@@ -1,0 +1,22 @@
+{
+  "name":"fluxsauce/switchboard",
+  "description":"An application for coordinating between local development and third-party hosts.",
+  "homepage":"https://github.com/fluxsauce/switchboard",
+  "license":"gplv2",
+  "authors":[
+    {
+      "name":"Jon Peck"
+    }
+  ],
+  "require":{
+    "php":">=5.3.3",
+    "rmccue/requests":">=1.0"
+  },
+  "require-dev":{
+    "phpunit/phpunit":">=3.5",
+    "drush/drush":">=6.2.0"
+  },
+  "support":{
+    "issues":"https://github.com/fluxsauce/switchboard/issues"
+  }
+}
