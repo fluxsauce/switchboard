@@ -42,24 +42,20 @@ function switchboard_get_provider_settings($provider) {
 function switchboard_drush_command() {
   $items = array();
 
-  $items['sw-auth-logout'] = array(
-    'description' => dt('End session with a provider.'),
+  $items['sw-auth-login'] = array(
+    'description' => dt('Create session with a provider'),
     'arguments' => array(
-      'provider' => dt('Name of the provider. Currently provided: @providers', array(
-        '@providers' => implode(', ', switchboard_get_providers()),
-      )),
+      'provider' => dt('Name of the provider.'),
+      'email' => dt('Email address of the account with the provider'),
+      'password' => dt('Password for the account'),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['sw-auth-login'] = array(
-    'description' => dt('Create session with a provider'),
+  $items['sw-auth-logout'] = array(
+    'description' => dt('End session with a provider.'),
     'arguments' => array(
-      'provider' => dt('Name of the provider. Currently provided: @providers', array(
-        '@providers' => implode(', ', switchboard_get_providers()),
-      )),
-      'email' => dt('Email address of the account with the provider'),
-      'password' => dt('Password for the account'),
+      'provider' => dt('Name of the provider.'),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
@@ -67,9 +63,7 @@ function switchboard_drush_command() {
   $items['sw-sites-list'] = array(
     'description' => dt('List available sites from a provider.'),
     'arguments' => array(
-      'provider' => dt('Name of the provider. Currently provided: @providers', array(
-        '@providers' => implode(', ', switchboard_get_providers()),
-      )),
+      'provider' => dt('Name of the provider.'),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
@@ -78,54 +72,93 @@ function switchboard_drush_command() {
 }
 
 /**
- * Implements drush_COMMAND_validate().
+ * Implements hook_drush_command_validate().
  */
 function drush_switchboard_sw_auth_login_validate($provider = FALSE, $email = FALSE, $password = FALSE) {
   if (!in_array($provider, switchboard_get_providers())) {
     return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider; cannot authenticate.'));
   }
   if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    return drush_set_error('SWITCHBOARD_INVALID_EMAIL', dt('Invalid email; cannot authenticate.'));
+    return drush_set_error('SWITCHBOARD_AUTH_LOGIN_INVALID_EMAIL', dt('Invalid email; cannot authenticate.'));
   }
   if (!$password) {
-    return drush_set_error('SWITCHBOARD_INVALID_PASSWORD', dt('Password missing; cannot authenticate.'));
+    return drush_set_error('SWITCHBOARD_AUTH_LOGIN_INVALID_PASSWORD', dt('Password missing; cannot authenticate.'));
   }
+  require_once('providers/' . $provider . '/' . $provider . '.auth.php');
+  return call_user_func('switchboard_' . $provider . '_auth_login_validate', $email, $password);
 }
 
+/**
+ * Implements hook_drush_command().
+ */
 function drush_switchboard_sw_auth_login($provider, $email, $password) {
-  $provider_settings = switchboard_get_provider_settings($provider);
-  if ($provider_settings['auth'] == 'basic') {
-    drush_cache_set('email', $email, 'switchboard-auth-' . $provider);
-    drush_cache_set('password', $password, 'switchboard-auth-' . $provider);
+  require_once('providers/' . $provider . '/' . $provider . '.auth.php');
+  call_user_func('switchboard_' . $provider . '_auth_login', $email, $password);
+  drush_log(dt('Logged into @provider as @email.', array(
+    '@provider' => $provider,
+    '@email' => $email,
+  )), 'ok');
+}
+
+/**
+ * Implements hook_drush_command_validate().
+ */
+function drush_switchboard_sw_auth_logout_validate($provider = FALSE) {
+  if (!in_array($provider, switchboard_get_providers())) {
+    return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider; cannot authenticate.'));
   }
+  require_once('providers/' . $provider . '/' . $provider . '.auth.php');
+  return call_user_func('switchboard_' . $provider . '_auth_logout_validate');
 }
 
+/**
+ * Implements hook_drush_command().
+ */
 function drush_switchboard_sw_auth_logout($provider) {
-  drush_cache_clear_all('email', 'switchboard-auth-' . $provider, TRUE);
-  drush_cache_clear_all('password', 'switchboard-auth-' . $provider, TRUE);
+  require_once('providers/' . $provider . '/' . $provider . '.auth.php');
+  call_user_func('switchboard_' . $provider . '_auth_logout');
+  drush_log(dt('Logged out of @provider.', array(
+    '@provider' => $provider,
+  )), 'ok');
 }
 
-function switchboard_request_options($provider) {
-  $email = drush_cache_get('email', 'switchboard-auth-' . $provider);
-  $password = drush_cache_get('password', 'switchboard-auth-' . $provider);
-  $options = array(
-    'auth' => new Requests_Auth_Basic(array(
-        $email->data,
-        $password->data,
-      )),
+function switchboard_requests_options($provider, $options = array()) {
+  $common_options = array(
+    'timeout' => 30,
   );
-  return $options;
+
+  // Get provider specific options.
+  require_once('providers/' . $provider . '/' . $provider . '.util.php');
+  $defaults = array_merge($common_options, call_user_func('switchboard_' . $provider . '_requests_options'));
+
+  // Combine defaults with custom options.
+  return array_merge($defaults, $options);
 }
 
-function switchboard_request($options) {
-  $provider = drush_get_option('provider');
+/**
+ * Send a request.
+ * @param $options
+ * @return bool|Requests_Response
+ */
+function switchboard_request($provider, $options) {
   $provider_settings = switchboard_get_provider_settings($provider);
-  $url = $provider_settings['endpoint'] . $options['resource'];
+  $url = $provider_settings['endpoint'];
+
+  if ($provider == 'pantheon') {
+    $url .= '/terminus.php?';
+  }
+
+  $url .= $options['resource'];
+
+  if ($provider == 'pantheon') {
+    $url .= '=' . $options['uuid'];
+    $url .= '&path=' . $options['realm'];
+  }
   if ($provider == 'acquia') {
     $url .= '.json';
   }
 
-  $request_options = switchboard_request_options($provider);
+  $requests_options = switchboard_requests_options($provider);
 
   if (!in_array($options['method'], array('GET', 'DELETE', 'POST', 'PUT'))) {
     return drush_set_error('SWITCHBOARD_REQUEST_INVALID_METHOD');
@@ -152,19 +185,19 @@ function switchboard_request($options) {
   try {
     switch ($options['method']) {
       case 'GET':
-        $response = Requests::get($url, $headers, $request_options);
+        $response = Requests::get($url, $headers, $requests_options);
         break;
 
       case 'DELETE':
-        $response = Requests::delete($url, $headers, $request_options);
+        $response = Requests::delete($url, $headers, $requests_options);
         break;
 
       case 'POST':
-        $response = Requests::post($url, $headers, $data, $request_options);
+        $response = Requests::post($url, $headers, $data, $requests_options);
         break;
 
       case 'PUT':
-        $response = Requests::put($url, $headers, $data, $request_options);
+        $response = Requests::put($url, $headers, $data, $requests_options);
         break;
 
     }
@@ -177,24 +210,12 @@ function switchboard_request($options) {
 }
 
 function drush_switchboard_sw_sites_list($provider) {
-  drush_set_option('provider', 'acquia');
-  require_once 'providers/acquia/acquia.sites.api.inc';
-  $result = switchboard_request(switchboard_acquia_sites());
-  $json = json_decode($result->body);
+  require_once('providers/' . $provider . '/' . $provider . '.sites.php');
+  $sites = call_user_func('switchboard_' . $provider . '_sites_get');
+
+  $pdo = switchboard_get_sqlite_db();
 
   try {
-    $pdo = new PDO('sqlite:switchboard.sqlite');
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    $sql_query = 'CREATE TABLE IF NOT EXISTS sites ( ';
-    $sql_query .= 'id INTEGER PRIMARY KEY ';
-    $sql_query .= ', provider TEXT ';
-    $sql_query .= ', site TEXT ';
-    $sql_query .= ', updated INTEGER ';
-    $sql_query .= ') ';
-
-    $pdo->exec($sql_query);
-
     // Cleanup.
     $sql_query = 'DELETE FROM sites ';
     $sql_query .= 'WHERE provider = :provider ';
@@ -202,18 +223,19 @@ function drush_switchboard_sw_sites_list($provider) {
     $stmt->bindParam(':provider', $provider, PDO::PARAM_STR);
     $stmt->execute();
 
-    $sql_query = 'INSERT INTO sites (provider, site, updated) ';
-    $sql_query .= 'VALUES (:provider, :site, :updated) ';
+    $sql_query = 'INSERT INTO sites (provider, name, uuid, updated) ';
+    $sql_query .= 'VALUES (:provider, :name, :uuid, :updated) ';
     $stmt = $pdo->prepare($sql_query);
     $stmt->bindParam(':provider', $provider);
     $stmt->bindParam(':updated', time());
 
-    foreach ($json as $site) {
-      $stmt->bindParam(':site', $site);
+    foreach ($sites as $site_data) {
+      $stmt->bindParam(':name', $site_data['name']);
+      $stmt->bindParam(':uuid', $site_data['uuid']);
       $stmt->execute();
     }
 
-    $sql_query = 'SELECT site, updated ';
+    $sql_query = 'SELECT name, uuid, updated ';
     $sql_query .= 'FROM sites ';
     $sql_query .= 'WHERE provider = :provider ';
     $stmt = $pdo->prepare($sql_query);
@@ -226,4 +248,24 @@ function drush_switchboard_sw_sites_list($provider) {
     // Print PDOException message
     echo $e->getMessage();
   }
+}
+
+function switchboard_get_sqlite_db() {
+  try {
+    $pdo = new PDO('sqlite:switchboard.sqlite');
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $sql_query = 'CREATE TABLE IF NOT EXISTS sites ( ';
+    $sql_query .= 'id INTEGER PRIMARY KEY ';
+    $sql_query .= ', provider TEXT ';
+    $sql_query .= ', name TEXT ';
+    $sql_query .= ', uuid TEXT ';
+    $sql_query .= ', updated INTEGER ';
+    $sql_query .= ') ';
+
+    $pdo->exec($sql_query);
+  } catch (PDOException $e) {
+    echo $e->getMessage();
+  }
+  return $pdo;
 }
