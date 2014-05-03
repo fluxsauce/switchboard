@@ -16,7 +16,22 @@ function switchboard_pantheon_sites_get() {
     $sites[] = array(
       'uuid' => $uuid,
       'name' => $data->information->name,
+      'realm' => $data->information->preferred_zone,
     );
   }
   return $sites;
+}
+
+function switchboard_pantheon_site_info($site_name) {
+  $site_info = switchboard_get_site('pantheon', $site_name);
+
+  // Hard coding.
+  $repository = 'codeserver.dev.' . $site_info->uuid;
+  $repository .= '@codeserver.dev.' . $site_info->uuid;
+  $repository .= '.drush.in:2222/~/repository.git';
+  return array(
+    'vcs_url' => $repository,
+    'vcs_type' => 'git',
+    'vcs_protocol' => 'ssh',
+  );
 }
