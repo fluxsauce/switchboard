@@ -20,10 +20,10 @@ function switchboard_acquia_sites_get() {
 }
 
 function switchboard_acquia_site_info($site_name) {
-  $site_info = switchboard_get_site('acquia', $site_name);
+  $site = switchboard_site_read('acquia', $site_name);
   $result = switchboard_request('acquia', array(
     'method' => 'GET',
-    'resource' => '/sites/' . $site_info->realm . ':' . $site_name,
+    'resource' => '/sites/' . $site['realm'] . ':' . $site_name,
   ));
   $site_info = json_decode($result->body);
   $ret_val = array(

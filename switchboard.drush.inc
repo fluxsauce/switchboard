@@ -11,6 +11,8 @@ if (!file_exists(__DIR__ . '/vendor/rmccue/requests/library/Requests.php')) {
 }
 require 'vendor/autoload.php';
 
+require 'switchboard.site.php';
+
 /**
  * Get the list of providers supported by Switchboard.
  *
@@ -70,6 +72,15 @@ function switchboard_drush_command() {
 
   $items['sw-site-info'] = array(
     'description' => dt('Get site information'),
+    'arguments' => array(
+      'provider' => dt('Name of the provider'),
+      'site_name' => dt('Name of the site'),
+    ),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-site-vcs'] = array(
+    'description' => dt('Get the command for retrieving site code.'),
     'arguments' => array(
       'provider' => dt('Name of the provider'),
       'site_name' => dt('Name of the site'),
@@ -232,28 +243,14 @@ function drush_switchboard_sw_site_info_validate($provider = FALSE, $site_name =
 function drush_switchboard_sw_site_info($provider, $site_name) {
   require_once('providers/' . $provider . '/' . $provider . '.sites.php');
   $site_info = call_user_func('switchboard_' . $provider . '_site_info', $site_name);
-  $pdo = switchboard_get_sqlite_db();
-  try {
-    // Determine what values have changed.
-    $sql_query = 'UPDATE sites SET ';
-    $sql_query_set = array();
-    foreach (array_keys($site_info) as $key) {
-      $sql_query_set[] = '"' . $key . '" = ? ';
-    }
-    $sql_query .= implode(', ', $sql_query_set);
-    $sql_query .= ', updated = ? ';
-    $sql_query .= 'WHERE name = ? ';
-    $stmt = $pdo->prepare($sql_query);
-    $stmt->execute(array_merge(array_values($site_info), array(
-      time(),
-      $site_name,
-    )));
-  } catch (PDOException $e) {
-    echo $e->getMessage();
-    exit;
-  }
+  switchboard_site_update($provider, $site_name, $site_info);
 
-  var_dump($site_info);
+  $site = switchboard_site_read($provider, $site_name);
+
+  $rows = array();
+  $rows[] = array_keys($site);
+  $rows[] = array_values($site);
+  drush_print_table($rows, TRUE);
 }
 
 function drush_switchboard_sw_sites_list_validate($provider = FALSE) {
@@ -265,45 +262,25 @@ function drush_switchboard_sw_sites_list_validate($provider = FALSE) {
 function drush_switchboard_sw_sites_list($provider) {
   require_once('providers/' . $provider . '/' . $provider . '.sites.php');
   $sites = call_user_func('switchboard_' . $provider . '_sites_get');
+  // Clean up list of sites.
+  switchboard_site_delete_all($provider);
 
-  $pdo = switchboard_get_sqlite_db();
-
-  try {
-    // Cleanup.
-    $stmt = $pdo->prepare('DELETE FROM sites WHERE provider = :provider');
-    $stmt->bindParam(':provider', $provider, PDO::PARAM_STR);
-    $stmt->execute();
-
-    $sql_query = 'INSERT INTO sites (provider, name, uuid, realm, updated) ';
-    $sql_query .= 'VALUES (:provider, :name, :uuid, :realm, :updated) ';
-    $stmt = $pdo->prepare($sql_query);
-    $stmt->bindParam(':provider', $provider);
-    $stmt->bindParam(':updated', time());
-
-    foreach ($sites as $site_data) {
-      $stmt->bindParam(':name', $site_data['name']);
-      $stmt->bindParam(':uuid', $site_data['uuid']);
-      $stmt->bindParam(':realm', $site_data['realm']);
-      $stmt->execute();
-    }
-
-  } catch (PDOException $e) {
-    echo $e->getMessage();
-    exit;
+  foreach ($sites as $site_data) {
+    switchboard_site_update($provider, $site_data['name'], $site_data);
   }
 
-  $sites = switchboard_get_sites($provider);
+  $sites = switchboard_site_read_all($provider);
 
   $rows = array();
   foreach ($sites as $site_data) {
-    $rows[$site_data->name] = array(
-      $site_data->name,
-      $site_data->uuid,
+    $rows[$site_data['name']] = array(
+      $site_data['name'],
+      $site_data['uuid'],
     );
   }
   ksort($rows);
   array_unshift($rows, array(dt('Name'), dt('UUID')));
-  drush_print_table($rows, TRUE);
+
 }
 
 function switchboard_get_sqlite_db() {
@@ -327,54 +304,37 @@ function switchboard_get_sqlite_db() {
 
     $pdo->exec($sql_query);
   } catch (PDOException $e) {
-    echo $e->getMessage();
+    switchboard_pdo_exception_debug($e);
   }
   return $pdo;
 }
 
-function switchboard_get_sites($provider) {
-  $pdo = switchboard_get_sqlite_db();
-  $ret_val = array();
-
-  try {
-    $sql_query = 'SELECT * ';
-    $sql_query .= 'FROM sites ';
-    $sql_query .= 'WHERE provider = :provider ';
-    $stmt = $pdo->prepare($sql_query);
-    $stmt->bindParam(':provider', $provider);
-    $stmt->execute();
-    while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
-      $ret_val[$row->name] = $row;
-    }
-  } catch (PDOException $e) {
-    echo $e->getMessage();
-  }
-  return $ret_val;
+function switchboard_pdo_exception_debug(PDOException $e) {
+  drush_log(dt('PDO Exception in @file on line @line: "@message"', array(
+    '@file' => $e->getFile(),
+    '@line' => $e->getLine(),
+    '@message' => $e->getMessage(),
+  )), 'error');
+  exit;
 }
 
-function switchboard_get_site($provider, $site_name) {
-  $pdo = switchboard_get_sqlite_db();
-
-  try {
-    $sql_query = 'SELECT * ';
-    $sql_query .= 'FROM sites ';
-    $sql_query .= 'WHERE provider = :provider ';
-    $sql_query .= 'AND name = :name ';
-    $stmt = $pdo->prepare($sql_query);
-    $stmt->bindParam(':provider', $provider);
-    $stmt->bindParam(':name', $site_name);
-    $stmt->execute();
-    return $stmt->fetch(PDO::FETCH_OBJ);
-  } catch (PDOException $e) {
-    echo $e->getMessage() . PHP_EOL;
-    exit;
+function drush_switchboard_sw_site_vcs($provider, $site_name) {
+  $site = switchboard_site_read($provider, $site_name);
+  $command = '';
+  switch ($site['vcs_type']) {
+    case 'git':
+      $command .= 'git clone';
+      break;
+    case 'svn':
+      $command .= 'svn checkout';
+      break;
+    default:
+      return drush_set_error('SWITCHBOARD_SITE_VCS_INVALID_PROTOCOL', dt('Invalid VCS type for site.'));
   }
-}
-
-function switchboard_site_exists($provider, $site_name) {
-  if (!$site_name) {
-    return FALSE;
+  $command .= ' ';
+  if ($site['vcs_protocol'] == 'ssh') {
+    $command .= 'ssh://';
   }
-  $sites = switchboard_get_sites($provider);
-  return array_key_exists($site_name, $sites);
+  $command .= $site['vcs_url'] . ' ' . $site_name;
+  drush_print($command);
 }
