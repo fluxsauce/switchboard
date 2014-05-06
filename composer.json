@@ -18,5 +18,8 @@
   },
   "support":{
     "issues":"https://github.com/fluxsauce/switchboard/issues"
+  },
+  "autoload": {
+    "psr-4": {"Fluxsauce\\Switchboard\\": "library/fluxsauce/switchboard/src"}
   }
 }

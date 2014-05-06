@@ -13,6 +13,11 @@ require 'vendor/autoload.php';
 
 require 'switchboard.site.php';
 
+$site = new Fluxsauce\Switchboard\Site('pantheon', 'fluxsauce');
+$site->read();
+var_dump($site);
+exit;
+
 /**
  * Get the list of providers supported by Switchboard.
  *
@@ -280,33 +285,6 @@ function drush_switchboard_sw_sites_list($provider) {
   }
   ksort($rows);
   array_unshift($rows, array(dt('Name'), dt('UUID')));
-
-}
-
-function switchboard_get_sqlite_db() {
-  try {
-    $pdo = new PDO('sqlite:' . __DIR__ . '/switchboard.sqlite');
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    $sql_query = 'CREATE TABLE IF NOT EXISTS sites ( ';
-    $sql_query .= 'id INTEGER PRIMARY KEY ';
-    $sql_query .= ', provider TEXT ';
-    $sql_query .= ', uuid TEXT ';
-    $sql_query .= ', realm TEXT ';
-    $sql_query .= ', name TEXT ';
-    $sql_query .= ', title TEXT ';
-    $sql_query .= ', unix_username TEXT ';
-    $sql_query .= ', vcs_url TEXT ';
-    $sql_query .= ', vcs_type TEXT ';
-    $sql_query .= ', vcs_protocol TEXT ';
-    $sql_query .= ', updated INTEGER ';
-    $sql_query .= ') ';
-
-    $pdo->exec($sql_query);
-  } catch (PDOException $e) {
-    switchboard_pdo_exception_debug($e);
-  }
-  return $pdo;
 }
 
 function switchboard_pdo_exception_debug(PDOException $e) {
