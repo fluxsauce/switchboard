@@ -2,6 +2,22 @@
 /**
  * @file
  * Switchboard, the host agnostic development facilitator.
+ *
+ * Copyright (C) 2014 Jonathan Peck, jpeck@fluxsauce.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 date_default_timezone_set('UTC');
 
@@ -12,11 +28,6 @@ if (!file_exists(__DIR__ . '/vendor/rmccue/requests/library/Requests.php')) {
 require 'vendor/autoload.php';
 
 require 'switchboard.site.php';
-
-$site = new Fluxsauce\Switchboard\Site('pantheon', 'fluxsauce');
-$site->read();
-var_dump($site);
-exit;
 
 /**
  * Get the list of providers supported by Switchboard.
@@ -67,7 +78,7 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['sw-sites-list'] = array(
+  $items['sw-site-list'] = array(
     'description' => dt('List available sites from a provider'),
     'arguments' => array(
       'provider' => dt('Name of the provider'),
@@ -248,30 +259,24 @@ function drush_switchboard_sw_site_info_validate($provider = FALSE, $site_name =
 function drush_switchboard_sw_site_info($provider, $site_name) {
   require_once('providers/' . $provider . '/' . $provider . '.sites.php');
   $site_info = call_user_func('switchboard_' . $provider . '_site_info', $site_name);
-  switchboard_site_update($provider, $site_name, $site_info);
-
-  $site = switchboard_site_read($provider, $site_name);
-
-  $rows = array();
-  $rows[] = array_keys($site);
-  $rows[] = array_values($site);
-  drush_print_table($rows, TRUE);
+  $site = new Fluxsauce\Switchboard\Site($provider, $site_name);
+  $site->update($site_info);
+  $site->renderDrushTable();
 }
 
-function drush_switchboard_sw_sites_list_validate($provider = FALSE) {
+function drush_switchboard_sw_site_list_validate($provider = FALSE) {
   if (!in_array($provider, switchboard_get_providers())) {
     return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider.'));
   }
 }
 
-function drush_switchboard_sw_sites_list($provider) {
+function drush_switchboard_sw_site_list($provider) {
   require_once('providers/' . $provider . '/' . $provider . '.sites.php');
   $sites = call_user_func('switchboard_' . $provider . '_sites_get');
-  // Clean up list of sites.
-  switchboard_site_delete_all($provider);
 
   foreach ($sites as $site_data) {
-    switchboard_site_update($provider, $site_data['name'], $site_data);
+    $site = new \Fluxsauce\Switchboard\Site($provider, $site_data['name']);
+    $site->update($site_data);
   }
 
   $sites = switchboard_site_read_all($provider);
@@ -285,10 +290,11 @@ function drush_switchboard_sw_sites_list($provider) {
   }
   ksort($rows);
   array_unshift($rows, array(dt('Name'), dt('UUID')));
+  drush_print_table($rows, TRUE);
 }
 
 function switchboard_pdo_exception_debug(PDOException $e) {
-  drush_log(dt('PDO Exception in @file on line @line: "@message"', array(
+  return drush_set_error(dt('PDO Exception in @file on line @line: "@message"', array(
     '@file' => $e->getFile(),
     '@line' => $e->getLine(),
     '@message' => $e->getMessage(),

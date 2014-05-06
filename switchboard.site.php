@@ -1,7 +1,7 @@
 <?php
 
 function switchboard_site_read_all($provider) {
-  $pdo = switchboard_get_sqlite_db();
+  $pdo = \Fluxsauce\Switchboard\Sqlite::getSite();
   $ret_val = array();
 
   try {
@@ -21,7 +21,7 @@ function switchboard_site_read_all($provider) {
 }
 
 function switchboard_site_delete_all($provider) {
-  $pdo = switchboard_get_sqlite_db();
+  $pdo = \Fluxsauce\Switchboard\Sqlite::getSite();
   try {
     $stmt = $pdo->prepare('DELETE FROM sites WHERE provider = :provider');
     $stmt->bindParam(':provider', $provider, PDO::PARAM_STR);

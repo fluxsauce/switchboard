@@ -37,39 +37,6 @@ class Site {
   }
 
   /**
-   * This should be something more abstract.
-   * @return \PDO
-   */
-  protected function _get_pdo() {
-    static $pdo;
-    if (!isset($pdo)) {
-      try {
-        $pdo = new \PDO('sqlite:' . drush_directory_cache('switchboard') . '/switchboard.sqlite');
-        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-
-        $sql_query = 'CREATE TABLE IF NOT EXISTS sites ( ';
-        $sql_query .= 'id INTEGER PRIMARY KEY ';
-        $sql_query .= ', provider TEXT ';
-        $sql_query .= ', uuid TEXT ';
-        $sql_query .= ', realm TEXT ';
-        $sql_query .= ', name TEXT ';
-        $sql_query .= ', title TEXT ';
-        $sql_query .= ', unix_username TEXT ';
-        $sql_query .= ', vcs_url TEXT ';
-        $sql_query .= ', vcs_type TEXT ';
-        $sql_query .= ', vcs_protocol TEXT ';
-        $sql_query .= ', updated INTEGER ';
-        $sql_query .= ') ';
-
-        $pdo->exec($sql_query);
-      } catch (\PDOException $e) {
-        switchboard_pdo_exception_debug($e);
-      }
-    }
-    return $pdo;
-  }
-
-  /**
    * Magic __get.
    *
    * @param $name string
@@ -104,7 +71,7 @@ class Site {
    * Create a site.
    */
   public function create() {
-    $pdo = $this->_get_pdo();
+    $pdo = \Fluxsauce\Switchboard\Sqlite::getSite();
 
     try {
       $sql_query = 'INSERT INTO sites (provider, name, updated) ';
@@ -124,7 +91,7 @@ class Site {
    * Read a site.
    */
   public function read() {
-    $pdo = $this->_get_pdo();
+    $pdo = \Fluxsauce\Switchboard\Sqlite::getSite();
     try {
       $sql_query = 'SELECT * ';
       $sql_query .= 'FROM sites ';
@@ -160,37 +127,56 @@ class Site {
   /**
    * Update a site.
    */
-  public function update() {
-    $pdo = $this->_get_pdo();
+  public function update($update = array()) {
+    $pdo = \Fluxsauce\Switchboard\Sqlite::getSite();
     if (!$this->id) {
       $this->create();
     }
 
-    $fields = get_object_vars($this);
+    if (!empty($update)) {
+      foreach ($update as $key => $value) {
+        $this->$key = $value;
+      }
+    }
+
+    $all_fields = get_object_vars($this);
+    $fields_to_update = array();
+
+    // Scan changed values.
+    foreach ($all_fields as $key => $value) {
+      // Empty string (allows for NULL).
+      if ($value === '') {
+        continue;
+      }
+      // Protected.
+      if (in_array($key, array('name', 'provider', 'id', 'updated'))) {
+        continue;
+      }
+      // Safe to update.
+      $fields_to_update[$key] = $value;
+    }
+
+    if (empty($fields_to_update)) {
+      return;
+    }
 
     try {
       $sql_query = 'UPDATE sites SET ';
       $sql_query_set = array();
-      foreach (array_keys($fields) as $key) {
-        // Safety.
-        if (in_array($key, array('name', 'provider', 'id'))) {
-          unset($fields[$key]);
-        }
-        else {
-          $sql_query_set[] = $key . ' = ? ';
-        }
-      }
-      // Nothing to update.
-      if (empty($sql_query_set)) {
-        return;
+      foreach (array_keys($fields_to_update) as $key) {
+        $sql_query_set[] = $key . ' = ? ';
       }
       $sql_query .= implode(', ', $sql_query_set);
       $sql_query .= ', updated = ? ';
       $sql_query .= 'WHERE id = ? ';
       $stmt = $pdo->prepare($sql_query);
-      $stmt->execute(array_merge(array_values($fields), array(
+      $stmt->execute(array_merge(array_values($fields_to_update), array(
         time(),
         $this->id,
+      )));
+      drush_log(dt('Updated site @provider:@name', array(
+        '@provider' => $this->provider,
+        '@name' => $this->name,
       )));
     } catch (PDOException $e) {
       switchboard_pdo_exception_debug($e);
@@ -201,7 +187,7 @@ class Site {
    * Delete a Site.
    */
   public function destroy() {
-    $pdo = $this->_get_pdo();
+    $pdo = \Fluxsauce\Switchboard\Sqlite::getSite();
     try {
       $stmt = $pdo->prepare('DELETE FROM sites WHERE id = :id');
       $stmt->execute(array(
@@ -211,5 +197,16 @@ class Site {
       switchboard_pdo_exception_debug($e);
     }
     $this->id = NULL;
+  }
+
+  /**
+   * Render a site as a Drush table.
+   */
+  public function renderDrushTable() {
+    $fields = get_object_vars($this);
+    $rows = array();
+    $rows[] = array_keys($fields);
+    $rows[] = array_values($fields);
+    drush_print_table($rows, TRUE);
   }
 }
