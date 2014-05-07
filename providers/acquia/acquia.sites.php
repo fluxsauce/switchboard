@@ -1,22 +1,5 @@
 <?php
 
-function switchboard_acquia_sites_get() {
-  $result = switchboard_request('acquia', array(
-    'method' => 'GET',
-    'resource' => '/sites',
-  ));
-  $site_names = json_decode($result->body);
-  $sites = array();
-  foreach ($site_names as $site_data) {
-    list($realm, $site_name) = explode(':', $site_data);
-    $sites[] = array(
-      'name' => $site_name,
-      'realm' => $realm,
-    );
-  }
-  return $sites;
-}
-
 function switchboard_acquia_site_info($site_name) {
   $site = new \Fluxsauce\Switchboard\Site('acquia', $site_name);
   $result = switchboard_request('acquia', array(

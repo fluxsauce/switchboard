@@ -46,7 +46,7 @@ class Site {
    */
   public function __get($name) {
     if (!property_exists($this, $name)) {
-      throw new \Exception('Property ' . $name . ' does not exist, cannot get.');
+      throw new \Exception(__CLASS__ . ' property ' . $name . ' does not exist, cannot get.');
     }
     return $this->$name;
   }
@@ -71,7 +71,7 @@ class Site {
    * Create a site.
    */
   public function create() {
-    $pdo = \Fluxsauce\Switchboard\Sqlite::getSite();
+    $pdo = \Fluxsauce\Switchboard\Sqlite::siteGet();
 
     try {
       $sql_query = 'INSERT INTO sites (provider, name, updated) ';
@@ -91,7 +91,7 @@ class Site {
    * Read a site.
    */
   public function read() {
-    $pdo = \Fluxsauce\Switchboard\Sqlite::getSite();
+    $pdo = \Fluxsauce\Switchboard\Sqlite::siteGet();
     try {
       $sql_query = 'SELECT * ';
       $sql_query .= 'FROM sites ';
@@ -128,7 +128,7 @@ class Site {
    * Update a site.
    */
   public function update($update = array()) {
-    $pdo = \Fluxsauce\Switchboard\Sqlite::getSite();
+    $pdo = \Fluxsauce\Switchboard\Sqlite::siteGet();
     if (!$this->id) {
       $this->create();
     }
@@ -187,7 +187,7 @@ class Site {
    * Delete a Site.
    */
   public function destroy() {
-    $pdo = \Fluxsauce\Switchboard\Sqlite::getSite();
+    $pdo = \Fluxsauce\Switchboard\Sqlite::siteGet();
     try {
       $stmt = $pdo->prepare('DELETE FROM sites WHERE id = :id');
       $stmt->execute(array(

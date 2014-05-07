@@ -55,8 +55,6 @@ function switchboard_pantheon_auth_login($email, $password) {
     return drush_set_error('SWITCHBOARD_AUTH_LOGIN_PANTHEON_NO_UUID', dt('Pantheon User UUID not found; please check your credentials and try again.'));
   }
 
-  var_dump($session);
-
   drush_cache_clear_all('*', 'switchboard-auth-pantheon', TRUE);
   drush_cache_set('user_uuid', $user_uuid, 'switchboard-auth-pantheon');
   drush_cache_set('session', $session, 'switchboard-auth-pantheon');

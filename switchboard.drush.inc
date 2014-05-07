@@ -27,8 +27,6 @@ if (!file_exists(__DIR__ . '/vendor/rmccue/requests/library/Requests.php')) {
 }
 require 'vendor/autoload.php';
 
-require 'switchboard.site.php';
-
 /**
  * Get the list of providers supported by Switchboard.
  *
@@ -36,18 +34,21 @@ require 'switchboard.site.php';
  *   Machine names of providers.
  */
 function switchboard_get_providers() {
-  $providers = array();
-  $files = scandir(__DIR__ . '/providers');
-  foreach ($files as $filename) {
-    if (is_dir(__DIR__ . '/providers/' . $filename) && !in_array($filename, array(
-        '.',
-        '..'
-      ))
-    ) {
-      $providers[] = $filename;
-    }
-  }
+  // Hard coding for now.
+  // Later, be clever and scan the directory containing Provider definitions.
+  $providers = array(
+    'acquia',
+    'pantheon',
+  );
   return $providers;
+}
+
+function switchboard_get_provider($provider) {
+  $class_name = '\Fluxsauce\Switchboard\Provider' . ucfirst($provider);
+  if (drush_get_option('refresh')) {
+    return new $class_name(TRUE);
+  }
+  return new $class_name();
 }
 
 function switchboard_get_provider_settings($provider) {
@@ -83,6 +84,9 @@ function switchboard_drush_command() {
     'arguments' => array(
       'provider' => dt('Name of the provider'),
     ),
+    'options' => array(
+      'refresh' => dt('Refresh site list.'),
+    ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
@@ -104,7 +108,17 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
+  $items['sw-reset'] = array(
+    'description' => dt('Reset the Switchboard brain.'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
   return $items;
+}
+
+function drush_switchboard_sw_reset() {
+  Fluxsauce\Switchboard\Sqlite::siteDelete();
+  drush_log('Switchboard brain deleted.', 'ok');
 }
 
 /**
@@ -134,6 +148,8 @@ function drush_switchboard_sw_auth_login($provider, $email, $password) {
     '@provider' => $provider,
     '@email' => $email,
   )), 'ok');
+  // Update list of sites.
+  $provider_object = switchboard_get_provider($provider);
 }
 
 /**
@@ -158,43 +174,30 @@ function drush_switchboard_sw_auth_logout($provider) {
   )), 'ok');
 }
 
-function switchboard_requests_options($provider, $options = array()) {
-  $common_options = array(
-    'timeout' => 30,
-  );
-
-  // Get provider specific options.
-  require_once('providers/' . $provider . '/' . $provider . '.util.php');
-  $defaults = array_merge($common_options, call_user_func('switchboard_' . $provider . '_requests_options'));
-
-  // Combine defaults with custom options.
-  return array_merge($defaults, $options);
-}
-
 /**
  * Send a request.
+ * @param \Fluxsauce\Switchboard\Provider $provider
  * @param $options
  * @return bool|Requests_Response
  */
 function switchboard_request($provider, $options) {
-  $provider_settings = switchboard_get_provider_settings($provider);
-  $url = $provider_settings['endpoint'];
+  $url = $provider->endpoint;
 
-  if ($provider == 'pantheon') {
+  if ($provider->name == 'pantheon') {
     $url .= '/terminus.php?';
   }
 
   $url .= $options['resource'];
 
-  if ($provider == 'pantheon') {
+  if ($provider->name == 'pantheon') {
     $url .= '=' . $options['uuid'];
     $url .= '&path=' . $options['realm'];
   }
-  if ($provider == 'acquia') {
+  if ($provider->name == 'acquia') {
     $url .= '.json';
   }
 
-  $requests_options = switchboard_requests_options($provider);
+  $requests_options = $provider->requests_options();
 
   if (!in_array($options['method'], array('GET', 'DELETE', 'POST', 'PUT'))) {
     return drush_set_error('SWITCHBOARD_REQUEST_INVALID_METHOD');
@@ -251,12 +254,14 @@ function drush_switchboard_sw_site_info_validate($provider = FALSE, $site_name =
   if (!in_array($provider, switchboard_get_providers())) {
     return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider.'));
   }
-  if (!switchboard_site_exists($provider, $site_name)) {
+  $provider_object = switchboard_get_provider($provider);
+  if (!$provider_object->site_exists($site_name)) {
     return drush_set_error('SWITCHBOARD_INVALID_SITE', dt('Invalid site; cannot continue.'));
   }
 }
 
 function drush_switchboard_sw_site_info($provider, $site_name) {
+  $provider_object = switchboard_get_provider($provider);
   require_once('providers/' . $provider . '/' . $provider . '.sites.php');
   $site_info = call_user_func('switchboard_' . $provider . '_site_info', $site_name);
   $site = new Fluxsauce\Switchboard\Site($provider, $site_name);
@@ -271,21 +276,13 @@ function drush_switchboard_sw_site_list_validate($provider = FALSE) {
 }
 
 function drush_switchboard_sw_site_list($provider) {
-  require_once('providers/' . $provider . '/' . $provider . '.sites.php');
-  $sites = call_user_func('switchboard_' . $provider . '_sites_get');
-
-  foreach ($sites as $site_data) {
-    $site = new \Fluxsauce\Switchboard\Site($provider, $site_data['name']);
-    $site->update($site_data);
-  }
-
-  $sites = switchboard_site_read_all($provider);
+  $provider_object = switchboard_get_provider($provider);
 
   $rows = array();
-  foreach ($sites as $site_data) {
-    $rows[$site_data['name']] = array(
-      $site_data['name'],
-      $site_data['uuid'],
+  foreach ($provider_object->sites as $site) {
+    $rows[] = array(
+      $site->name,
+      $site->uuid,
     );
   }
   ksort($rows);

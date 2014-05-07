@@ -6,7 +6,10 @@
 namespace Fluxsauce\Switchboard;
 
 class Sqlite {
-  public static function getSite() {
+  public static function siteDelete() {
+    unlink(drush_directory_cache('switchboard') . '/switchboard.sqlite');
+  }
+  public static function siteGet() {
     static $pdo;
     if (!isset($pdo)) {
       try {
