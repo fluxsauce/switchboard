@@ -40,15 +40,18 @@ abstract class Provider {
       $stmt->execute();
       while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
         $site = new Site($this->name, $row['name']);
-        $site->update($row);
         $this->sites[$row['name']] = $site;
       }
     } catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
     }
 
+    // This should be some sort of bootstrapper instead.
     if ($refresh) {
       $this->api_get_sites();
+      foreach ($this->sites as $site) {
+        $site->update();
+      }
     }
   }
 

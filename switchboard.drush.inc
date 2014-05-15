@@ -67,6 +67,11 @@ function switchboard_get_provider($provider_name) {
 function switchboard_drush_command() {
   $items = array();
 
+  $items['sw-provider-list'] = array(
+    'description' => dt('List all available providers'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
   $items['sw-auth-login'] = array(
     'description' => dt('Create session with a provider'),
     'arguments' => array(
@@ -129,6 +134,22 @@ function switchboard_drush_command() {
   );
 
   return $items;
+}
+
+function drush_switchboard_sw_provider_list() {
+  $provider_names = switchboard_get_provider_names();
+  $rows = array();
+  foreach ($provider_names as $provider_name) {
+    $provider = switchboard_get_provider($provider_name);
+    $rows[$provider->name] = array(
+      $provider->name,
+      $provider->label,
+      $provider->homepage,
+    );
+  }
+  ksort($rows);
+  array_unshift($rows, array(dt('Name'), dt('Label'), dt('Homepage')));
+  drush_print_table($rows, TRUE);
 }
 
 function drush_switchboard_sw_reset_validate() {
