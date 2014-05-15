@@ -104,16 +104,43 @@ abstract class Provider {
    */
   abstract public function requests_options_custom();
 
+  /**
+   * Log in to target provider.
+   * @param $email
+   * @param $password
+   * @return boolean
+   */
+  abstract public function auth_login($email, $password);
+
+  /**
+   * Log out of target provider.
+   */
+  public function auth_logout() {
+    drush_cache_clear_all('*', 'switchboard-auth-' . $this->name, TRUE);
+  }
+
+  /**
+   * @return boolean
+   */
+  abstract public function auth_is_logged_in();
+
   public function requests_options($options = array()) {
-    $common_options = array(
+    $defaults = array(
       'timeout' => 30,
     );
 
     // Get provider specific options.
-    $defaults = array_merge($common_options, $this->requests_options_custom());
+    $provider_options = $this->requests_options_custom();
+    if (!empty($provider_options)) {
+      $defaults = array_merge($defaults, $provider_options);
+    }
 
-    // Combine defaults with custom options.
-    return array_merge($defaults, $options);
+    // Get custom options.
+    if (!empty($options)) {
+      $defaults = array_merge($defaults, $options);
+    }
+
+    return $defaults;
   }
 
   /**

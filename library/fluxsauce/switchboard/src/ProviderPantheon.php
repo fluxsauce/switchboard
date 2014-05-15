@@ -33,11 +33,71 @@ class ProviderPantheon extends Provider {
   }
 
   public function requests_options_custom() {
+    $options = array();
     $cookies = drush_cache_get('session', 'switchboard-auth-pantheon');
-    $options = array(
-      'cookies' => array($cookies->data),
-    );
+    if (isset($cookies->data)) {
+      $options = array(
+        'cookies' => array($cookies->data),
+      );
+    }
     return $options;
+  }
+
+  public function auth_login($email, $password) {
+    $url = $this->endpoint . '/login';
+
+    // Get the form build ID.
+    try {
+      $response = \Requests::post($url);
+    }
+    catch (\Requests_Exception $e) {
+      return drush_set_error('SWITCHBOARD_AUTH_LOGIN_PANTHEON_ENDPOINT_UNAVAILABLE', dt('Pantheon endpoint unavailable: @error', array(
+        '@error' => $e->getMessage(),
+      )));
+    }
+    $form_build_id = $this->auth_login_get_form_build_id($response->body);
+    if (!$form_build_id) {
+      return drush_set_error('SWITCHBOARD_AUTH_LOGIN_PANTHEON_LOGIN_UNAVAILABLE', dt('Pantheon login unavailable.'));
+    }
+
+    // Attempt to log in.
+    try {
+      $response = \Requests::post($url, array(), array(
+        'email' => $email,
+        'password' => $password,
+        'form_build_id' => $form_build_id,
+        'form_id' => 'atlas_login_form',
+        'op' => 'Login',
+      ), $this->requests_options(array('follow_redirects' => FALSE)));
+    }
+    catch (\Requests_Exception $e) {
+      return drush_set_error('SWITCHBOARD_AUTH_LOGIN_PANTHEON_LOGIN_FAILURE', dt('Pantheon login failure: @error', array(
+        '@error' => $e->getMessage(),
+      )));
+    }
+
+    $session = $this->auth_login_get_session_from_headers($response->headers->getValues('set-cookie'));
+
+    if (!$session) {
+      return drush_set_error('SWITCHBOARD_AUTH_LOGIN_PANTHEON_NO_SESSION', dt('Pantheon Session not found; please check your credentials and try again.'));
+    }
+
+    // Get the UUID.
+    $user_uuid = array_pop(explode('/', $response->headers->offsetGet('Location')));
+    if (!$this->validate_uuid($user_uuid)) {
+      return drush_set_error('SWITCHBOARD_AUTH_LOGIN_PANTHEON_NO_UUID', dt('Pantheon User UUID not found; please check your credentials and try again.'));
+    }
+
+    drush_cache_clear_all('*', 'switchboard-auth-pantheon', TRUE);
+    drush_cache_set('user_uuid', $user_uuid, 'switchboard-auth-pantheon');
+    drush_cache_set('session', $session, 'switchboard-auth-pantheon');
+    drush_cache_set('email', $email, 'switchboard-auth-pantheon');
+    return TRUE;
+  }
+
+  public function auth_is_logged_in() {
+    $session = drush_cache_get('session', 'switchboard-auth-pantheon');
+    return $session->data ? TRUE : FALSE;
   }
 
   /**
