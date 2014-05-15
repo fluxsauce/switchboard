@@ -90,6 +90,15 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
+  $items['sw-site-delete'] = array(
+    'description' => dt('Locally delete site.'),
+    'arguments' => array(
+      'provider' => dt('Name of the provider'),
+      'site_name' => dt('Name of the site'),
+    ),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
   $items['sw-site-info'] = array(
     'description' => dt('Get site information'),
     'arguments' => array(
@@ -318,4 +327,27 @@ function drush_switchboard_sw_site_vcs($provider, $site_name) {
   }
   $command .= $site['vcs_url'] . ' ' . $site_name;
   drush_print($command);
+}
+
+function drush_switchboard_sw_site_delete_validate($provider = FALSE, $site_name = FALSE) {
+  if (!in_array($provider, switchboard_get_providers())) {
+    return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider; cannot authenticate.'));
+  }
+  $provider_object = switchboard_get_provider($provider);
+  if (!isset($provider_object->sites[$site_name])) {
+    return drush_set_error('SWITCHBOARD_PROVIDER_INVALID_SITE', dt('Site @site_name does not exist in provider @provider.', array(
+      '@site_name' => $site_name,
+      '@provider' => $provider,
+    )));
+  }
+  drush_set_option('provider_object', $provider_object);
+}
+
+function drush_switchboard_sw_site_delete($provider, $site_name) {
+  $provider_object = drush_get_option('provider_object');
+  $provider_object->site_delete($site_name);
+  drush_log(dt('Locally deleted @site_name from @provider.', array(
+    '@site_name' => $site_name,
+    '@provider' => $provider,
+  )), 'ok');
 }

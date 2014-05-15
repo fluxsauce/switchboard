@@ -41,7 +41,7 @@ abstract class Provider {
       while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
         $site = new Site($this->name, $row['name']);
         $site->update($row);
-        $ret_val[$row['name']] = $site;
+        $this->sites[$row['name']] = $site;
       }
     } catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
@@ -65,6 +65,14 @@ abstract class Provider {
       throw new \Exception(__CLASS__ . ' property ' . $name . ' does not exist, cannot get.');
     }
     return $this->$name;
+  }
+
+  public function site_delete($site_name) {
+    if (!isset($this->sites[$site_name])) {
+      throw new \Exception(__CLASS__ . ' site ' . $site_name . ' does not exist, cannot delete.');
+    }
+    $this->sites[$site_name]->destroy();
+    unset($this->sites[$site_name]);
   }
 
   public function sites_delete() {
