@@ -32,3 +32,14 @@ the [Composer Documentation](http://getcomposer.org/doc/00-intro.md).
     composer update --no-dev
     # Clear Drush's cache.
     drush cc drush
+
+## Documentation
+
+Switchboard uses Drush's internal documentation system. To get a list of all
+available Switchboard commands:
+
+    drush --filter=switchboard
+
+For a JSON list of available commands:
+
+    drush help --format=json --filter=switchboard
