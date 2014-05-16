@@ -12,8 +12,11 @@ class ProviderPantheon extends Provider {
   protected $endpoint = 'https://terminus.getpantheon.com';
 
   public function site_get_field($site_name, $field) {
-    drush_log("Getting $field for {$this->name} $site_name");
     switch ($field) {
+      // No API required.
+      case 'name':
+      case 'provider':
+        break;
       case 'vcs_url':
       case 'vcs_type':
       case 'vcs_protocol':
@@ -26,7 +29,7 @@ class ProviderPantheon extends Provider {
         $this->api_get_sites();
         break;
       default:
-        throw new \Exception('Unknown field in ' . __CLASS__);
+        throw new \Exception('Unknown field ' . $field . ' in ' . __CLASS__);
     }
     return $this->sites[$site_name]->$field;
   }

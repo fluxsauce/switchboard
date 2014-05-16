@@ -20,13 +20,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 date_default_timezone_set('UTC');
+define('SWITCHBOARD_ROOT', __DIR__ . '/');
 
 // Requests - Library used for HTTP requests.
-if (!file_exists(__DIR__ . '/vendor/rmccue/requests/library/Requests.php')) {
+if (!file_exists(SWITCHBOARD_ROOT . 'vendor/rmccue/requests/library/Requests.php')) {
   return drush_set_error('SWITCHBOARD_MISSING_REQUESTS', dt('Requests is not installed; please see README.md for instructions.'));
 }
 // PSR-4 autoloading.
-require 'vendor/autoload.php';
+require SWITCHBOARD_ROOT . 'vendor/autoload.php';
 
 /**
  * Get the list of providers supported by Switchboard.
@@ -53,6 +54,11 @@ function switchboard_is_valid_provider_name($provider_name) {
   return in_array($provider_name, switchboard_get_provider_names()) ? TRUE : FALSE;
 }
 
+/**
+ * Pseudo factory method for getting a Provider.
+ * @param $provider_name
+ * @return mixed
+ */
 function switchboard_get_provider($provider_name) {
   $class_name = '\Fluxsauce\Switchboard\Provider' . ucfirst($provider_name);
   if (drush_get_option('refresh')) {
@@ -116,6 +122,9 @@ function switchboard_drush_command() {
       'provider_name' => dt('Name of the provider'),
       'site_name' => dt('Name of the site'),
     ),
+    'options' => array(
+      'refresh' => dt('Refresh site information.'),
+    ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
@@ -136,6 +145,9 @@ function switchboard_drush_command() {
   return $items;
 }
 
+/**
+ * Implements hook_drush_command().
+ */
 function drush_switchboard_sw_provider_list() {
   $provider_names = switchboard_get_provider_names();
   $rows = array();
@@ -152,6 +164,9 @@ function drush_switchboard_sw_provider_list() {
   drush_print_table($rows, TRUE);
 }
 
+/**
+ * Implements hook_drush_command_validate().
+ */
 function drush_switchboard_sw_reset_validate() {
   $confirm = drush_confirm(dt('Are you sure you want to reset the Switchboard brain?'));
   if (!$confirm) {
@@ -159,6 +174,9 @@ function drush_switchboard_sw_reset_validate() {
   }
 }
 
+/**
+ * Implements hook_drush_command().
+ */
 function drush_switchboard_sw_reset() {
   Fluxsauce\Switchboard\Sqlite::siteDelete();
   drush_log('Switchboard brain deleted.', 'ok');
@@ -314,6 +332,9 @@ function switchboard_request($provider, $options) {
   return $response;
 }
 
+/**
+ * Implements hook_drush_command_validate().
+ */
 function drush_switchboard_sw_site_info_validate($provider_name = FALSE, $site_name = FALSE) {
   if (!switchboard_is_valid_provider_name($provider_name)) {
     return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider.'));
@@ -325,12 +346,18 @@ function drush_switchboard_sw_site_info_validate($provider_name = FALSE, $site_n
   drush_set_option('provider', $provider);
 }
 
+/**
+ * Implements hook_drush_command().
+ */
 function drush_switchboard_sw_site_info($provider_name, $site_name) {
   $provider = drush_get_option('provider');
   $site = new Fluxsauce\Switchboard\Site($provider_name, $site_name);
   $site->renderDrushTable();
 }
 
+/**
+ * Implements hook_drush_command_validate().
+ */
 function drush_switchboard_sw_site_list_validate($provider_name = FALSE) {
   if (!switchboard_is_valid_provider_name($provider_name)) {
     return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider name.'));
@@ -344,6 +371,9 @@ function drush_switchboard_sw_site_list_validate($provider_name = FALSE) {
   drush_set_option('provider', $provider);
 }
 
+/**
+ * Implements hook_drush_command().
+ */
 function drush_switchboard_sw_site_list($provider_name) {
   $provider = drush_get_option('provider');
 
@@ -363,15 +393,21 @@ function drush_switchboard_sw_site_list($provider_name) {
   drush_print_table($rows, TRUE);
 }
 
+/**
+ * Helper for debugging PDO exceptions.
+ * @param PDOException $e
+ */
 function switchboard_pdo_exception_debug(PDOException $e) {
-  return drush_set_error(dt('PDO Exception in @file on line @line: "@message"', array(
+  drush_set_error(dt('PDO Exception in @file on line @line: "@message"', array(
     '@file' => $e->getFile(),
     '@line' => $e->getLine(),
     '@message' => $e->getMessage(),
   )), 'error');
-  exit;
 }
 
+/**
+ * Implements hook_drush_command_validate().
+ */
 function drush_switchboard_sw_site_vcs_validate($provider_name = FALSE, $site_name = FALSE) {
   if (!switchboard_is_valid_provider_name($provider_name)) {
     return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider name.'));
@@ -391,6 +427,9 @@ function drush_switchboard_sw_site_vcs_validate($provider_name = FALSE, $site_na
   drush_set_option('provider', $provider);
 }
 
+/**
+ * Implements hook_drush_command().
+ */
 function drush_switchboard_sw_site_vcs($provider_name, $site_name) {
   $provider = drush_get_option('provider');
   $site = $provider->sites[$site_name];
@@ -413,6 +452,9 @@ function drush_switchboard_sw_site_vcs($provider_name, $site_name) {
   drush_print($command);
 }
 
+/**
+ * Implements hook_drush_command_validate().
+ */
 function drush_switchboard_sw_site_delete_validate($provider_name = FALSE, $site_name = FALSE) {
   if (!switchboard_is_valid_provider_name($provider_name)) {
     return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider; cannot authenticate.'));
@@ -427,6 +469,9 @@ function drush_switchboard_sw_site_delete_validate($provider_name = FALSE, $site
   drush_set_option('provider', $provider);
 }
 
+/**
+ * Implements hook_drush_command().
+ */
 function drush_switchboard_sw_site_delete($provider_name, $site_name) {
   $provider = drush_get_option('provider');
   $provider->site_delete($site_name);
