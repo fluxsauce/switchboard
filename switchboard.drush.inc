@@ -73,67 +73,60 @@ function switchboard_get_provider($provider_name) {
 function switchboard_drush_command() {
   $items = array();
 
+  $default_arguments = array(
+    'provider_name' => dt('Name of the provider.'),
+  );
+  $default_site_arguments = array(
+    'site_name' => dt('Name of the site.'),
+  ) + $default_arguments;
+  $default_options = array(
+    'refresh' => dt('Refresh all remote data.'),
+  );
+
   $items['sw-provider-list'] = array(
-    'description' => dt('List all available providers'),
+    'description' => dt('List all available providers.'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
   $items['sw-auth-login'] = array(
-    'description' => dt('Create session with a provider'),
+    'description' => dt('Create session with a provider.'),
     'arguments' => array(
-      'provider_name' => dt('Name of the provider'),
-      'email' => dt('Email address of the account with the provider'),
-      'password' => dt('Password for the account'),
-    ),
+      'email' => dt('Email address of the account with the provider.'),
+      'password' => dt('Password for the account.'),
+    ) + $default_arguments,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
   $items['sw-auth-logout'] = array(
-    'description' => dt('End session with a provider'),
-    'arguments' => array(
-      'provider_name' => dt('Name of the provider'),
-    ),
+    'description' => dt('End session with a provider.'),
+    'arguments' => $default_arguments,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
   $items['sw-site-list'] = array(
-    'description' => dt('List available sites from a provider'),
-    'arguments' => array(
-      'provider_name' => dt('Name of the provider'),
-    ),
-    'options' => array(
-      'refresh' => dt('Refresh site list.'),
-    ),
+    'description' => dt('List available sites from a provider.'),
+    'arguments' => $default_arguments,
+    'options' => $default_options,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
   $items['sw-site-delete'] = array(
     'description' => dt('Locally delete site.'),
-    'arguments' => array(
-      'provider_name' => dt('Name of the provider'),
-      'site_name' => dt('Name of the site'),
-    ),
+    'arguments' => $default_site_arguments,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
   $items['sw-site-info'] = array(
-    'description' => dt('Get site information'),
-    'arguments' => array(
-      'provider_name' => dt('Name of the provider'),
-      'site_name' => dt('Name of the site'),
-    ),
-    'options' => array(
-      'refresh' => dt('Refresh site information.'),
-    ),
+    'description' => dt('Get site information.'),
+    'arguments' => $default_site_arguments,
+    'options' => $default_options,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
   $items['sw-site-vcs'] = array(
     'description' => dt('Get the command for retrieving site code.'),
-    'arguments' => array(
-      'provider_name' => dt('Name of the provider'),
-      'site_name' => dt('Name of the site'),
-    ),
+    'arguments' => $default_site_arguments,
+    'options' => $default_options,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
@@ -179,7 +172,7 @@ function drush_switchboard_sw_reset_validate() {
  */
 function drush_switchboard_sw_reset() {
   Fluxsauce\Switchboard\Sqlite::siteDelete();
-  drush_log('Switchboard brain deleted.', 'ok');
+  drush_log('Switchboard brain ablation completed.', 'ok');
 }
 
 /**
