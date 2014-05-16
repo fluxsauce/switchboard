@@ -270,7 +270,7 @@ function switchboard_request($provider, $options) {
 
   // Prepare data for transport.
   $data = NULL;
-  if ($options['data']) {
+  if (isset($options['data'])) {
     $data = json_encode(array('data' => $options['data']));
     if (in_array($options['method'], array('POST', 'PUT', 'DELETE'))) {
       $headers = array(
@@ -327,10 +327,7 @@ function drush_switchboard_sw_site_info_validate($provider_name = FALSE, $site_n
 
 function drush_switchboard_sw_site_info($provider_name, $site_name) {
   $provider = drush_get_option('provider');
-  require_once('providers/' . $provider_name . '/' . $provider_name . '.sites.php');
-  $site_info = call_user_func('switchboard_' . $provider_name . '_site_info', $site_name);
   $site = new Fluxsauce\Switchboard\Site($provider_name, $site_name);
-  $site->update($site_info);
   $site->renderDrushTable();
 }
 

@@ -98,6 +98,15 @@ abstract class Provider {
   }
 
   /**
+   * A mapping function that calls the appropriate API to populate a field.
+   *
+   * @param $site_name
+   * @param $field
+   * @return string
+   */
+  abstract public function site_get_field($site_name, $field);
+
+  /**
    * Update list of sites from provider.
    */
   abstract public function api_get_sites();

@@ -11,6 +11,41 @@ class ProviderPantheon extends Provider {
   protected $homepage = 'https://www.getpantheon.com/';
   protected $endpoint = 'https://terminus.getpantheon.com';
 
+  public function site_get_field($site_name, $field) {
+    drush_log("Getting $field for {$this->name} $site_name");
+    switch ($field) {
+      case 'vcs_url':
+      case 'vcs_type':
+      case 'vcs_protocol':
+        $this->api_get_site($site_name);
+        break;
+      case 'unix_username':
+      case 'realm':
+      case 'uuid':
+      case 'title':
+        $this->api_get_sites();
+        break;
+      default:
+        throw new \Exception('Unknown field in ' . __CLASS__);
+    }
+    return $this->sites[$site_name]->$field;
+  }
+
+  public function api_get_site($site_name) {
+    $site = new Site('pantheon', $site_name);
+
+    $repository = 'codeserver.dev.' . $site->uuid;
+    $repository .= '@codeserver.dev.' . $site->uuid;
+    $repository .= '.drush.in:2222/~/repository.git';
+
+    $site->update(array(
+      'vcs_url' => $repository,
+      'vcs_type' => 'git',
+      'vcs_protocol' => 'ssh',
+    ));
+    $this->sites[$site_name] = $site;
+  }
+
   public function api_get_sites() {
     $user_uuid = drush_cache_get('user_uuid', 'switchboard-auth-pantheon');
     $result = switchboard_request($this, array(
@@ -97,7 +132,7 @@ class ProviderPantheon extends Provider {
 
   public function auth_is_logged_in() {
     $session = drush_cache_get('session', 'switchboard-auth-pantheon');
-    return $session->data ? TRUE : FALSE;
+    return isset($session->data) ? TRUE : FALSE;
   }
 
   /**
