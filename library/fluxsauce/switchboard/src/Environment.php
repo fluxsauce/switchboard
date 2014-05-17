@@ -11,7 +11,6 @@ class Environment {
   protected $name;
   protected $host;
   protected $branch;
-  protected $primary_domain;
   protected $updated;
 
   /**

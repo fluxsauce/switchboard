@@ -55,7 +55,6 @@ class Sqlite {
         $sql_query .= ', site_id INTEGER ';
         $sql_query .= ', name TEXT ';
         $sql_query .= ', host TEXT ';
-        $sql_query .= ', primary_domain TEXT ';
         $sql_query .= ', branch TEXT ';
         $sql_query .= ', updated INTEGER ';
         $sql_query .= ') ';

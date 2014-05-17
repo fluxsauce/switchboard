@@ -107,7 +107,6 @@ class ProviderAcquia extends Provider {
     $environment_data = json_decode($result->body);
     foreach ($environment_data as $environment) {
       $new_environment = new Environment($site->id, $environment->name);
-      $new_environment->primary_domain = $environment->default_domain;
       $new_environment->branch = $environment->vcs_path;
       $new_environment->host = $environment->ssh_host;
       $new_environment->update();
