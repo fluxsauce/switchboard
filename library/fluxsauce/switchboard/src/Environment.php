@@ -5,33 +5,28 @@
 
 namespace Fluxsauce\Switchboard;
 
-class Site {
+class Environment {
   protected $id;
-  protected $provider;
-  protected $uuid;
-  protected $realm;
+  protected $site_id;
   protected $name;
-  protected $title;
-  protected $unix_username;
-  protected $vcs_url;
-  protected $vcs_type;
-  protected $vcs_protocol;
+  protected $host;
+  protected $branch;
+  protected $primary_domain;
   protected $updated;
 
   /**
-   * Constructor; if both provider and string are provided, attempts to read
-   * from database.
+   * Constructor.
    *
-   * @param string $provider
-   *  Optional provider name.
+   * @param string $site_id
+   *  Optional site_id.
    * @param string $name
-   *  Optional site name.
+   *  Optional environment name.
    */
-  public function __construct($provider = NULL, $name = NULL) {
-    $this->provider = $provider;
+  public function __construct($site_id = NULL, $name = NULL) {
+    $this->site_id = $site_id;
     $this->name = $name;
 
-    if ($provider && $name) {
+    if ($site_id && $name) {
       $this->read();
     }
   }
@@ -47,10 +42,6 @@ class Site {
   public function __get($name) {
     if (!property_exists($this, $name)) {
       throw new \Exception(__CLASS__ . ' property ' . $name . ' does not exist, cannot get.');
-    }
-    $provider = drush_get_option('provider');
-    if ($provider && (is_null($this->$name) || drush_get_option('refresh'))) {
-      $this->$name = $provider->site_get_field($this->name, $name);
     }
     return $this->$name;
   }
@@ -72,16 +63,16 @@ class Site {
   }
 
   /**
-   * Create a site.
+   * Create an environment.
    */
   public function create() {
     $pdo = Sqlite::get();
 
     try {
-      $sql_query = 'INSERT INTO sites (provider, name, updated) ';
-      $sql_query .= 'VALUES (:provider, :name, :updated) ';
+      $sql_query = 'INSERT INTO environments (site_id, name, updated) ';
+      $sql_query .= 'VALUES (:site_id, :name, :updated) ';
       $stmt = $pdo->prepare($sql_query);
-      $stmt->bindParam(':provider', $this->provider);
+      $stmt->bindParam(':site_id', $this->site_id);
       $stmt->bindParam(':name', $this->name);
       $stmt->bindParam(':updated', time());
       $stmt->execute();
@@ -92,25 +83,25 @@ class Site {
   }
 
   /**
-   * Read a site.
+   * Read an environment.
    */
   public function read() {
     $pdo = Sqlite::get();
     try {
       $sql_query = 'SELECT * ';
-      $sql_query .= 'FROM sites ';
+      $sql_query .= 'FROM environments ';
       // ID known.
       if ($this->id) {
         $sql_query .= 'WHERE id = :id ';
         $stmt = $pdo->prepare($sql_query);
         $stmt->bindParam(':id', $this->id);
       }
-      // Name and provider known.
-      elseif ($this->name && $this->provider) {
-        $sql_query .= 'WHERE provider = :provider ';
+      // Name and site_id known.
+      elseif ($this->name && $this->site_id) {
+        $sql_query .= 'WHERE site_id = :site_id ';
         $sql_query .= 'AND name = :name ';
         $stmt = $pdo->prepare($sql_query);
-        $stmt->bindParam(':provider', $this->provider);
+        $stmt->bindParam(':site_id', $this->site_id);
         $stmt->bindParam(':name', $this->name);
       }
       // Not enough information.
@@ -129,7 +120,7 @@ class Site {
   }
 
   /**
-   * Update a site.
+   * Update an environment.
    */
   public function update($update = array()) {
     $pdo = Sqlite::get();
@@ -153,7 +144,7 @@ class Site {
         continue;
       }
       // Protected.
-      if (in_array($key, array('name', 'provider', 'id', 'updated'))) {
+      if (in_array($key, array('name', 'site_id', 'id', 'updated'))) {
         continue;
       }
       // Safe to update.
@@ -165,7 +156,7 @@ class Site {
     }
 
     try {
-      $sql_query = 'UPDATE sites SET ';
+      $sql_query = 'UPDATE environments SET ';
       $sql_query_set = array();
       foreach (array_keys($fields_to_update) as $key) {
         $sql_query_set[] = $key . ' = ? ';
@@ -178,8 +169,8 @@ class Site {
         time(),
         $this->id,
       )));
-      drush_log(dt('Updated site @provider:@name - @fields_to_update', array(
-        '@provider' => $this->provider,
+      drush_log(dt('Updated environment @site_id:@name - @fields_to_update', array(
+        '@site_id' => $this->site_id,
         '@name' => $this->name,
         '@fields_to_update' => implode(', ', array_keys($fields_to_update)),
       )));
@@ -189,12 +180,12 @@ class Site {
   }
 
   /**
-   * Delete a Site.
+   * Delete an environment.
    */
   public function destroy() {
     $pdo = Sqlite::get();
     try {
-      $stmt = $pdo->prepare('DELETE FROM sites WHERE id = :id');
+      $stmt = $pdo->prepare('DELETE FROM environments WHERE id = :id');
       $stmt->execute(array(
         $this->id,
       ));
@@ -205,7 +196,7 @@ class Site {
   }
 
   /**
-   * Render a site as a Drush table.
+   * Render an environment as a Drush table.
    */
   public function renderDrushTable() {
     $fields = get_object_vars($this);

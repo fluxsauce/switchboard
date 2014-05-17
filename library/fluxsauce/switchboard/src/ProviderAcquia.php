@@ -28,6 +28,9 @@ class ProviderAcquia extends Provider {
       case 'realm':
         $this->api_get_sites();
         break;
+      case 'environments':
+        $this->api_get_site_environments($site_name);
+        break;
       default:
         throw new \Exception('Unknown field ' . $field . ' in ' . __CLASS__);
     }
@@ -73,6 +76,7 @@ class ProviderAcquia extends Provider {
       $site->update();
       $this->sites[$site->name] = $site;
     }
+    drush_set_option('provider', $this);
   }
 
   public function api_get_site($site_name) {
@@ -91,5 +95,17 @@ class ProviderAcquia extends Provider {
       'title' => $site_info->title,
     ));
     $this->sites[$site_name] = $site;
+    drush_set_option('provider', $this);
+  }
+
+  public function api_get_site_environments($site_name) {
+    $site = new Site('acquia', $site_name);
+    $result = switchboard_request($this, array(
+      'method' => 'GET',
+      'resource' => '/sites/' . $site->realm . ':' . $site_name . '/envs',
+    ));
+    $environments = json_decode($result->body);
+    drush_print_r($environments);
+    exit;
   }
 }

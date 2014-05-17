@@ -28,7 +28,7 @@ abstract class Provider {
       throw new \Exception('Missing valid endpoint from ' . __CLASS__);
     }
 
-    $pdo = Sqlite::siteGet();
+    $pdo = Sqlite::get();
     $this->sites = array();
 
     try {
@@ -46,7 +46,6 @@ abstract class Provider {
       switchboard_pdo_exception_debug($e);
     }
 
-    // This should be some sort of bootstrapper instead.
     if ($refresh) {
       $this->api_get_sites();
       foreach ($this->sites as $site) {
@@ -80,7 +79,7 @@ abstract class Provider {
 
   public function sites_delete() {
     $this->sites = array();
-    $pdo = Sqlite::siteGet();
+    $pdo = Sqlite::get();
     try {
       $stmt = $pdo->prepare('DELETE FROM sites WHERE provider = :provider');
       $stmt->bindParam(':provider', $this->name, PDO::PARAM_STR);

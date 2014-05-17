@@ -20,14 +20,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 date_default_timezone_set('UTC');
-define('SWITCHBOARD_ROOT', __DIR__ . '/');
+define('SWITCHBOARD_BASE_PATH', __DIR__);
 
-// Requests - Library used for HTTP requests.
-if (!file_exists(SWITCHBOARD_ROOT . 'vendor/rmccue/requests/library/Requests.php')) {
-  return drush_set_error('SWITCHBOARD_MISSING_REQUESTS', dt('Requests is not installed; please see README.md for instructions.'));
-}
 // PSR-4 autoloading.
-require SWITCHBOARD_ROOT . 'vendor/autoload.php';
+if (!file_exists(SWITCHBOARD_BASE_PATH . '/vendor/autoload.php')) {
+  return drush_set_error('SWITCHBOARD_MISSING_COMPOSER', dt('Composer autoloader is missing; please see README.md for installation instructions.'));
+}
+require SWITCHBOARD_BASE_PATH . '/vendor/autoload.php';
 
 /**
  * Get the list of providers supported by Switchboard.
@@ -64,7 +63,9 @@ function switchboard_get_provider($provider_name) {
   if (drush_get_option('refresh')) {
     return new $class_name(TRUE);
   }
-  return new $class_name();
+  $provider = new $class_name();
+  drush_set_option('provider', $provider);
+  return $provider;
 }
 
 /**
@@ -113,6 +114,13 @@ function switchboard_drush_command() {
   $items['sw-site-delete'] = array(
     'description' => dt('Locally delete site.'),
     'arguments' => $default_site_arguments,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-site-env-list'] = array(
+    'description' => dt('List available site environments from a provider.'),
+    'arguments' => $default_site_arguments,
+    'options' => $default_options,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
@@ -171,7 +179,7 @@ function drush_switchboard_sw_reset_validate() {
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_reset() {
-  Fluxsauce\Switchboard\Sqlite::siteDelete();
+  Fluxsauce\Switchboard\Sqlite::delete();
   drush_log('Switchboard brain ablation completed.', 'ok');
 }
 
@@ -188,7 +196,6 @@ function drush_switchboard_sw_auth_login_validate($provider_name = FALSE, $email
       '@provider_name' => $provider_name,
     )));
   }
-  drush_set_option('provider', $provider);
 
   if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     return drush_set_error('SWITCHBOARD_AUTH_LOGIN_INVALID_EMAIL', dt('Invalid email; cannot authenticate.'));
@@ -235,7 +242,6 @@ function drush_switchboard_sw_auth_logout_validate($provider_name = FALSE) {
       '@provider_name' => $provider_name,
     )));
   }
-  drush_set_option('provider', $provider);
 }
 
 /**
@@ -328,29 +334,6 @@ function switchboard_request($provider, $options) {
 /**
  * Implements hook_drush_command_validate().
  */
-function drush_switchboard_sw_site_info_validate($provider_name = FALSE, $site_name = FALSE) {
-  if (!switchboard_is_valid_provider_name($provider_name)) {
-    return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider.'));
-  }
-  $provider = switchboard_get_provider($provider_name);
-  if (!$provider->site_exists($site_name)) {
-    return drush_set_error('SWITCHBOARD_INVALID_SITE', dt('Invalid site; cannot continue.'));
-  }
-  drush_set_option('provider', $provider);
-}
-
-/**
- * Implements hook_drush_command().
- */
-function drush_switchboard_sw_site_info($provider_name, $site_name) {
-  $provider = drush_get_option('provider');
-  $site = new Fluxsauce\Switchboard\Site($provider_name, $site_name);
-  $site->renderDrushTable();
-}
-
-/**
- * Implements hook_drush_command_validate().
- */
 function drush_switchboard_sw_site_list_validate($provider_name = FALSE) {
   if (!switchboard_is_valid_provider_name($provider_name)) {
     return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider name.'));
@@ -361,7 +344,6 @@ function drush_switchboard_sw_site_list_validate($provider_name = FALSE) {
       '@provider_name' => $provider_name,
     )));
   }
-  drush_set_option('provider', $provider);
 }
 
 /**
@@ -387,21 +369,17 @@ function drush_switchboard_sw_site_list($provider_name) {
 }
 
 /**
- * Helper for debugging PDO exceptions.
- * @param PDOException $e
+ * Reusable validator for provider, site and login check.
+ *
+ * @param string $provider_name
+ *   Name of the provider.
+ * @param string $site_name
+ *   Name of the site.
+ *
+ * @return boolean
+ *   TRUE if all checks pass.
  */
-function switchboard_pdo_exception_debug(PDOException $e) {
-  drush_set_error(dt('PDO Exception in @file on line @line: "@message"', array(
-    '@file' => $e->getFile(),
-    '@line' => $e->getLine(),
-    '@message' => $e->getMessage(),
-  )), 'error');
-}
-
-/**
- * Implements hook_drush_command_validate().
- */
-function drush_switchboard_sw_site_vcs_validate($provider_name = FALSE, $site_name = FALSE) {
+function switchboard_validate_provider_site($provider_name = FALSE, $site_name = FALSE) {
   if (!switchboard_is_valid_provider_name($provider_name)) {
     return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider name.'));
   }
@@ -417,7 +395,56 @@ function drush_switchboard_sw_site_vcs_validate($provider_name = FALSE, $site_na
       '@provider_name' => $provider_name,
     )));
   }
-  drush_set_option('provider', $provider);
+  return TRUE;
+}
+
+/**
+ * Implements hook_drush_command_validate().
+ */
+function drush_switchboard_sw_site_env_list_validate($provider_name = FALSE, $site_name = FALSE) {
+  return switchboard_validate_provider_site($provider_name, $site_name);
+}
+
+/**
+ * Implements hook_drush_command().
+ */
+function drush_switchboard_sw_site_env_list($provider_name = FALSE, $site_name = FALSE) {
+  $provider = drush_get_option('provider');
+  drush_print_r($provider->sites[$site_name]->environments);
+}
+
+/**
+ * Implements hook_drush_command_validate().
+ */
+function drush_switchboard_sw_site_info_validate($provider_name = FALSE, $site_name = FALSE) {
+  return switchboard_validate_provider_site($provider_name, $site_name);
+}
+
+/**
+ * Implements hook_drush_command().
+ */
+function drush_switchboard_sw_site_info($provider_name, $site_name) {
+  $provider = drush_get_option('provider');
+  $provider->sites[$site_name]->renderDrushTable();
+}
+
+/**
+ * Helper for debugging PDO exceptions.
+ * @param PDOException $e
+ */
+function switchboard_pdo_exception_debug(PDOException $e) {
+  drush_set_error(dt('PDO Exception in @file on line @line: "@message"', array(
+    '@file' => $e->getFile(),
+    '@line' => $e->getLine(),
+    '@message' => $e->getMessage(),
+  )), 'error');
+}
+
+/**
+ * Implements hook_drush_command_validate().
+ */
+function drush_switchboard_sw_site_vcs_validate($provider_name = FALSE, $site_name = FALSE) {
+  return switchboard_validate_provider_site($provider_name, $site_name);
 }
 
 /**
@@ -459,7 +486,6 @@ function drush_switchboard_sw_site_delete_validate($provider_name = FALSE, $site
       '@provider' => $provider_name,
     )));
   }
-  drush_set_option('provider', $provider);
 }
 
 /**

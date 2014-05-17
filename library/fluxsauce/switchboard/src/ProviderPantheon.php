@@ -47,6 +47,7 @@ class ProviderPantheon extends Provider {
       'vcs_protocol' => 'ssh',
     ));
     $this->sites[$site_name] = $site;
+    drush_set_option('provider', $this);
   }
 
   public function api_get_sites() {
@@ -68,6 +69,7 @@ class ProviderPantheon extends Provider {
       $site->update();
       $this->sites[$site->name] = $site;
     }
+    drush_set_option('provider', $this);
   }
 
   public function requests_options_custom() {
