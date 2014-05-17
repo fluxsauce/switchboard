@@ -110,6 +110,8 @@ abstract class Provider {
    */
   abstract public function api_get_sites();
 
+  abstract public function api_get_site_environments($site_name);
+
   /**
    * @return array
    */

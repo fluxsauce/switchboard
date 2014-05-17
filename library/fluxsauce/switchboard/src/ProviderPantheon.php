@@ -28,6 +28,9 @@ class ProviderPantheon extends Provider {
       case 'title':
         $this->api_get_sites();
         break;
+      case 'environments':
+        $this->api_get_site_environments($site_name);
+        break;
       default:
         throw new \Exception('Unknown field ' . $field . ' in ' . __CLASS__);
     }
@@ -184,5 +187,25 @@ class ProviderPantheon extends Provider {
       }
     }
     return FALSE;
+  }
+
+  public function api_get_site_environments($site_name) {
+    $site = $this->sites[$site_name];
+    $result = switchboard_request($this, array(
+      'method' => 'GET',
+      'realm' => 'environments',
+      'resource' => 'site',
+      'uuid' => $site->uuid,
+    ));
+    $environment_data = json_decode($result->body);
+    foreach ($environment_data as $environment_name => $environment) {
+      $new_environment = new Environment($site->id, $environment_name);
+      $new_environment->branch = 'master';
+      $new_environment->host = 'appserver.' . $environment_name . '.' . $site->uuid . '.drush.in';
+      $new_environment->update();
+      $site->environmentAdd($new_environment);
+    }
+    $this->sites[$site_name] = $site;
+    drush_set_option('provider', $this);
   }
 }
