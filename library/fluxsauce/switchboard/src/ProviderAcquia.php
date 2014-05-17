@@ -99,13 +99,21 @@ class ProviderAcquia extends Provider {
   }
 
   public function api_get_site_environments($site_name) {
-    $site = new Site('acquia', $site_name);
+    $site = $this->sites[$site_name];
     $result = switchboard_request($this, array(
       'method' => 'GET',
       'resource' => '/sites/' . $site->realm . ':' . $site_name . '/envs',
     ));
-    $environments = json_decode($result->body);
-    drush_print_r($environments);
-    exit;
+    $environment_data = json_decode($result->body);
+    foreach ($environment_data as $environment) {
+      $new_environment = new Environment($site->id, $environment->name);
+      $new_environment->primary_domain = $environment->default_domain;
+      $new_environment->branch = $environment->vcs_path;
+      $new_environment->host = $environment->ssh_host;
+      $new_environment->update();
+      $site->environmentAdd($new_environment);
+    }
+    $this->sites[$site_name] = $site;
+    drush_set_option('provider', $this);
   }
 }

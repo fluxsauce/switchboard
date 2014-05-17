@@ -410,7 +410,7 @@ function drush_switchboard_sw_site_env_list_validate($provider_name = FALSE, $si
  */
 function drush_switchboard_sw_site_env_list($provider_name = FALSE, $site_name = FALSE) {
   $provider = drush_get_option('provider');
-  drush_print_r($provider->sites[$site_name]->environments);
+  $provider->sites[$site_name]->renderEnvironmentsDrushTable();
 }
 
 /**

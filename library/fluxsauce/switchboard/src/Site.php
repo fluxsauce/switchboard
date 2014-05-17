@@ -16,6 +16,7 @@ class Site {
   protected $vcs_url;
   protected $vcs_type;
   protected $vcs_protocol;
+  protected $environments;
   protected $updated;
 
   /**
@@ -69,6 +70,17 @@ class Site {
       throw new \Exception('Property ' . $name . ' does not exist, cannot get.');
     }
     $this->$name = $value;
+  }
+
+  public function environmentAdd(Environment $environment) {
+    if (!is_array($this->environments)) {
+      $this->environments = array();
+    }
+    $this->environments[$environment->name] = $environment;
+  }
+
+  public function environmentRemove(Environment $environment) {
+    unset($this->environments[$environment->name]);
   }
 
   /**
@@ -126,6 +138,20 @@ class Site {
     } catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
     }
+    // Environments.
+    try {
+      $sql_query = 'SELECT * ';
+      $sql_query .= 'FROM environments ';
+      $sql_query .= 'WHERE site_id = :id ';
+      $stmt = $pdo->prepare($sql_query);
+      $stmt->bindParam(':id', $this->id);
+      $result = $stmt->execute();
+      while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+        $this->environmentAdd(new Environment($this->id, $row['name']));
+      }
+    } catch (\PDOException $e) {
+      switchboard_pdo_exception_debug($e);
+    }
   }
 
   /**
@@ -153,7 +179,7 @@ class Site {
         continue;
       }
       // Protected.
-      if (in_array($key, array('name', 'provider', 'id', 'updated'))) {
+      if (in_array($key, array('name', 'provider', 'id', 'updated', 'environments'))) {
         continue;
       }
       // Safe to update.
@@ -212,6 +238,19 @@ class Site {
     $rows = array();
     $rows[] = array_keys($fields);
     $rows[] = array_values($fields);
+    drush_print_table($rows, TRUE);
+  }
+
+  public function renderEnvironmentsDrushTable() {
+    $rows = array();
+    $environment = new Environment();
+    $fields = $environment->to_array();
+    $rows = array();
+    $rows[] = array_keys($fields);
+    foreach ($this->__get('environments') as $environment) {
+      $fields = $environment->to_array();
+      $rows[] = array_values($fields);
+    }
     drush_print_table($rows, TRUE);
   }
 }

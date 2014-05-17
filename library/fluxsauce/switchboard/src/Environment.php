@@ -205,4 +205,8 @@ class Environment {
     $rows[] = array_values($fields);
     drush_print_table($rows, TRUE);
   }
+
+  public function to_array() {
+    return get_object_vars($this);
+  }
 }
