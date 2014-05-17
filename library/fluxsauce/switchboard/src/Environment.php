@@ -73,7 +73,7 @@ class Environment {
 
     try {
       $sql_query = 'INSERT INTO environments (site_id, name, updated) ';
-      $sql_query .= 'VALUES (:siteId, :name, :updated) ';
+      $sql_query .= 'VALUES (:site_id, :name, :updated) ';
       $stmt = $pdo->prepare($sql_query);
       $stmt->bindParam(':site_id', $this->site_id);
       $stmt->bindParam(':name', $this->name);
