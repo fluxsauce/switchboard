@@ -244,11 +244,11 @@ class Site {
   public function renderEnvironmentsDrushTable() {
     $rows = array();
     $environment = new Environment();
-    $fields = $environment->to_array();
+    $fields = $environment->toArray();
     $rows = array();
     $rows[] = array_keys($fields);
     foreach ($this->__get('environments') as $environment) {
-      $fields = $environment->to_array();
+      $fields = $environment->toArray();
       $rows[] = array_values($fields);
     }
     drush_print_table($rows, TRUE);

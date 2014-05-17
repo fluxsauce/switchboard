@@ -1,6 +1,7 @@
 <?php
 /**
  * @file
+ * Site environment.
  */
 
 namespace Fluxsauce\Switchboard;
@@ -17,9 +18,9 @@ class Environment {
    * Constructor.
    *
    * @param string $site_id
-   *  Optional site_id.
+   *   Optional site identifier.
    * @param string $name
-   *  Optional environment name.
+   *   Optional environment name.
    */
   public function __construct($site_id = NULL, $name = NULL) {
     $this->site_id = $site_id;
@@ -33,9 +34,11 @@ class Environment {
   /**
    * Magic __get.
    *
-   * @param $name string
+   * @param string $name
+   *   Name of the property to get.
+   *
    * @return mixed
-   *  Value of set property.
+   *   Value of set property.
    * @throws \Exception
    */
   public function __get($name) {
@@ -48,10 +51,11 @@ class Environment {
   /**
    * Magic __set.
    *
-   * @param $name string
-   *  Name of the property to set.
-   * @param $value mixed
-   *  Value of said property.
+   * @param string $name
+   *   Name of the property to set.
+   * @param mixed $value
+   *   Value of said property.
+   *
    * @throws \Exception
    */
   public function __set($name, $value) {
@@ -69,14 +73,15 @@ class Environment {
 
     try {
       $sql_query = 'INSERT INTO environments (site_id, name, updated) ';
-      $sql_query .= 'VALUES (:site_id, :name, :updated) ';
+      $sql_query .= 'VALUES (:siteId, :name, :updated) ';
       $stmt = $pdo->prepare($sql_query);
       $stmt->bindParam(':site_id', $this->site_id);
       $stmt->bindParam(':name', $this->name);
       $stmt->bindParam(':updated', time());
       $stmt->execute();
       $this->id = $pdo->lastInsertId();
-    } catch (\PDOException $e) {
+    }
+    catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
     }
   }
@@ -113,7 +118,8 @@ class Environment {
           $this->$key = $value;
         }
       }
-    } catch (\PDOException $e) {
+    }
+    catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
     }
   }
@@ -173,7 +179,8 @@ class Environment {
         '@name' => $this->name,
         '@fields_to_update' => implode(', ', array_keys($fields_to_update)),
       )));
-    } catch (\PDOException $e) {
+    }
+    catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
     }
   }
@@ -188,7 +195,8 @@ class Environment {
       $stmt->execute(array(
         $this->id,
       ));
-    } catch (\PDOException $e) {
+    }
+    catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
     }
     $this->id = NULL;
@@ -205,7 +213,13 @@ class Environment {
     drush_print_table($rows, TRUE);
   }
 
-  public function to_array() {
+  /**
+   * Dump the Environment as an array.
+   *
+   * @return array
+   *   Property names and values.
+   */
+  public function toArray() {
     return get_object_vars($this);
   }
 }
