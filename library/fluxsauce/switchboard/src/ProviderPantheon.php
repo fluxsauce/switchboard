@@ -204,4 +204,12 @@ class ProviderPantheon extends Provider {
       $site->environmentAdd($new_environment);
     }
   }
+
+  public function api_get_site_env_dbs($site_name, $env_name) {
+    $site =& $this->sites[$site_name];
+    $env =& $site->environments[$env_name];
+    $new_db = new EnvDb($env->id, 'pantheon');
+    $new_db->update();
+    $env->dbAdd($new_db);
+  }
 }
