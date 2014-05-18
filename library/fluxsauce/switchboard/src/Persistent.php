@@ -24,7 +24,7 @@ abstract class Persistent {
   public function __construct($external_id = NULL, $name = NULL) {
     // Ensure that implementing classes include an external key name of some sort.
     if (!$this->external_key_name) {
-      throw new \Exception(__CLASS__ . ' is missing the external key name.');
+      throw new \Exception(get_called_class() . ' is missing the external key name.');
     }
     $this->{$this->external_key_name} = $external_id;
     $this->name = $name;
@@ -47,7 +47,7 @@ abstract class Persistent {
   public function __get($name) {
     if (!property_exists($this, $name)) {
       drush_print_r(debug_backtrace());
-      throw new \Exception(__CLASS__ . ' property ' . $name . ' does not exist, cannot get.');
+      throw new \Exception(get_called_class() . ' property ' . $name . ' does not exist, cannot get.');
     }
     return $this->$name;
   }
@@ -64,7 +64,7 @@ abstract class Persistent {
    */
   public function __set($name, $value) {
     if (!property_exists($this, $name)) {
-      throw new \Exception(__CLASS__ . ' property ' . $name . ' does not exist, cannot set.');
+      throw new \Exception(get_called_class() . ' property ' . $name . ' does not exist, cannot set.');
     }
     $this->$name = $value;
   }

@@ -92,6 +92,7 @@ abstract class Provider {
    */
   public function __get($name) {
     if (!property_exists($this, $name)) {
+      drush_print_r(debug_backtrace());
       throw new \Exception(__CLASS__ . ' property ' . $name . ' does not exist, cannot get.');
     }
     return $this->$name;

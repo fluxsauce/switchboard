@@ -410,7 +410,7 @@ function drush_switchboard_sw_site_env_db_list_validate($provider_name = FALSE, 
  */
 function drush_switchboard_sw_site_env_db_list($provider_name, $site_name, $env_name) {
   $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  $provider->api_get_site_env_dbs($site_name, $env_name);
+  $provider->sites[$site_name]->environments[$env_name]->renderDbsDrushTable();
 }
 
 /**

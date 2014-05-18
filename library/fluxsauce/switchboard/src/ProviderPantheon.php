@@ -197,7 +197,7 @@ class ProviderPantheon extends Provider {
     ));
     $environment_data = json_decode($result->body);
     foreach ($environment_data as $environment_name => $environment) {
-      $new_environment = new Environment($site->id, $environment_name);
+      $new_environment = new Environment($this->name, $site->id, $environment_name);
       $new_environment->branch = 'master';
       $new_environment->host = 'appserver.' . $environment_name . '.' . $site->uuid . '.drush.in';
       $new_environment->update();

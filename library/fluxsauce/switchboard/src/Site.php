@@ -59,14 +59,14 @@ class Site extends Persistent {
     $pdo = Sqlite::get();
     // Environments.
     try {
-      $sql_query = 'SELECT * ';
+      $sql_query = 'SELECT name ';
       $sql_query .= 'FROM environments ';
       $sql_query .= 'WHERE site_id = :id ';
       $stmt = $pdo->prepare($sql_query);
       $stmt->bindParam(':id', $this->id);
       $result = $stmt->execute();
       while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-        $this->environmentAdd(new Environment($this->id, $row['name']));
+        $this->environmentAdd(new Environment($this->provider, $this->id, $row['name']));
       }
     } catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
@@ -75,7 +75,7 @@ class Site extends Persistent {
 
   public function renderEnvironmentsDrushTable() {
     $rows = array();
-    $environment = new Environment();
+    $environment = new Environment($this->provider);
     $fields = $environment->toArray();
     $rows = array();
     $rows[] = array_keys($fields);
