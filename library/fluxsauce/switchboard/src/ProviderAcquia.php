@@ -76,7 +76,6 @@ class ProviderAcquia extends Provider {
       $site->update();
       $this->sites[$site->name] = $site;
     }
-    drush_set_option('provider', $this);
   }
 
   public function api_get_site($site_name) {
@@ -95,7 +94,6 @@ class ProviderAcquia extends Provider {
       'title' => $site_info->title,
     ));
     $this->sites[$site_name] = $site;
-    drush_set_option('provider', $this);
   }
 
   public function api_get_site_environments($site_name) {
@@ -113,6 +111,5 @@ class ProviderAcquia extends Provider {
       $site->environmentAdd($new_environment);
     }
     $this->sites[$site_name] = $site;
-    drush_set_option('provider', $this);
   }
 }

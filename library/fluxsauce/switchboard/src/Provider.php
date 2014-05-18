@@ -13,7 +13,25 @@ abstract class Provider {
 
   protected $sites;
 
-  public function __construct($refresh = FALSE) {
+  /**
+   * Returns a singleton Provider.
+   *
+   * @param string $provider_name
+   * @return mixed
+   */
+  static function getInstance($provider_name) {
+    static $instance = NULL;
+    if (!$instance) {
+      $class_name = '\Fluxsauce\Switchboard\Provider' . ucfirst($provider_name);
+      $instance = new $class_name;
+    }
+    return $instance;
+  }
+
+  /**
+   * Protected constructor.
+   */
+  protected function __construct() {
     // Ensure implementing classes have necessary properties.
     if (!$this->name) {
       throw new \Exception('Missing name from ' . __CLASS__);
@@ -46,13 +64,23 @@ abstract class Provider {
       switchboard_pdo_exception_debug($e);
     }
 
-    if ($refresh) {
+    if (drush_get_option('refresh')) {
       $this->api_get_sites();
       foreach ($this->sites as $site) {
         $site->update();
       }
     }
   }
+
+  /**
+   * Prevent cloning of the Provider Singleton.
+   */
+  private function __clone() {}
+
+  /**
+   * Prevent unserializing of the Provider Singleton.
+   */
+  private function __wakeup(){}
 
   /**
    * Magic __get.

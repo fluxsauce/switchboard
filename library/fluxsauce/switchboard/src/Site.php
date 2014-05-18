@@ -49,8 +49,8 @@ class Site {
     if (!property_exists($this, $name)) {
       throw new \Exception(__CLASS__ . ' property ' . $name . ' does not exist, cannot get.');
     }
-    $provider = drush_get_option('provider');
-    if ($provider && (is_null($this->$name) || drush_get_option('refresh'))) {
+    $provider = Provider::getInstance($this->provider);
+    if (is_null($this->$name) || drush_get_option('refresh')) {
       $this->$name = $provider->site_get_field($this->name, $name);
     }
     return $this->$name;

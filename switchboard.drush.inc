@@ -26,7 +26,10 @@ define('SWITCHBOARD_BASE_PATH', __DIR__);
 if (!file_exists(SWITCHBOARD_BASE_PATH . '/vendor/autoload.php')) {
   return drush_set_error('SWITCHBOARD_MISSING_COMPOSER', dt('Composer autoloader is missing; please see README.md for installation instructions.'));
 }
-require SWITCHBOARD_BASE_PATH . '/vendor/autoload.php';
+require_once SWITCHBOARD_BASE_PATH . '/vendor/autoload.php';
+
+// Validators.
+require_once SWITCHBOARD_BASE_PATH . '/switchboard.validators.inc';
 
 /**
  * Get the list of providers supported by Switchboard.
@@ -42,30 +45,6 @@ function switchboard_get_provider_names() {
     'pantheon',
   );
   return $provider_names;
-}
-
-/**
- * Determine if a given provider name is in the list of known provider names.
- * @param $provider_name
- * @return boolean
- */
-function switchboard_is_valid_provider_name($provider_name) {
-  return in_array($provider_name, switchboard_get_provider_names()) ? TRUE : FALSE;
-}
-
-/**
- * Pseudo factory method for getting a Provider.
- * @param $provider_name
- * @return mixed
- */
-function switchboard_get_provider($provider_name) {
-  $class_name = '\Fluxsauce\Switchboard\Provider' . ucfirst($provider_name);
-  if (drush_get_option('refresh')) {
-    return new $class_name(TRUE);
-  }
-  $provider = new $class_name();
-  drush_set_option('provider', $provider);
-  return $provider;
 }
 
 /**
@@ -153,7 +132,7 @@ function drush_switchboard_sw_provider_list() {
   $provider_names = switchboard_get_provider_names();
   $rows = array();
   foreach ($provider_names as $provider_name) {
-    $provider = switchboard_get_provider($provider_name);
+    $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
     $rows[$provider->name] = array(
       $provider->name,
       $provider->label,
@@ -187,10 +166,10 @@ function drush_switchboard_sw_reset() {
  * Implements hook_drush_command_validate().
  */
 function drush_switchboard_sw_auth_login_validate($provider_name = FALSE, $email = FALSE, $password = FALSE) {
-  if (!switchboard_is_valid_provider_name($provider_name)) {
-    return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider; cannot authenticate.'));
+  if (!switchboard_validate_provider_name($provider_name)) {
+    return FALSE;
   }
-  $provider = switchboard_get_provider($provider_name);
+  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if ($provider->auth_is_logged_in()) {
     return drush_set_error('SWITCHBOARD_AUTH_LOGIN_ALREADY_LOGGEDIN', dt('Already logged-in to @provider_name.', array(
       '@provider_name' => $provider_name,
@@ -210,7 +189,7 @@ function drush_switchboard_sw_auth_login_validate($provider_name = FALSE, $email
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_auth_login($provider_name, $email, $password) {
-  $provider = drush_get_option('provider');
+  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
 
   $result = $provider->auth_login($email, $password);
   if ($result) {
@@ -220,7 +199,6 @@ function drush_switchboard_sw_auth_login($provider_name, $email, $password) {
     )), 'ok');
     // Update list of sites.
     drush_set_option('refresh', TRUE);
-    $provider = switchboard_get_provider($provider_name);
   }
   else {
     drush_set_error('SWITCHBOARD_AUTH_LOGIN_FAILURE', dt('Unable to login to @provider_name.', array(
@@ -233,10 +211,10 @@ function drush_switchboard_sw_auth_login($provider_name, $email, $password) {
  * Implements hook_drush_command_validate().
  */
 function drush_switchboard_sw_auth_logout_validate($provider_name = FALSE) {
-  if (!switchboard_is_valid_provider_name($provider_name)) {
+  if (!switchboard_validate_provider_name($provider_name)) {
     return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider; cannot authenticate.'));
   }
-  $provider = switchboard_get_provider($provider_name);
+  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if (!$provider->auth_is_logged_in()) {
     return drush_set_error('SWITCHBOARD_AUTH_LOGOUT_ALREADY_LOGGEDOUT', dt('Already logged-out of @provider_name.', array(
       '@provider_name' => $provider_name,
@@ -248,7 +226,7 @@ function drush_switchboard_sw_auth_logout_validate($provider_name = FALSE) {
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_auth_logout($provider_name) {
-  $provider = drush_get_option('provider');
+  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $provider->auth_logout();
   drush_log(dt('Logged out of @provider.', array(
     '@provider' => $provider_name,
@@ -335,14 +313,11 @@ function switchboard_request($provider, $options) {
  * Implements hook_drush_command_validate().
  */
 function drush_switchboard_sw_site_list_validate($provider_name = FALSE) {
-  if (!switchboard_is_valid_provider_name($provider_name)) {
-    return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider name.'));
+  if (!switchboard_validate_provider_name($provider_name)) {
+    return FALSE;
   }
-  $provider = switchboard_get_provider($provider_name);
-  if (!$provider->auth_is_logged_in()) {
-    return drush_set_error('SWITCHBOARD_NOT_LOGGED_IN', dt('Not logged-in to @provider_name, cannot continue.', array(
-      '@provider_name' => $provider_name,
-    )));
+  if (!switchboard_validate_auth_logged_in($provider_name)) {
+    return FALSE;
   }
 }
 
@@ -350,10 +325,13 @@ function drush_switchboard_sw_site_list_validate($provider_name = FALSE) {
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_site_list($provider_name) {
-  $provider = drush_get_option('provider');
+  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
 
   if (count($provider->sites) == 0) {
-    return drush_print('No sites.');
+    $provider->api_get_sites();
+  }
+  if (count($provider->sites) == 0) {
+    return drush_print(dt('No sites.'));
   }
 
   $rows = array();
@@ -368,48 +346,25 @@ function drush_switchboard_sw_site_list($provider_name) {
   drush_print_table($rows, TRUE);
 }
 
-/**
- * Reusable validator for provider, site and login check.
- *
- * @param string $provider_name
- *   Name of the provider.
- * @param string $site_name
- *   Name of the site.
- *
- * @return boolean
- *   TRUE if all checks pass.
- */
-function switchboard_validate_provider_site($provider_name = FALSE, $site_name = FALSE) {
-  if (!switchboard_is_valid_provider_name($provider_name)) {
-    return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider name.'));
-  }
-  $provider = switchboard_get_provider($provider_name);
-  if (!$provider->site_exists($site_name)) {
-    return drush_set_error('SWITCHBOARD_PROVIDER_INVALID_SITE', dt('Site @site_name does not exist in provider @provider.', array(
-      '@site_name' => $site_name,
-      '@provider' => $provider_name,
-    )));
-  }
-  if (!$provider->auth_is_logged_in()) {
-    return drush_set_error('SWITCHBOARD_NOT_LOGGED_IN', dt('Not logged-in to @provider_name, cannot continue.', array(
-      '@provider_name' => $provider_name,
-    )));
-  }
-  return TRUE;
-}
+
 
 /**
  * Implements hook_drush_command_validate().
  */
 function drush_switchboard_sw_site_env_list_validate($provider_name = FALSE, $site_name = FALSE) {
-  return switchboard_validate_provider_site($provider_name, $site_name);
+  if (!switchboard_validate_provider_site($provider_name, $site_name)) {
+    return FALSE;
+  }
+  if (!switchboard_validate_auth_logged_in($provider_name)) {
+    return FALSE;
+  }
 }
 
 /**
  * Implements hook_drush_command().
  */
-function drush_switchboard_sw_site_env_list($provider_name = FALSE, $site_name = FALSE) {
-  $provider = drush_get_option('provider');
+function drush_switchboard_sw_site_env_list($provider_name, $site_name) {
+  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $provider->sites[$site_name]->renderEnvironmentsDrushTable();
 }
 
@@ -417,14 +372,19 @@ function drush_switchboard_sw_site_env_list($provider_name = FALSE, $site_name =
  * Implements hook_drush_command_validate().
  */
 function drush_switchboard_sw_site_info_validate($provider_name = FALSE, $site_name = FALSE) {
-  return switchboard_validate_provider_site($provider_name, $site_name);
+  if (!switchboard_validate_provider_site($provider_name, $site_name)) {
+    return FALSE;
+  }
+  if (!switchboard_validate_auth_logged_in($provider_name)) {
+    return FALSE;
+  }
 }
 
 /**
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_site_info($provider_name, $site_name) {
-  $provider = drush_get_option('provider');
+  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $provider->sites[$site_name]->renderDrushTable();
 }
 
@@ -444,14 +404,19 @@ function switchboard_pdo_exception_debug(PDOException $e) {
  * Implements hook_drush_command_validate().
  */
 function drush_switchboard_sw_site_vcs_validate($provider_name = FALSE, $site_name = FALSE) {
-  return switchboard_validate_provider_site($provider_name, $site_name);
+  if (!switchboard_validate_provider_site($provider_name, $site_name)) {
+    return FALSE;
+  }
+  if (!switchboard_validate_auth_logged_in($provider_name)) {
+    return FALSE;
+  }
 }
 
 /**
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_site_vcs($provider_name, $site_name) {
-  $provider = drush_get_option('provider');
+  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $site = $provider->sites[$site_name];
   $command = '';
   switch ($site->vcs_type) {
@@ -476,15 +441,11 @@ function drush_switchboard_sw_site_vcs($provider_name, $site_name) {
  * Implements hook_drush_command_validate().
  */
 function drush_switchboard_sw_site_delete_validate($provider_name = FALSE, $site_name = FALSE) {
-  if (!switchboard_is_valid_provider_name($provider_name)) {
-    return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider; cannot authenticate.'));
+  if (!switchboard_validate_provider_site($provider_name, $site_name)) {
+    return FALSE;
   }
-  $provider = switchboard_get_provider($provider_name);
-  if (!$provider->site_exists($site_name)) {
-    return drush_set_error('SWITCHBOARD_PROVIDER_INVALID_SITE', dt('Site @site_name does not exist in provider @provider.', array(
-      '@site_name' => $site_name,
-      '@provider' => $provider_name,
-    )));
+  if (!switchboard_validate_auth_logged_in($provider_name)) {
+    return FALSE;
   }
 }
 
@@ -492,7 +453,7 @@ function drush_switchboard_sw_site_delete_validate($provider_name = FALSE, $site
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_site_delete($provider_name, $site_name) {
-  $provider = drush_get_option('provider');
+  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $provider->site_delete($site_name);
   drush_log(dt('Locally deleted @site_name from @provider.', array(
     '@site_name' => $site_name,
