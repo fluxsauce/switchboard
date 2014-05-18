@@ -97,7 +97,7 @@ class ProviderAcquia extends Provider {
   }
 
   public function api_get_site_environments($site_name) {
-    $site = $this->sites[$site_name];
+    $site =& $this->sites[$site_name];
     $result = switchboard_request($this, array(
       'method' => 'GET',
       'resource' => '/sites/' . $site->realm . ':' . $site_name . '/envs',
@@ -110,6 +110,26 @@ class ProviderAcquia extends Provider {
       $new_environment->update();
       $site->environmentAdd($new_environment);
     }
-    $this->sites[$site_name] = $site;
+  }
+
+  public function api_get_site_env_dbs($site_name, $env_name) {
+    $site = $this->sites[$site_name];
+    // GET /sites/:site/envs/:env/dbs
+    $result = switchboard_request($this, array(
+      'method' => 'GET',
+      'resource' => '/sites/' . $site->realm . ':' . $site_name . '/envs/' . $env_name . '/dbs',
+    ));
+    $environment_data = json_decode($result->body);
+    var_dump($environment_data);
+  }
+
+  public function api_get_site_env_db_backups($site_name, $env_name, $db_name) {
+    $site = $this->sites[$site_name];
+    // GET /sites/:site/envs/:env/dbs/:db/backups
+    $result = switchboard_request($this, array(
+      'method' => 'GET',
+      'resource' => '/sites/' . $site->realm . ':' . $site_name . '/envs/' . $env_name . '/dbs/' . $db_name . '/backups',
+    ));
+    $environment_data = json_decode($result->body);
   }
 }

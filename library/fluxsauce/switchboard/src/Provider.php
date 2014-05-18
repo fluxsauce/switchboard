@@ -21,7 +21,7 @@ abstract class Provider {
    */
   static function getInstance($provider_name) {
     static $instance = array();
-    if (!$instance[$provider_name]) {
+    if (!isset($instance[$provider_name])) {
       $class_name = '\Fluxsauce\Switchboard\Provider' . ucfirst($provider_name);
       $instance[$provider_name] = new $class_name;
     }
@@ -50,7 +50,7 @@ abstract class Provider {
     $this->sites = array();
 
     try {
-      $sql_query = 'SELECT * ';
+      $sql_query = 'SELECT name ';
       $sql_query .= 'FROM sites ';
       $sql_query .= 'WHERE provider = :provider ';
       $stmt = $pdo->prepare($sql_query);
@@ -182,14 +182,5 @@ abstract class Provider {
     }
 
     return $defaults;
-  }
-
-  /**
-   * Validate a standard 8-4-4-4-12 UUID.
-   * @param $uuid
-   * @return boolean
-   */
-  public function validate_uuid($uuid) {
-    return preg_match('#^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$#', $uuid) ? TRUE : FALSE;
   }
 }

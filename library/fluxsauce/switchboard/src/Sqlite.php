@@ -25,6 +25,7 @@ class Sqlite {
       try {
         $pdo = new \PDO('sqlite:' . drush_directory_cache('switchboard') . '/switchboard.sqlite');
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, FALSE);
       } catch (\PDOException $e) {
         switchboard_pdo_exception_debug($e);
       }

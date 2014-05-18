@@ -125,7 +125,7 @@ class ProviderPantheon extends Provider {
 
     // Get the UUID.
     $user_uuid = array_pop(explode('/', $response->headers->offsetGet('Location')));
-    if (!$this->validate_uuid($user_uuid)) {
+    if (!switchboard_validate_uuid($user_uuid)) {
       return drush_set_error('SWITCHBOARD_AUTH_LOGIN_PANTHEON_NO_UUID', dt('Pantheon User UUID not found; please check your credentials and try again.'));
     }
 
@@ -188,7 +188,7 @@ class ProviderPantheon extends Provider {
   }
 
   public function api_get_site_environments($site_name) {
-    $site = $this->sites[$site_name];
+    $site =& $this->sites[$site_name];
     $result = switchboard_request($this, array(
       'method' => 'GET',
       'realm' => 'environments',
@@ -203,6 +203,5 @@ class ProviderPantheon extends Provider {
       $new_environment->update();
       $site->environmentAdd($new_environment);
     }
-    $this->sites[$site_name] = $site;
   }
 }

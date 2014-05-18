@@ -82,3 +82,12 @@ function switchboard_validate_site_env($provider_name, $site_name, $env_name) {
   }
   return TRUE;
 }
+
+/**
+ * Validate a standard 8-4-4-4-12 UUID.
+ * @param $uuid
+ * @return boolean
+ */
+function switchboard_validate_uuid($uuid) {
+  return preg_match('#^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$#', $uuid) ? TRUE : FALSE;
+}

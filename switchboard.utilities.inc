@@ -101,9 +101,12 @@ function switchboard_get_provider_names() {
  * @param PDOException $e
  */
 function switchboard_pdo_exception_debug(PDOException $e) {
+  $trace = $e->getTrace();
   drush_set_error(dt('PDO Exception in @file on line @line: "@message"', array(
     '@file' => $e->getFile(),
     '@line' => $e->getLine(),
     '@message' => $e->getMessage(),
-  )), 'error');
+  )));
+  drush_print(var_export($trace[0], TRUE));
+  exit;
 }
