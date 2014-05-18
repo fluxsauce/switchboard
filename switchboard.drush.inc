@@ -28,24 +28,9 @@ if (!file_exists(SWITCHBOARD_BASE_PATH . '/vendor/autoload.php')) {
 }
 require_once SWITCHBOARD_BASE_PATH . '/vendor/autoload.php';
 
-// Validators.
+// Common functions.
 require_once SWITCHBOARD_BASE_PATH . '/switchboard.validators.inc';
-
-/**
- * Get the list of providers supported by Switchboard.
- *
- * @return array
- *   Machine names of providers.
- */
-function switchboard_get_provider_names() {
-  // Hard coding for now.
-  // Later, be clever and scan the directory containing Provider definitions.
-  $provider_names = array(
-    'acquia',
-    'pantheon',
-  );
-  return $provider_names;
-}
+require_once SWITCHBOARD_BASE_PATH . '/switchboard.utilities.inc';
 
 /**
  * Implements hook_drush_command().
@@ -98,6 +83,13 @@ function switchboard_drush_command() {
 
   $items['sw-site-env-list'] = array(
     'description' => dt('List available site environments from a provider.'),
+    'arguments' => $default_site_arguments,
+    'options' => $default_options,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-site-env-db-backup'] = array(
+    'description' => dt('Get URL of latest database backup.'),
     'arguments' => $default_site_arguments,
     'options' => $default_options,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
@@ -212,7 +204,7 @@ function drush_switchboard_sw_auth_login($provider_name, $email, $password) {
  */
 function drush_switchboard_sw_auth_logout_validate($provider_name = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
-    return drush_set_error('SWITCHBOARD_INVALID_PROVIDER', dt('Invalid provider; cannot authenticate.'));
+    return FALSE;
   }
   $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if (!$provider->auth_is_logged_in()) {
@@ -231,82 +223,6 @@ function drush_switchboard_sw_auth_logout($provider_name) {
   drush_log(dt('Logged out of @provider.', array(
     '@provider' => $provider_name,
   )), 'ok');
-}
-
-/**
- * Send a request.
- * @param \Fluxsauce\Switchboard\Provider $provider
- * @param $options
- * @return bool|Requests_Response
- */
-function switchboard_request($provider, $options) {
-  $url = $provider->endpoint;
-
-  if ($provider->name == 'pantheon') {
-    $url .= '/terminus.php?';
-  }
-
-  $url .= $options['resource'];
-
-  if ($provider->name == 'pantheon') {
-    $url .= '=' . $options['uuid'];
-    $url .= '&path=' . $options['realm'];
-  }
-  if ($provider->name == 'acquia') {
-    $url .= '.json';
-  }
-
-  $requests_options = $provider->requests_options();
-
-  if (!in_array($options['method'], array('GET', 'DELETE', 'POST', 'PUT'))) {
-    return drush_set_error('SWITCHBOARD_REQUEST_INVALID_METHOD');
-  }
-  $headers = array();
-
-  // Prepare data for transport.
-  $data = NULL;
-  if (isset($options['data'])) {
-    $data = json_encode(array('data' => $options['data']));
-    if (in_array($options['method'], array('POST', 'PUT', 'DELETE'))) {
-      $headers = array(
-        'Content-Type' => 'application/json',
-        'Content-Length' => strlen($data),
-      );
-    }
-    else {
-      if (in_array($options['method'], array('GET'))) {
-        $url .= '?' . http_build_query($data);
-      }
-    }
-  }
-
-  drush_log($url);
-
-  try {
-    switch ($options['method']) {
-      case 'GET':
-        $response = Requests::get($url, $headers, $requests_options);
-        break;
-
-      case 'DELETE':
-        $response = Requests::delete($url, $headers, $requests_options);
-        break;
-
-      case 'POST':
-        $response = Requests::post($url, $headers, $data, $requests_options);
-        break;
-
-      case 'PUT':
-        $response = Requests::put($url, $headers, $data, $requests_options);
-        break;
-
-    }
-  } catch (Requests_Exception $e) {
-    return drush_set_error('SWITCHBOARD_REQUEST_FAIL', dt('API failure: @error', array(
-      '@error' => $e->getMessage(),
-    )));
-  }
-  return $response;
 }
 
 /**
@@ -346,16 +262,17 @@ function drush_switchboard_sw_site_list($provider_name) {
   drush_print_table($rows, TRUE);
 }
 
-
-
 /**
  * Implements hook_drush_command_validate().
  */
 function drush_switchboard_sw_site_env_list_validate($provider_name = FALSE, $site_name = FALSE) {
-  if (!switchboard_validate_provider_site($provider_name, $site_name)) {
+  if (!switchboard_validate_provider_name($provider_name)) {
     return FALSE;
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
+    return FALSE;
+  }
+  if (!switchboard_validate_site($provider_name, $site_name)) {
     return FALSE;
   }
 }
@@ -372,10 +289,13 @@ function drush_switchboard_sw_site_env_list($provider_name, $site_name) {
  * Implements hook_drush_command_validate().
  */
 function drush_switchboard_sw_site_info_validate($provider_name = FALSE, $site_name = FALSE) {
-  if (!switchboard_validate_provider_site($provider_name, $site_name)) {
+  if (!switchboard_validate_provider_name($provider_name)) {
     return FALSE;
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
+    return FALSE;
+  }
+  if (!switchboard_validate_site($provider_name, $site_name)) {
     return FALSE;
   }
 }
@@ -389,25 +309,16 @@ function drush_switchboard_sw_site_info($provider_name, $site_name) {
 }
 
 /**
- * Helper for debugging PDO exceptions.
- * @param PDOException $e
- */
-function switchboard_pdo_exception_debug(PDOException $e) {
-  drush_set_error(dt('PDO Exception in @file on line @line: "@message"', array(
-    '@file' => $e->getFile(),
-    '@line' => $e->getLine(),
-    '@message' => $e->getMessage(),
-  )), 'error');
-}
-
-/**
  * Implements hook_drush_command_validate().
  */
 function drush_switchboard_sw_site_vcs_validate($provider_name = FALSE, $site_name = FALSE) {
-  if (!switchboard_validate_provider_site($provider_name, $site_name)) {
+  if (!switchboard_validate_provider_name($provider_name)) {
     return FALSE;
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
+    return FALSE;
+  }
+  if (!switchboard_validate_site($provider_name, $site_name)) {
     return FALSE;
   }
 }
@@ -441,10 +352,13 @@ function drush_switchboard_sw_site_vcs($provider_name, $site_name) {
  * Implements hook_drush_command_validate().
  */
 function drush_switchboard_sw_site_delete_validate($provider_name = FALSE, $site_name = FALSE) {
-  if (!switchboard_validate_provider_site($provider_name, $site_name)) {
+  if (!switchboard_validate_provider_name($provider_name)) {
     return FALSE;
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
+    return FALSE;
+  }
+  if (!switchboard_validate_site($provider_name, $site_name)) {
     return FALSE;
   }
 }
@@ -459,4 +373,29 @@ function drush_switchboard_sw_site_delete($provider_name, $site_name) {
     '@site_name' => $site_name,
     '@provider' => $provider_name,
   )), 'ok');
+}
+
+/**
+ * Implements hook_drush_command_validate().
+ */
+function drush_switchboard_sw_site_env_db_backup_validate($provider_name = FALSE, $site_name = FALSE, $env_name = FALSE) {
+  if (!switchboard_validate_provider_name($provider_name)) {
+    return FALSE;
+  }
+  if (!switchboard_validate_auth_logged_in($provider_name)) {
+    return FALSE;
+  }
+  if (!switchboard_validate_site($provider_name, $site_name)) {
+    return FALSE;
+  }
+  if (!switchboard_validate_site_env($provider_name, $site_name, $env_name)) {
+    return FALSE;
+  }
+}
+
+/**
+ * Implements hook_drush_command().
+ */
+function drush_switchboard_sw_site_env_db_backup($provider_name, $site_name, $env_name) {
+
 }

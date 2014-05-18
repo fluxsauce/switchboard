@@ -20,12 +20,12 @@ abstract class Provider {
    * @return mixed
    */
   static function getInstance($provider_name) {
-    static $instance = NULL;
-    if (!$instance) {
+    static $instance = array();
+    if (!$instance[$provider_name]) {
       $class_name = '\Fluxsauce\Switchboard\Provider' . ucfirst($provider_name);
-      $instance = new $class_name;
+      $instance[$provider_name] = new $class_name;
     }
-    return $instance;
+    return $instance[$provider_name];
   }
 
   /**
