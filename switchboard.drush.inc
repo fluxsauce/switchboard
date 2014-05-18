@@ -390,7 +390,7 @@ function drush_switchboard_sw_site_delete($provider_name, $site_name) {
 /**
  * Implements hook_drush_command_validate().
  */
-function drush_switchboard_sw_site_env_db_list_validate($provider_name = FALSE, $site_name = FALSE, $env_name = FALSE) {
+function drush_switchboard_sw_site_env_db_backup_validate($provider_name = FALSE, $site_name = FALSE, $env_name = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
     return FALSE;
   }
@@ -408,34 +408,7 @@ function drush_switchboard_sw_site_env_db_list_validate($provider_name = FALSE, 
 /**
  * Implements hook_drush_command().
  */
-function drush_switchboard_sw_site_env_db_list($provider_name, $site_name, $env_name) {
+function drush_switchboard_sw_site_env_db_backup($provider_name, $site_name, $env_name) {
   $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  $provider->sites[$site_name]->environments[$env_name]->renderDbsDrushTable();
-}
-
-/**
- * Implements hook_drush_command_validate().
- */
-function drush_switchboard_sw_site_env_db_backup_validate($provider_name = FALSE, $site_name = FALSE, $env_name = FALSE, $db_name = FALSE) {
-  if (!switchboard_validate_provider_name($provider_name)) {
-    return FALSE;
-  }
-  if (!switchboard_validate_auth_logged_in($provider_name)) {
-    return FALSE;
-  }
-  if (!switchboard_validate_site($provider_name, $site_name)) {
-    return FALSE;
-  }
-  if (!switchboard_validate_site_env($provider_name, $site_name, $env_name)) {
-    return FALSE;
-  }
-  return drush_set_error('', 'db_name validation not implemented.');
-}
-
-/**
- * Implements hook_drush_command().
- */
-function drush_switchboard_sw_site_env_db_backup($provider_name, $site_name, $env_name, $db_name) {
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  $provider->api_get_site_env_db_backups($site_name, $env_name, $db_name);
+  $provider->api_get_site_env_db_backups($site_name, $env_name);
 }

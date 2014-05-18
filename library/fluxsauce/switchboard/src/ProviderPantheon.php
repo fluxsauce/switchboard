@@ -197,7 +197,7 @@ class ProviderPantheon extends Provider {
     ));
     $environment_data = json_decode($result->body);
     foreach ($environment_data as $environment_name => $environment) {
-      $new_environment = new Environment($this->name, $site->id, $environment_name);
+      $new_environment = new Environment($site->id, $environment_name);
       $new_environment->branch = 'master';
       $new_environment->host = 'appserver.' . $environment_name . '.' . $site->uuid . '.drush.in';
       $new_environment->update();
@@ -211,5 +211,29 @@ class ProviderPantheon extends Provider {
     $new_db = new EnvDb($env->id, 'pantheon');
     $new_db->update();
     $env->dbAdd($new_db);
+  }
+
+  public function api_get_site_env_db_backups($site_name, $env_name) {
+    $site = $this->sites[$site_name];
+    $result = switchboard_request($this, array(
+      'method' => 'GET',
+      'resource' => 'site',
+      'realm' => 'environments/' . $env_name . '/backups/catalog',
+      'uuid' => $site->uuid,
+    ));
+    $environment_data = json_decode($result->body);
+
+    $buckets = array();
+    $backups = json_decode($result->body);
+    foreach ($backups as $id => $a) {
+      $parts = explode('_', $id);
+      if (!isset($a->filename) || $parts[2] != 'database') {
+        continue;
+      }
+      $buckets[$a->filename] = $parts[0] .'_'. $parts[1];
+    }
+    arsort($buckets);
+
+    var_dump($buckets);
   }
 }

@@ -66,7 +66,7 @@ class Site extends Persistent {
       $stmt->bindParam(':id', $this->id);
       $result = $stmt->execute();
       while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-        $this->environmentAdd(new Environment($this->provider, $this->id, $row['name']));
+        $this->environmentAdd(new Environment($this->id, $row['name']));
       }
     } catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
@@ -75,7 +75,7 @@ class Site extends Persistent {
 
   public function renderEnvironmentsDrushTable() {
     $rows = array();
-    $environment = new Environment($this->provider);
+    $environment = new Environment();
     $fields = $environment->toArray();
     $rows = array();
     $rows[] = array_keys($fields);
