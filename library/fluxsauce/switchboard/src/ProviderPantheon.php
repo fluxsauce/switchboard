@@ -221,19 +221,54 @@ class ProviderPantheon extends Provider {
       'realm' => 'environments/' . $env_name . '/backups/catalog',
       'uuid' => $site->uuid,
     ));
-    $environment_data = json_decode($result->body);
-
-    $buckets = array();
-    $backups = json_decode($result->body);
-    foreach ($backups as $id => $a) {
+    // $result = terminus_api_backup_download_url(drush_get_option('site_uuid'), drush_get_option('environment'), drush_get_option('bucket'), drush_get_option('element'));
+    $backups = array();
+    $backup_data = json_decode($result->body);
+    foreach ($backup_data as $id => $backup) {
       $parts = explode('_', $id);
-      if (!isset($a->filename) || $parts[2] != 'database') {
+      if (!isset($backup->filename) || $parts[2] != 'database') {
         continue;
       }
-      $buckets[$a->filename] = $parts[0] .'_'. $parts[1];
+      $backups[$backup->timestamp] = array(
+        'filename' => $backup->filename,
+        'url' => '',
+        'bucket' => $parts[0] . '_' . $parts[1],
+        'timestamp' => $backup->timestamp,
+      );
     }
-    arsort($buckets);
+    arsort($backups);
+    return $backups;
+  }
 
-    var_dump($buckets);
+  public function get_site_env_db_backup_latest($site_name, $env_name) {
+    $backup = parent::get_site_env_db_backup_latest($site_name, $env_name);
+    $backup['url'] = $this->api_get_backup_download_url($site_name, $env_name, $backup['bucket'], 'database');
+    unset($backup['bucket']);
+    return $backup;
+  }
+
+  public function api_get_backup_download_url($site_name, $env_name, $bucket, $element) {
+    $site = $this->sites[$site_name];
+    $result = switchboard_request($this, array(
+      'method' => 'POST',
+      'resource' => 'site',
+      'realm' => 'environments/' . $env_name . '/backups/catalog/' . $bucket . '/' . $element . '/s3token',
+      'uuid' => $site->uuid,
+      'data' => array('method' => 'GET'),
+    ));
+    $token = json_decode($result->body);
+    return $token->url;
+  }
+
+  public function api_download_backup($backup, $destination) {
+    // See Drush's package_handler_download_project().
+    $destination_path = $destination . DIRECTORY_SEPARATOR . $backup['filename'];
+    $path = _drush_download_file($backup['url'], $destination_path, 31556926);
+    if ($path || drush_get_context('DRUSH_SIMULATE')) {
+      return $destination_path;
+    }
+    else {
+      return drush_set_error('SWITCHBOARD_PANTHEON_BACKUP_DL_FAIL', dt('Unable to download!'));
+    }
   }
 }

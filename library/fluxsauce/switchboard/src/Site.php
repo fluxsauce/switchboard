@@ -34,7 +34,7 @@ class Site extends Persistent {
         '@name' => $name,
         '@calling_function' => $callers[1]['function'],
       )));
-      $provider = Provider::getInstance($this->provider);
+      $provider =& Provider::getInstance($this->provider);
       $this->$name = $value = $provider->site_get_field($this->name, $name);
     }
     return $value;

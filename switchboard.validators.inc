@@ -19,7 +19,7 @@ function switchboard_validate_site($provider_name, $site_name) {
   if (!$site_name) {
     return drush_set_error('SWITCHBOARD_PROVIDER_SITE_MISSING', dt('No site was specified.'));
   }
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if (!$provider->site_exists($site_name)) {
     return drush_set_error('SWITCHBOARD_PROVIDER_SITE_INVALID', dt('Site @site_name does not exist in provider @provider.', array(
       '@site_name' => $site_name,
@@ -37,7 +37,7 @@ function switchboard_validate_site($provider_name, $site_name) {
  *   TRUE if logged-in to provider.
  */
 function switchboard_validate_auth_logged_in($provider_name) {
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if (!$provider->auth_is_logged_in()) {
     return drush_set_error('SWITCHBOARD_NOT_LOGGED_IN', dt('Not logged-in to @provider_name, cannot continue.', array(
       '@provider_name' => $provider_name,
@@ -73,7 +73,7 @@ function switchboard_validate_site_env($provider_name, $site_name, $env_name) {
   if (!$env_name) {
     return drush_set_error('SWITCHBOARD_SITE_ENV_MISSING', dt('Environment name not specified.'));
   }
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if (!array_key_exists($env_name, $provider->sites[$site_name]->environments)) {
     return drush_set_error('SWITCHBOARD_SITE_ENV_INVALID', dt('@env_name is not a valid environment for @site_name.', array(
       '@env_name' => $env_name,
@@ -81,6 +81,18 @@ function switchboard_validate_site_env($provider_name, $site_name, $env_name) {
     )));
   }
   return TRUE;
+}
+
+function switchboard_validate_destination($destination_path) {
+  if (!$destination_path) {
+    return drush_set_error('SWITCHBOARD_DESTINATION_MISSING', dt('Destination path not specified.'));
+  }
+  if (is_writable($destination_path)) {
+    return TRUE;
+  }
+  return drush_set_error('SWITCHBOARD_DESTINATION_UNWRITEABLE', dt('@destination_path is not writeable.', array(
+    '@destination_path' => $destination_path,
+  )));
 }
 
 /**

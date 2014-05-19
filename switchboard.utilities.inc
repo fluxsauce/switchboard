@@ -21,7 +21,7 @@ function switchboard_request($provider, $options) {
 
   if ($provider->name == 'pantheon') {
     $url .= '=' . $options['uuid'];
-    $url .= '&path=' . $options['realm'];
+    $url .= '&path=' . urlencode($options['realm']);
   }
   if ($provider->name == 'acquia') {
     $url .= '.json';
@@ -51,7 +51,11 @@ function switchboard_request($provider, $options) {
     }
   }
 
-  drush_log($url);
+  // Perform request.
+  drush_log(dt('Making API @method request to @url', array(
+    '@method' => $options['method'],
+    '@url' => $url,
+  )));
 
   try {
     switch ($options['method']) {

@@ -154,6 +154,8 @@ abstract class Provider {
    */
   abstract public function auth_login($email, $password);
 
+  abstract public function api_download_backup($backup, $destination);
+
   /**
    * Log out of target provider.
    */
@@ -165,6 +167,13 @@ abstract class Provider {
    * @return boolean
    */
   abstract public function auth_is_logged_in();
+
+  abstract public function api_get_site_env_db_backups($site_name, $env_name);
+
+  public function get_site_env_db_backup_latest($site_name, $env_name) {
+    $backups = $this->api_get_site_env_db_backups($site_name, $env_name);
+    return array_pop($backups);
+  }
 
   public function requests_options($options = array()) {
     $defaults = array(

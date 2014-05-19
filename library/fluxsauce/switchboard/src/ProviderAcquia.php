@@ -56,6 +56,20 @@ class ProviderAcquia extends Provider {
     return TRUE;
   }
 
+  protected function auth_email_get() {
+    $email = drush_cache_get('email', 'switchboard-auth-acquia');
+    if (isset($email->data)) {
+      return $email->data;
+    }
+  }
+
+  protected function auth_password_get() {
+    $password = drush_cache_get('password', 'switchboard-auth-acquia');
+    if (isset($password->data)) {
+      return $password->data;
+    }
+  }
+
   public function auth_is_logged_in() {
     $email = drush_cache_get('email', 'switchboard-auth-acquia');
     $password = drush_cache_get('password', 'switchboard-auth-acquia');
@@ -133,7 +147,41 @@ class ProviderAcquia extends Provider {
       'method' => 'GET',
       'resource' => '/sites/' . $site->realm . ':' . $site_name . '/envs/' . $env_name . '/dbs/' . $site_name . '/backups',
     ));
-    $environment_data = json_decode($result->body);
-    var_dump($environment_data);
+    $backup_data = json_decode($result->body);
+
+    $backups = array();
+    foreach ($backup_data as $backup) {
+      $backups[$backup->completed] = array(
+        'filename' => end(explode('/', $backup->path)),
+        'url' => '',
+        'timestamp' => $backup->completed,
+        'id' => $backup->id,
+      );
+    }
+    arsort($backups);
+    return $backups;
+  }
+
+  public function get_site_env_db_backup_latest($site_name, $env_name) {
+    $site = $this->sites[$site_name];
+    $backup = parent::get_site_env_db_backup_latest($site_name, $env_name);
+    $backup['url'] = 'https://cloudapi.acquia.com/v1/sites/' . $site->realm . ':' . $site_name . '/envs/' . $env_name . '/dbs/' . $site_name . '/backups/' . $backup['id'] . '/download.json';
+    unset($backup['id']);
+    return $backup;
+  }
+
+  public function api_download_backup($backup, $destination) {
+    drush_log(var_export($backup, TRUE));
+    $destination_tmp = drush_tempnam('download_file');
+    drush_shell_exec("curl --fail -s -L -u " . $this->auth_email_get() . ":" . $this->auth_password_get() . " --connect-timeout 30 -o %s %s", $destination_tmp, $backup['url']);
+    if (!drush_file_not_empty($destination_tmp) && $file = @file_get_contents($backup['url'])) {
+      @file_put_contents($destination_tmp, $file);
+    }
+    if (!drush_file_not_empty($destination_tmp)) {
+      return drush_set_error('SWITCHBOARD_ACQUIA_BACKUP_DL_FAIL', dt('Unable to download!'));
+    }
+    $destination_path = $destination . DIRECTORY_SEPARATOR . $backup['filename'];
+    drush_move_dir($destination_tmp, $destination_path, TRUE);
+    return $destination_path;
   }
 }

@@ -98,10 +98,11 @@ function switchboard_drush_command() {
   );
 
   $items['sw-site-env-db-backup'] = array(
-    'description' => dt('Get URL of latest database backup.'),
+    'description' => dt('Download the latest database backup.'),
     'arguments' => $default_site_arguments + array(
       'env_name' => dt('Environment name'),
       'db_name' => dt('Database name'),
+      'destination' => dt('Destination path'),
     ),
     'options' => $default_options,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
@@ -136,7 +137,7 @@ function drush_switchboard_sw_provider_list() {
   $provider_names = switchboard_get_provider_names();
   $rows = array();
   foreach ($provider_names as $provider_name) {
-    $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+    $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
     $rows[$provider->name] = array(
       $provider->name,
       $provider->label,
@@ -173,7 +174,7 @@ function drush_switchboard_sw_auth_login_validate($provider_name = FALSE, $email
   if (!switchboard_validate_provider_name($provider_name)) {
     return FALSE;
   }
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if ($provider->auth_is_logged_in()) {
     return drush_set_error('SWITCHBOARD_AUTH_LOGIN_ALREADY_LOGGEDIN', dt('Already logged-in to @provider_name.', array(
       '@provider_name' => $provider_name,
@@ -193,7 +194,7 @@ function drush_switchboard_sw_auth_login_validate($provider_name = FALSE, $email
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_auth_login($provider_name, $email, $password) {
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
 
   $result = $provider->auth_login($email, $password);
   if ($result) {
@@ -218,7 +219,7 @@ function drush_switchboard_sw_auth_logout_validate($provider_name = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
     return FALSE;
   }
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if (!$provider->auth_is_logged_in()) {
     return drush_set_error('SWITCHBOARD_AUTH_LOGOUT_ALREADY_LOGGEDOUT', dt('Already logged-out of @provider_name.', array(
       '@provider_name' => $provider_name,
@@ -230,7 +231,7 @@ function drush_switchboard_sw_auth_logout_validate($provider_name = FALSE) {
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_auth_logout($provider_name) {
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $provider->auth_logout();
   drush_log(dt('Logged out of @provider.', array(
     '@provider' => $provider_name,
@@ -253,7 +254,7 @@ function drush_switchboard_sw_site_list_validate($provider_name = FALSE) {
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_site_list($provider_name) {
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
 
   if (count($provider->sites) == 0) {
     $provider->api_get_sites();
@@ -293,7 +294,7 @@ function drush_switchboard_sw_site_env_list_validate($provider_name = FALSE, $si
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_site_env_list($provider_name, $site_name) {
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $provider->sites[$site_name]->renderEnvironmentsDrushTable();
 }
 
@@ -316,7 +317,7 @@ function drush_switchboard_sw_site_info_validate($provider_name = FALSE, $site_n
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_site_info($provider_name, $site_name) {
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $provider->sites[$site_name]->renderDrushTable();
 }
 
@@ -339,7 +340,7 @@ function drush_switchboard_sw_site_vcs_validate($provider_name = FALSE, $site_na
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_site_vcs($provider_name, $site_name) {
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $site = $provider->sites[$site_name];
   $command = '';
   switch ($site->vcs_type) {
@@ -379,7 +380,7 @@ function drush_switchboard_sw_site_delete_validate($provider_name = FALSE, $site
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_site_delete($provider_name, $site_name) {
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $provider->site_delete($site_name);
   drush_log(dt('Locally deleted @site_name from @provider.', array(
     '@site_name' => $site_name,
@@ -390,7 +391,7 @@ function drush_switchboard_sw_site_delete($provider_name, $site_name) {
 /**
  * Implements hook_drush_command_validate().
  */
-function drush_switchboard_sw_site_env_db_backup_validate($provider_name = FALSE, $site_name = FALSE, $env_name = FALSE) {
+function drush_switchboard_sw_site_env_db_backup_validate($provider_name = FALSE, $site_name = FALSE, $env_name = FALSE, $destination = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
     return FALSE;
   }
@@ -403,12 +404,25 @@ function drush_switchboard_sw_site_env_db_backup_validate($provider_name = FALSE
   if (!switchboard_validate_site_env($provider_name, $site_name, $env_name)) {
     return FALSE;
   }
+  if (!switchboard_validate_destination($destination)) {
+    return FALSE;
+  }
 }
 
 /**
  * Implements hook_drush_command().
  */
-function drush_switchboard_sw_site_env_db_backup($provider_name, $site_name, $env_name) {
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  $provider->api_get_site_env_db_backups($site_name, $env_name);
+function drush_switchboard_sw_site_env_db_backup($provider_name, $site_name, $env_name, $destination) {
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $backup = $provider->get_site_env_db_backup_latest($site_name, $env_name);
+
+  drush_log(dt('Downloading @filename from @date...', array(
+    '@filename' => $backup['filename'],
+    '@date' => date('r', $backup['timestamp']),
+  )));
+
+  $result = $provider->api_download_backup($backup, $destination);
+  if ($result) {
+    drush_print($result);
+  }
 }
