@@ -15,6 +15,17 @@ class Sqlite {
     }
   }
 
+  public static function delete_table($table) {
+    $pdo = Sqlite::get();
+
+    try {
+      $sql_query = 'DROP TABLE IF EXISTS ' . $table;
+      $pdo->exec($sql_query);
+    } catch (\PDOException $e) {
+      switchboard_pdo_exception_debug($e);
+    }
+  }
+
   /**
    * Get the SQLite PDO.
    * @return \PDO

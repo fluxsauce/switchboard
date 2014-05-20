@@ -114,3 +114,21 @@ function switchboard_pdo_exception_debug(PDOException $e) {
   drush_print(var_export($trace[0], TRUE));
   exit;
 }
+
+function switchboard_message_success($message) {
+  if (drush_get_option('json')) {
+    drush_set_context('DRUSH_USER_ABORT', TRUE);
+    drush_print(json_encode(array('success' => $message)));
+    exit;
+  }
+  drush_log($message, 'success');
+}
+
+function switchboard_message_fail($code, $message) {
+  if (drush_get_option('json')) {
+    drush_set_context('DRUSH_USER_ABORT', TRUE);
+    drush_print(json_encode(array('error' => $message)));
+    exit;
+  }
+  return drush_set_error($code, $message);
+}

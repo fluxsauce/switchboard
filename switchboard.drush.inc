@@ -44,27 +44,33 @@ function switchboard_drush_command() {
   $default_site_arguments = array(
     'site_name' => dt('Name of the site.'),
   ) + $default_arguments;
+  $json_option = array(
+    'json' => dt('Render response in JSON'),
+  );
   $default_options = array(
     'refresh' => dt('Refresh all remote data.'),
-  );
+  ) + $json_option;
 
   $items['sw-provider-list'] = array(
     'description' => dt('List all available providers.'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'options' => $json_option,
   );
 
   $items['sw-auth-login'] = array(
-    'description' => dt('Create session with a provider.'),
+    'description' => dt('Authenticate with a provider.'),
     'arguments' => array(
       'email' => dt('Email address of the account with the provider.'),
-      'password' => dt('Password for the account.'),
+      'password' => dt('Password or API key for the account.'),
     ) + $default_arguments,
+    'options' => $json_option,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
   $items['sw-auth-logout'] = array(
     'description' => dt('End session with a provider.'),
     'arguments' => $default_arguments,
+    'options' => $json_option,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
@@ -78,21 +84,13 @@ function switchboard_drush_command() {
   $items['sw-site-delete'] = array(
     'description' => dt('Locally delete site.'),
     'arguments' => $default_site_arguments,
+    'options' => $json_option,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
   $items['sw-site-env-list'] = array(
     'description' => dt('List available site environments from a provider.'),
     'arguments' => $default_site_arguments,
-    'options' => $default_options,
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
-  );
-
-  $items['sw-site-env-db-list'] = array(
-    'description' => dt('Get list of databases associated with an environment.'),
-    'arguments' => $default_site_arguments + array(
-      'env_name' => dt('Environment name'),
-    ),
     'options' => $default_options,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
@@ -124,6 +122,9 @@ function switchboard_drush_command() {
 
   $items['sw-reset'] = array(
     'description' => dt('Reset the Switchboard brain.'),
+    'options' => array(
+      'tables' => dt('List of tables, comma separated, to remove.'),
+    ) + $json_option,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
@@ -139,21 +140,34 @@ function drush_switchboard_sw_provider_list() {
   foreach ($provider_names as $provider_name) {
     $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
     $rows[$provider->name] = array(
-      $provider->name,
-      $provider->label,
-      $provider->homepage,
+      'name' => $provider->name,
+      'label' => $provider->label,
+      'homepage' => $provider->homepage,
     );
   }
   ksort($rows);
-  array_unshift($rows, array(dt('Name'), dt('Label'), dt('Homepage')));
-  drush_print_table($rows, TRUE);
+  if (drush_get_option('json')) {
+    drush_print(json_encode($rows));
+  }
+  else {
+    array_unshift($rows, array(dt('Name'), dt('Label'), dt('Homepage')));
+    drush_print_table($rows, TRUE);
+  }
 }
 
 /**
  * Implements hook_drush_command_validate().
  */
 function drush_switchboard_sw_reset_validate() {
-  $confirm = drush_confirm(dt('Are you sure you want to reset the Switchboard brain?'));
+  $tables = drush_get_option('tables');
+  if ($tables) {
+    $confirm = drush_confirm(dt('Are you sure you want to reset @tables?', array(
+      '@tables' => $tables,
+    )));
+  }
+  else {
+    $confirm = drush_confirm(dt('Are you sure you want to reset the Switchboard brain?'));
+  }
   if (!$confirm) {
     return drush_user_abort();
   }
@@ -163,8 +177,18 @@ function drush_switchboard_sw_reset_validate() {
  * Implements hook_drush_command().
  */
 function drush_switchboard_sw_reset() {
-  Fluxsauce\Switchboard\Sqlite::delete();
-  drush_log('Switchboard brain ablation completed.', 'ok');
+  $tables = drush_get_option('tables');
+  if ($tables) {
+    foreach (explode(',', $tables) as $table) {
+      Fluxsauce\Switchboard\Sqlite::delete_table($table);
+      switchboard_message_success(dt('Switchboard brain ablation of @table completed.', array(
+        '@table' => $table,
+      )));
+    }
+  }
+  else {
+    switchboard_message_success(dt('Switchboard brain ablation completed.'));
+  }
 }
 
 /**
@@ -176,17 +200,17 @@ function drush_switchboard_sw_auth_login_validate($provider_name = FALSE, $email
   }
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if ($provider->auth_is_logged_in()) {
-    return drush_set_error('SWITCHBOARD_AUTH_LOGIN_ALREADY_LOGGEDIN', dt('Already logged-in to @provider_name.', array(
+    return switchboard_message_fail('SWITCHBOARD_AUTH_LOGIN_ALREADY_LOGGEDIN', dt('Already logged-in to @provider_name.', array(
       '@provider_name' => $provider_name,
     )));
   }
 
   if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    return drush_set_error('SWITCHBOARD_AUTH_LOGIN_INVALID_EMAIL', dt('Invalid email; cannot authenticate.'));
+    return switchboard_message_fail('SWITCHBOARD_AUTH_LOGIN_INVALID_EMAIL', dt('Invalid email; cannot authenticate.'));
   }
 
   if (!$password) {
-    return drush_set_error('SWITCHBOARD_AUTH_LOGIN_INVALID_PASSWORD', dt('Password missing; cannot authenticate.'));
+    return switchboard_message_fail('SWITCHBOARD_AUTH_LOGIN_INVALID_PASSWORD', dt('Password missing; cannot authenticate.'));
   }
 }
 
@@ -198,15 +222,13 @@ function drush_switchboard_sw_auth_login($provider_name, $email, $password) {
 
   $result = $provider->auth_login($email, $password);
   if ($result) {
-    drush_log(dt('Logged into @provider_name as @email.', array(
+    switchboard_message_success(dt('Logged into @provider_name as @email.', array(
       '@provider_name' => $provider_name,
       '@email' => $email,
-    )), 'ok');
-    // Update list of sites.
-    drush_set_option('refresh', TRUE);
+    )));
   }
   else {
-    drush_set_error('SWITCHBOARD_AUTH_LOGIN_FAILURE', dt('Unable to login to @provider_name.', array(
+    switchboard_message_fail('SWITCHBOARD_AUTH_LOGIN_FAILURE', dt('Unable to login to @provider_name.', array(
       '@provider_name' => $provider_name,
     )));
   }
@@ -221,7 +243,7 @@ function drush_switchboard_sw_auth_logout_validate($provider_name = FALSE) {
   }
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if (!$provider->auth_is_logged_in()) {
-    return drush_set_error('SWITCHBOARD_AUTH_LOGOUT_ALREADY_LOGGEDOUT', dt('Already logged-out of @provider_name.', array(
+    return switchboard_message_fail('SWITCHBOARD_AUTH_LOGOUT_ALREADY_LOGGEDOUT', dt('Already logged-out of @provider_name.', array(
       '@provider_name' => $provider_name,
     )));
   }
@@ -233,9 +255,9 @@ function drush_switchboard_sw_auth_logout_validate($provider_name = FALSE) {
 function drush_switchboard_sw_auth_logout($provider_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $provider->auth_logout();
-  drush_log(dt('Logged out of @provider.', array(
+  switchboard_message_success(dt('Logged out of @provider.', array(
     '@provider' => $provider_name,
-  )), 'ok');
+  )));
 }
 
 /**
@@ -260,19 +282,27 @@ function drush_switchboard_sw_site_list($provider_name) {
     $provider->api_get_sites();
   }
   if (count($provider->sites) == 0) {
+    if (drush_get_option('json')) {
+      return drush_print(json_encode(array()));
+    }
     return drush_print(dt('No sites.'));
   }
 
   $rows = array();
   foreach ($provider->sites as $site) {
-    $rows[] = array(
-      $site->name,
-      $site->uuid,
+    $rows[$site->name] = array(
+      'name' => $site->name,
+      'uuid' => $site->uuid,
     );
   }
   ksort($rows);
-  array_unshift($rows, array(dt('Name'), dt('UUID')));
-  drush_print_table($rows, TRUE);
+  if (drush_get_option('json')) {
+    drush_print(json_encode($rows));
+  }
+  else {
+    array_unshift($rows, array(dt('Name'), dt('UUID')));
+    drush_print_table($rows, TRUE);
+  }
 }
 
 /**
@@ -295,7 +325,12 @@ function drush_switchboard_sw_site_env_list_validate($provider_name = FALSE, $si
  */
 function drush_switchboard_sw_site_env_list($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  $provider->sites[$site_name]->renderEnvironmentsDrushTable();
+  if (drush_get_option('json')) {
+    $provider->sites[$site_name]->renderEnvironmentsJson();
+  }
+  else {
+    $provider->sites[$site_name]->renderEnvironmentsDrushTable();
+  }
 }
 
 /**
@@ -318,7 +353,12 @@ function drush_switchboard_sw_site_info_validate($provider_name = FALSE, $site_n
  */
 function drush_switchboard_sw_site_info($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  $provider->sites[$site_name]->renderDrushTable();
+  if (drush_get_option('json')) {
+    $provider->sites[$site_name]->renderJson();
+  }
+  else {
+    $provider->sites[$site_name]->renderDrushTable();
+  }
 }
 
 /**
@@ -351,14 +391,19 @@ function drush_switchboard_sw_site_vcs($provider_name, $site_name) {
       $command .= 'svn checkout';
       break;
     default:
-      return drush_set_error('SWITCHBOARD_SITE_VCS_INVALID_PROTOCOL', dt('Invalid VCS type for site.'));
+      return switchboard_message_fail('SWITCHBOARD_SITE_VCS_INVALID_PROTOCOL', dt('Invalid VCS type for site.'));
   }
   $command .= ' ';
   if ($site->vcs_protocol == 'ssh') {
     $command .= 'ssh://';
   }
   $command .= $site->vcs_url . ' ' . $site_name;
-  drush_print($command);
+  if (drush_get_option('json')) {
+    drush_print(json_encode($command));
+  }
+  else {
+    drush_print($command);
+  }
 }
 
 /**
@@ -382,10 +427,10 @@ function drush_switchboard_sw_site_delete_validate($provider_name = FALSE, $site
 function drush_switchboard_sw_site_delete($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $provider->site_delete($site_name);
-  drush_log(dt('Locally deleted @site_name from @provider.', array(
+  switchboard_message_success(dt('Locally deleted @site_name from @provider.', array(
     '@site_name' => $site_name,
     '@provider' => $provider_name,
-  )), 'ok');
+  )));
 }
 
 /**

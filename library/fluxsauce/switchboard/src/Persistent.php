@@ -237,4 +237,8 @@ abstract class Persistent {
     $rows[] = array_values($fields);
     drush_print_table($rows, TRUE);
   }
+
+  public function renderJson() {
+    drush_print(json_encode($this->toArray()));
+  }
 } 

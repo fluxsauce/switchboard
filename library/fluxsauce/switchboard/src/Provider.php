@@ -122,6 +122,9 @@ abstract class Provider {
     if (!$site_name) {
       return FALSE;
     }
+    if (empty($this->sites)) {
+      $this->api_get_sites();
+    }
     return array_key_exists($site_name, $this->sites);
   }
 

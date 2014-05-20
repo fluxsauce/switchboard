@@ -14,6 +14,7 @@ class Site extends Persistent {
   protected $vcs_url;
   protected $vcs_type;
   protected $vcs_protocol;
+
   protected $environments;
 
   protected $external_key_name = 'provider';
@@ -84,5 +85,25 @@ class Site extends Persistent {
       $rows[] = array_values($fields);
     }
     drush_print_table($rows, TRUE);
+  }
+
+  public function renderEnvironmentsJson() {
+    $rows = array();
+    foreach ($this->__get('environments') as $environment) {
+      $rows[] = $environment->toArray();
+    }
+    drush_print(json_encode($rows));
+  }
+
+  /**
+   * Dump to an array.
+   *
+   * @return array
+   *   Property names and values.
+   */
+  public function toArray() {
+    $fields = parent::toArray();
+    unset($fields['environments']);
+    return $fields;
   }
 }
