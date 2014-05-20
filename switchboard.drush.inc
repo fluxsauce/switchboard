@@ -51,6 +51,29 @@ function switchboard_drush_command() {
     'refresh' => dt('Refresh all remote data.'),
   ) + $json_option;
 
+  $items['sw-brain-set'] = array(
+    'description' => dt('Set Switchboard brain (SQLite database) file location.'),
+    'arguments' => array(
+      'path' => dt('Full path, including filename, of brain.'),
+    ),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'options' => $json_option,
+  );
+
+  $items['sw-brain-get'] = array(
+    'description' => dt('Get Switchboard brain (SQLite database) location.'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'options' => $json_option,
+  );
+
+  $items['sw-brain-destroy'] = array(
+    'description' => dt('Destroy the Switchboard brain.'),
+    'options' => array(
+        'tables' => dt('List of tables, comma separated, to remove from the database.'),
+      ) + $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
   $items['sw-provider-list'] = array(
     'description' => dt('List all available providers.'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
@@ -120,14 +143,6 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['sw-reset'] = array(
-    'description' => dt('Reset the Switchboard brain.'),
-    'options' => array(
-      'tables' => dt('List of tables, comma separated, to remove.'),
-    ) + $json_option,
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
-  );
-
   return $items;
 }
 
@@ -156,9 +171,51 @@ function drush_switchboard_sw_provider_list() {
 }
 
 /**
+ * Implements hook_drush_command().
+ */
+function drush_switchboard_sw_brain_get() {
+  $brain_path = \Fluxsauce\Switchboard\Sqlite::getLocation();
+  if (drush_get_option('json')) {
+    drush_print(json_encode($brain_path));
+  }
+  else {
+    drush_print($brain_path);
+  }
+}
+
+/**
  * Implements hook_drush_command_validate().
  */
-function drush_switchboard_sw_reset_validate() {
+function drush_switchboard_sw_brain_set_validate($path = FALSE) {
+  if (!$path) {
+    return switchboard_message_fail('SWITCHBOARD_BRAIN_PATH_MISSING', dt('Path missing, cannot set to nothing.'));
+  }
+  if (!drush_is_absolute_path($path)) {
+    return switchboard_message_fail('SWITCHBOARD_BRAIN_PATH_ABSOLUTE', dt('You must specify the absolute path to the file.'));
+  }
+  if (is_dir($path)) {
+    return switchboard_message_fail('SWITCHBOARD_BRAIN_PATH_DIR', dt('You need to specify the name of the file, not just the directory.'));
+  }
+  if (!(substr($path, -strlen('.sqlite')) === '.sqlite')) {
+    return switchboard_message_fail('SWITCHBOARD_BRAIN_PATH_EXT', dt('You need to specify the file extension .sqlite for the brain.'));
+  }
+}
+
+/**
+ * Implements hook_drush_command().
+ */
+function drush_switchboard_sw_brain_set($path) {
+  if (\Fluxsauce\Switchboard\Sqlite::setLocation($path)) {
+    switchboard_message_success(dt('Switchboard brain location set to @path.', array(
+      '@path' => $path,
+    )));
+  }
+}
+
+/**
+ * Implements hook_drush_command_validate().
+ */
+function drush_switchboard_sw_brain_destroy_validate() {
   $tables = drush_get_option('tables');
   if ($tables) {
     $confirm = drush_confirm(dt('Are you sure you want to reset @tables?', array(
@@ -166,7 +223,7 @@ function drush_switchboard_sw_reset_validate() {
     )));
   }
   else {
-    $confirm = drush_confirm(dt('Are you sure you want to reset the Switchboard brain?'));
+    $confirm = drush_confirm(dt('Are you sure you want to destroy the Switchboard brain?'));
   }
   if (!$confirm) {
     return drush_user_abort();
@@ -176,18 +233,18 @@ function drush_switchboard_sw_reset_validate() {
 /**
  * Implements hook_drush_command().
  */
-function drush_switchboard_sw_reset() {
+function drush_switchboard_sw_brain_destroy() {
   $tables = drush_get_option('tables');
   if ($tables) {
     foreach (explode(',', $tables) as $table) {
-      Fluxsauce\Switchboard\Sqlite::delete_table($table);
+      Fluxsauce\Switchboard\Sqlite::deleteTable($table);
       switchboard_message_success(dt('Switchboard brain ablation of @table completed.', array(
         '@table' => $table,
       )));
     }
   }
   else {
-    switchboard_message_success(dt('Switchboard brain ablation completed.'));
+    switchboard_message_success(dt('Switchboard brain ablation completed (file removed).'));
   }
 }
 

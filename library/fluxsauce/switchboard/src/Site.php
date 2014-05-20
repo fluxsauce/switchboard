@@ -31,7 +31,8 @@ class Site extends Persistent {
     $value = parent::__get($name);
     if (is_null($value) || drush_get_option('refresh')) {
       $callers = debug_backtrace();
-      drush_log(dt('Site is missing value for @name from @calling_function.', array(
+      drush_log(dt('Site @site_name is missing value for @name from @calling_function.', array(
+        '@site_name' => $this->name,
         '@name' => $name,
         '@calling_function' => $callers[1]['function'],
       )));
@@ -69,7 +70,8 @@ class Site extends Persistent {
       while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
         $this->environmentAdd(new Environment($this->id, $row['name']));
       }
-    } catch (\PDOException $e) {
+    }
+    catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
     }
   }

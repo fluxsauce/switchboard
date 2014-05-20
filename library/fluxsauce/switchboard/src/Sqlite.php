@@ -1,43 +1,92 @@
 <?php
 /**
  * @file
+ * The Switchboard brain.
  */
 
 namespace Fluxsauce\Switchboard;
 
 class Sqlite {
   /**
+   * Get the location of the Switchboard brain.
+   *
+   * @return string
+   *   The full path to the location of the brain.
+   */
+  public static function getLocation() {
+    $brain_path = drush_cache_get('brain_path', 'switchboard');
+    if (!isset($brain_path->data)) {
+      return drush_directory_cache('switchboard') . '/switchboard.sqlite';
+    }
+    return $brain_path->data;
+  }
+
+  /**
+   * Set the location of the switchboard brain. Moves old brain if it exists.
+   *
+   * @param string $brain_path
+   *   The full path to the new location of the brain.
+   *
+   * @return bool
+   *   TRUE if successful.
+   */
+  public static function setLocation($brain_path) {
+    $existing_location = Sqlite::getLocation();
+    drush_cache_set('brain_path', $brain_path, 'switchboard');
+    if (file_exists($existing_location)) {
+      // Move it.
+      if (!drush_move_dir($existing_location, $brain_path, TRUE)) {
+        drush_cache_set('brain_path', $existing_location, 'switchboard');
+        return switchboard_message_fail('SWITCHBOARD_BRAIN_MOVE_FAIL', dt('Unable to move Switchboard brain to @brain_path; aborting.', array(
+          '@brain_path' => $brain_path,
+        )));
+      }
+    }
+    return TRUE;
+  }
+
+  /**
    * Delete the SQLite database.
    */
   public static function delete() {
-    if (file_exists(drush_directory_cache('switchboard') . '/switchboard.sqlite')) {
-      unlink(drush_directory_cache('switchboard') . '/switchboard.sqlite');
+    if (file_exists(Sqlite::getLocation())) {
+      unlink(Sqlite::getLocation());
     }
   }
 
-  public static function delete_table($table) {
+  /**
+   * Delete a specific table from the SQLite database.
+   *
+   * @param string $table
+   *   The victim table.
+   */
+  public static function deleteTable($table) {
     $pdo = Sqlite::get();
 
     try {
       $sql_query = 'DROP TABLE IF EXISTS ' . $table;
       $pdo->exec($sql_query);
-    } catch (\PDOException $e) {
+    }
+    catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
     }
   }
 
   /**
    * Get the SQLite PDO.
+   *
    * @return \PDO
+   *   Fully set up SQLite PDO, including tables.
    */
   public static function get() {
     static $pdo;
     if (!isset($pdo)) {
       try {
-        $pdo = new \PDO('sqlite:' . drush_directory_cache('switchboard') . '/switchboard.sqlite');
+        $pdo = new \PDO('sqlite:' . Sqlite::getLocation());
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, FALSE);
-      } catch (\PDOException $e) {
+      }
+      catch (\PDOException $e) {
         switchboard_pdo_exception_debug($e);
       }
 
@@ -57,7 +106,8 @@ class Sqlite {
         $sql_query .= ') ';
 
         $pdo->exec($sql_query);
-      } catch (\PDOException $e) {
+      }
+      catch (\PDOException $e) {
         switchboard_pdo_exception_debug($e);
       }
 
@@ -72,7 +122,8 @@ class Sqlite {
         $sql_query .= ') ';
 
         $pdo->exec($sql_query);
-      } catch (\PDOException $e) {
+      }
+      catch (\PDOException $e) {
         switchboard_pdo_exception_debug($e);
       }
 
@@ -85,7 +136,8 @@ class Sqlite {
         $sql_query .= ') ';
 
         $pdo->exec($sql_query);
-      } catch (\PDOException $e) {
+      }
+      catch (\PDOException $e) {
         switchboard_pdo_exception_debug($e);
       }
     }

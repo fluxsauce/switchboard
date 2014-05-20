@@ -68,6 +68,8 @@ class ProviderPantheon extends Provider {
       $site = new Site($this->name, $data->information->name);
       $site->uuid = $uuid;
       $site->realm = $data->information->preferred_zone;
+      $site->title = $site->name;
+      $site->unix_username = '';
       $site->update();
       $this->sites[$site->name] = $site;
     }
