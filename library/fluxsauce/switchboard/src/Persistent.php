@@ -232,6 +232,10 @@ abstract class Persistent {
    */
   public function renderDrushTable() {
     $fields = $this->toArray();
+    foreach ($fields as $field => &$value) {
+      $value = $this->__get($field);
+    }
+
     $rows = array();
     $rows[] = array_keys($fields);
     $rows[] = array_values($fields);
@@ -239,6 +243,10 @@ abstract class Persistent {
   }
 
   public function renderJson() {
-    drush_print(json_encode($this->toArray()));
+    $fields = $this->toArray();
+    foreach ($fields as $field => &$value) {
+      $value = $this->__get($field);
+    }
+    drush_print(json_encode($fields));
   }
 } 

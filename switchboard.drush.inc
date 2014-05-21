@@ -410,6 +410,7 @@ function drush_switchboard_sw_site_info_validate($provider_name = FALSE, $site_n
  */
 function drush_switchboard_sw_site_info($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+
   if (drush_get_option('json')) {
     $provider->sites[$site_name]->renderJson();
   }

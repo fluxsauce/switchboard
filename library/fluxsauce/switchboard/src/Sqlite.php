@@ -51,6 +51,7 @@ class Sqlite {
   public static function delete() {
     if (file_exists(Sqlite::getLocation())) {
       unlink(Sqlite::getLocation());
+      drush_cache_clear_all('brain_path', 'switchboard', TRUE);
     }
   }
 
