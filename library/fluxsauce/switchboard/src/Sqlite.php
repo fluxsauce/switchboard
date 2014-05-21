@@ -15,14 +15,16 @@ class Sqlite {
    */
   public static function getLocation() {
     $brain_path = drush_cache_get('brain_path', 'switchboard');
-    if (!isset($brain_path->data)) {
-      return drush_directory_cache('switchboard') . '/switchboard.sqlite';
+    if (isset($brain_path->data)) {
+      return $brain_path->data;
     }
-    return $brain_path->data;
+    $default_location = drush_directory_cache('switchboard') . '/switchboard.sqlite';
+    Sqlite::setLocation($default_location);
+    return $default_location;
   }
 
   /**
-   * Set the location of the switchboard brain. Moves old brain if it exists.
+   * Set the location of the switchboard brain.
    *
    * @param string $brain_path
    *   The full path to the new location of the brain.
@@ -31,24 +33,13 @@ class Sqlite {
    *   TRUE if successful.
    */
   public static function setLocation($brain_path) {
-    $existing_location = Sqlite::getLocation();
     drush_cache_set('brain_path', $brain_path, 'switchboard');
-    if (file_exists($existing_location)) {
-      // Move it.
-      if (!drush_move_dir($existing_location, $brain_path, TRUE)) {
-        drush_cache_set('brain_path', $existing_location, 'switchboard');
-        return switchboard_message_fail('SWITCHBOARD_BRAIN_MOVE_FAIL', dt('Unable to move Switchboard brain to @brain_path; aborting.', array(
-          '@brain_path' => $brain_path,
-        )));
-      }
-    }
-    return TRUE;
   }
 
   /**
-   * Delete the SQLite database.
+   * Destroy the SQLite database.
    */
-  public static function delete() {
+  public static function destroy() {
     if (file_exists(Sqlite::getLocation())) {
       unlink(Sqlite::getLocation());
       drush_cache_clear_all('brain_path', 'switchboard', TRUE);
@@ -56,12 +47,12 @@ class Sqlite {
   }
 
   /**
-   * Delete a specific table from the SQLite database.
+   * Drop a specific table from the SQLite database.
    *
    * @param string $table
    *   The victim table.
    */
-  public static function deleteTable($table) {
+  public static function destroyTable($table) {
     $pdo = Sqlite::get();
 
     try {
@@ -133,6 +124,30 @@ class Sqlite {
         $sql_query .= 'id INTEGER PRIMARY KEY ';
         $sql_query .= ', environment_id INTEGER ';
         $sql_query .= ', name TEXT ';
+        $sql_query .= ', updated INTEGER ';
+        $sql_query .= ') ';
+
+        $pdo->exec($sql_query);
+      }
+      catch (\PDOException $e) {
+        switchboard_pdo_exception_debug($e);
+      }
+
+      try {
+        $sql_query = 'CREATE TABLE IF NOT EXISTS projects ( ';
+        $sql_query .= 'id INTEGER PRIMARY KEY ';
+        $sql_query .= ', name TEXT ';
+        $sql_query .= ', uuid TEXT ';
+        $sql_query .= ', site_id INTEGER ';
+        $sql_query .= ', hostname TEXT ';
+        $sql_query .= ', ssh_port INTEGER ';
+        $sql_query .= ', code_path TEXT ';
+        $sql_query .= ', database_host TEXT ';
+        $sql_query .= ', database_username TEXT ';
+        $sql_query .= ', database_password TEXT ';
+        $sql_query .= ', database_name TEXT ';
+        $sql_query .= ', database_port INTEGER ';
+        $sql_query .= ', files_path TEXT ';
         $sql_query .= ', updated INTEGER ';
         $sql_query .= ') ';
 

@@ -98,15 +98,15 @@ abstract class Provider {
     return $this->$name;
   }
 
-  public function site_delete($site_name) {
+  public function site_destroy($site_name) {
     if (!isset($this->sites[$site_name])) {
-      throw new \Exception(__CLASS__ . ' site ' . $site_name . ' does not exist, cannot delete.');
+      throw new \Exception(__CLASS__ . ' site ' . $site_name . ' does not exist, cannot destroy.');
     }
     $this->sites[$site_name]->destroy();
     unset($this->sites[$site_name]);
   }
 
-  public function sites_delete() {
+  public function sites_destroy() {
     $this->sites = array();
     $pdo = Sqlite::get();
     try {

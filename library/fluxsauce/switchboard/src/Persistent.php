@@ -228,6 +228,18 @@ abstract class Persistent {
   }
 
   /**
+   * Render to standard output.
+   */
+  public function render() {
+    if (drush_get_option('json')) {
+      $this->renderJson();
+    }
+    else {
+      $this->renderDrushTable();
+    }
+  }
+
+  /**
    * Render as a Drush table.
    */
   public function renderDrushTable() {
@@ -242,6 +254,9 @@ abstract class Persistent {
     drush_print_table($rows, TRUE);
   }
 
+  /**
+   * Render as a JSON array.
+   */
   public function renderJson() {
     $fields = $this->toArray();
     foreach ($fields as $field => &$value) {

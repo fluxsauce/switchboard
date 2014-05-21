@@ -51,7 +51,7 @@ function switchboard_drush_command() {
     'refresh' => dt('Refresh all remote data.'),
   ) + $json_option;
 
-  $items['sw-brain-set'] = array(
+  $items['sw-brain-update'] = array(
     'description' => dt('Set Switchboard brain (SQLite database) file location.'),
     'arguments' => array(
       'path' => dt('Full path, including filename, of brain.'),
@@ -60,7 +60,7 @@ function switchboard_drush_command() {
     'options' => $json_option,
   );
 
-  $items['sw-brain-get'] = array(
+  $items['sw-brain-read'] = array(
     'description' => dt('Get Switchboard brain (SQLite database) location.'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'options' => $json_option,
@@ -78,6 +78,99 @@ function switchboard_drush_command() {
     'description' => dt('List all available providers.'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'options' => $json_option,
+  );
+
+  $site_options = array(
+    'uuid' => array(
+      'description' => dt('UUID of the project'),
+      'value' => 'required',
+    ),
+    'site_id' => array(
+      'description' => dt('Remote Site ID'),
+      'value' => 'required',
+      'example-value' => 37,
+    ),
+    'ssh_port' => array(
+      'description' => dt('SSH Port'),
+      'value' => 'required',
+      'example-value' => 22,
+    ),
+    'hostname' => array(
+      'description' => dt('Hostname'),
+      'value' => 'required',
+      'example-value' => 'caffeine.kala'
+    ),
+    'code_path' => array(
+      'description' => dt('Absolute path to codebase'),
+      'value' => 'required',
+      'example-value' => '/srv/site/code',
+    ),
+    'database_host' => array(
+      'description' => dt('Database Hostname'),
+      'value' => 'required',
+    ),
+    'database_username' => array(
+      'description' => dt('Database Username'),
+      'value' => 'required',
+    ),
+    'database_password' => array(
+      'description' => dt('Database Password'),
+      'value' => 'required',
+    ),
+    'database_name' => array(
+      'description' => dt('Database Name'),
+      'value' => 'required',
+    ),
+    'database_port' => array(
+      'description' => dt('Database Port'),
+      'value' => 'required',
+    ),
+    'files_path' => array(
+      'description' => dt('Absolute path to files'),
+      'value' => 'required',
+    ),
+  );
+
+  $items['sw-project-create'] = array(
+    'description' => dt('Create a local project record.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => $site_options + $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-destroy'] = array(
+    'description' => dt('Destroy a local project record.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-list'] = array(
+    'description' => dt('List available local project records.'),
+    'options' => $site_options + $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-read'] = array(
+    'description' => dt('Get information on a local project record.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => $site_options + $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-update'] = array(
+    'description' => dt('Update a local project record.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => $site_options + $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
   $items['sw-auth-login'] = array(
@@ -104,8 +197,8 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['sw-site-delete'] = array(
-    'description' => dt('Locally delete site.'),
+  $items['sw-site-destroy'] = array(
+    'description' => dt('Locally destroy site record.'),
     'arguments' => $default_site_arguments,
     'options' => $json_option,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
@@ -129,7 +222,7 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['sw-site-info'] = array(
+  $items['sw-site-read'] = array(
     'description' => dt('Get site information.'),
     'arguments' => $default_site_arguments,
     'options' => $default_options,
@@ -144,6 +237,188 @@ function switchboard_drush_command() {
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_drush_command_validate().
+ */
+function drush_switchboard_sw_project_create_validate($project_name = FALSE) {
+  if (!$project_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot create.'));
+  }
+  if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if ($project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_ALREADY_EXISTS', dt('A local project named @project_name already exists.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+}
+
+/**
+ * Implements hook_drush_command().
+ */
+function drush_switchboard_sw_project_create($project_name) {
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  foreach (switchboard_get_drush_options('sw-project-create') as $option) {
+    $option_value = drush_get_option($option);
+    if ($option_value && !is_bool($option_value)) {
+      $project->$option = $option_value;
+    }
+  }
+  // Generate a UUID if none was provided.
+  if (!$project->uuid) {
+    $project->uuid = switchboard_generate_uuid();
+  }
+  $project->update();
+  return switchboard_message_success(dt('Local project @project_name created.', array(
+    '@project_name' => $project_name,
+  )));
+}
+
+/**
+ * Implements hook_drush_command_validate().
+ */
+function drush_switchboard_sw_project_destroy_validate($project_name = FALSE) {
+  if (!$project_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot destroy.'));
+  }
+  if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  $confirm = drush_confirm(dt('Are you sure that you want to delete local project @project_name?', array(
+    '@project_name' => $project_name,
+  )));
+  if (!$confirm) {
+    return drush_user_abort();
+  }
+}
+
+/**
+ * Implements hook_drush_command().
+ */
+function drush_switchboard_sw_project_destroy($project_name) {
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  $project->destroy();
+  return switchboard_message_success(dt('Local project @project_name deleted.', array(
+    '@project_name' => $project_name,
+  )));
+}
+
+/**
+ * Implements hook_drush_command().
+ */
+function drush_switchboard_sw_project_list() {
+  $pdo = \Fluxsauce\Switchboard\Sqlite::get();
+  $rows = array();
+
+  $keys_to_show = array(
+    'id',
+    'name',
+    'hostname',
+    'uuid',
+  );
+
+  try {
+    $sql_query = 'SELECT name ';
+    $sql_query .= 'FROM projects ';
+    $stmt = $pdo->prepare($sql_query);
+    $stmt->execute();
+    while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+      $project = new \Fluxsauce\Switchboard\Project($row['name'], $row['name']);
+      $project_row = array();
+      foreach ($keys_to_show as $key) {
+        $project_row[$key] = $project->$key;
+      }
+      $rows[$row['name']] = $project_row;
+    }
+  } catch (\PDOException $e) {
+    switchboard_pdo_exception_debug($e);
+  }
+
+  if (empty($rows)) {
+    if (drush_get_option('json')) {
+      return json_encode($rows);
+    }
+    else {
+      return drush_print(dt('No local projects exist.'));
+    }
+  }
+
+  ksort($rows);
+  if (drush_get_option('json')) {
+    drush_print(json_encode($rows));
+  }
+  else {
+    array_unshift($rows, $keys_to_show);
+    drush_print_table($rows, TRUE);
+  }
+}
+
+/**
+ * Implements hook_drush_command_validate().
+ */
+function drush_switchboard_sw_project_read_validate($project_name = FALSE) {
+  if (!$project_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot create.'));
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+}
+
+/**
+ * Implements hook_drush_command().
+ */
+function drush_switchboard_sw_project_read($project_name) {
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  $project->render();
+}
+
+/**
+ * Implements hook_drush_command_validate().
+ */
+function drush_switchboard_sw_project_update_validate($project_name = FALSE) {
+  if (!$project_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot update.'));
+  }
+  if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+}
+
+/**
+ * Implements hook_drush_command().
+ */
+function drush_switchboard_sw_project_update($project_name) {
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  foreach (switchboard_get_drush_options('sw-project-update') as $option) {
+    $option_value = drush_get_option($option);
+    if ($option_value && !is_bool($option_value)) {
+      $project->$option = $option_value;
+    }
+  }
+  $project->update();
+  return switchboard_message_success(dt('Local project @project_name updated.', array(
+    '@project_name' => $project_name,
+  )));
 }
 
 /**
@@ -173,7 +448,7 @@ function drush_switchboard_sw_provider_list() {
 /**
  * Implements hook_drush_command().
  */
-function drush_switchboard_sw_brain_get() {
+function drush_switchboard_sw_brain_read() {
   $brain_path = \Fluxsauce\Switchboard\Sqlite::getLocation();
   if (drush_get_option('json')) {
     drush_print(json_encode($brain_path));
@@ -186,7 +461,7 @@ function drush_switchboard_sw_brain_get() {
 /**
  * Implements hook_drush_command_validate().
  */
-function drush_switchboard_sw_brain_set_validate($path = FALSE) {
+function drush_switchboard_sw_brain_update_validate($path = FALSE) {
   if (!$path) {
     return switchboard_message_fail('SWITCHBOARD_BRAIN_PATH_MISSING', dt('Path missing, cannot set to nothing.'));
   }
@@ -204,12 +479,11 @@ function drush_switchboard_sw_brain_set_validate($path = FALSE) {
 /**
  * Implements hook_drush_command().
  */
-function drush_switchboard_sw_brain_set($path) {
-  if (\Fluxsauce\Switchboard\Sqlite::setLocation($path)) {
-    switchboard_message_success(dt('Switchboard brain location set to @path.', array(
-      '@path' => $path,
-    )));
-  }
+function drush_switchboard_sw_brain_update($path) {
+  \Fluxsauce\Switchboard\Sqlite::setLocation($path);
+  switchboard_message_success(dt('Switchboard brain location set to @path.', array(
+    '@path' => $path,
+  )));
 }
 
 /**
@@ -237,7 +511,7 @@ function drush_switchboard_sw_brain_destroy() {
   $tables = drush_get_option('tables');
   if ($tables) {
     foreach (explode(',', $tables) as $table) {
-      Fluxsauce\Switchboard\Sqlite::deleteTable($table);
+      Fluxsauce\Switchboard\Sqlite::destroyTable($table);
       switchboard_message_success(dt('Switchboard brain ablation of @table completed.', array(
         '@table' => $table,
       )));
@@ -393,7 +667,7 @@ function drush_switchboard_sw_site_env_list($provider_name, $site_name) {
 /**
  * Implements hook_drush_command_validate().
  */
-function drush_switchboard_sw_site_info_validate($provider_name = FALSE, $site_name = FALSE) {
+function drush_switchboard_sw_site_read_validate($provider_name = FALSE, $site_name = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
     return FALSE;
   }
@@ -408,15 +682,9 @@ function drush_switchboard_sw_site_info_validate($provider_name = FALSE, $site_n
 /**
  * Implements hook_drush_command().
  */
-function drush_switchboard_sw_site_info($provider_name, $site_name) {
+function drush_switchboard_sw_site_read($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-
-  if (drush_get_option('json')) {
-    $provider->sites[$site_name]->renderJson();
-  }
-  else {
-    $provider->sites[$site_name]->renderDrushTable();
-  }
+  $provider->sites[$site_name]->render();
 }
 
 /**
@@ -467,7 +735,7 @@ function drush_switchboard_sw_site_vcs($provider_name, $site_name) {
 /**
  * Implements hook_drush_command_validate().
  */
-function drush_switchboard_sw_site_delete_validate($provider_name = FALSE, $site_name = FALSE) {
+function drush_switchboard_sw_site_destroy_validate($provider_name = FALSE, $site_name = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
     return FALSE;
   }
@@ -482,9 +750,9 @@ function drush_switchboard_sw_site_delete_validate($provider_name = FALSE, $site
 /**
  * Implements hook_drush_command().
  */
-function drush_switchboard_sw_site_delete($provider_name, $site_name) {
+function drush_switchboard_sw_site_destroy($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  $provider->site_delete($site_name);
+  $provider->site_destroy($site_name);
   switchboard_message_success(dt('Locally deleted @site_name from @provider.', array(
     '@site_name' => $site_name,
     '@provider' => $provider_name,

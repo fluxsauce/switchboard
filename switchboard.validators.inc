@@ -103,3 +103,22 @@ function switchboard_validate_destination($destination_path) {
 function switchboard_validate_uuid($uuid) {
   return preg_match('#^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$#', $uuid) ? TRUE : FALSE;
 }
+
+function switchboard_get_drush_options($command_name) {
+  $command = switchboard_drush_command();
+  if (isset($command[$command_name]['options'])) {
+    $options = $command[$command_name]['options'];
+    unset($options['json']);
+    return array_keys($options);
+  }
+  return array();
+}
+
+function switchboard_validate_drush_option_required_values($command_name) {
+  foreach (switchboard_get_drush_options($command_name) as $option_name) {
+    if (is_bool(drush_get_option($option_name, 'dummy'))) {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
