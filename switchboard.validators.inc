@@ -73,6 +73,9 @@ function switchboard_validate_destination($destination_path) {
   if (!$destination_path) {
     return FALSE;
   }
+  if (!file_exists($destination_path)) {
+    return TRUE;
+  }
   return is_writable($destination_path);
 }
 

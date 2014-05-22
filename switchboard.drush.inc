@@ -173,6 +173,15 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
+  $items['sw-project-vcs-clone'] = array(
+    'description' => dt('Clone a remote Site into a Project.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
   $items['sw-auth-login'] = array(
     'description' => dt('Authenticate with a provider.'),
     'arguments' => array(
@@ -224,13 +233,6 @@ function switchboard_drush_command() {
 
   $items['sw-site-read'] = array(
     'description' => dt('Get site information.'),
-    'arguments' => $default_site_arguments,
-    'options' => $default_options,
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
-  );
-
-  $items['sw-site-vcs'] = array(
-    'description' => dt('Get the command for retrieving site code.'),
     'arguments' => $default_site_arguments,
     'options' => $default_options,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
@@ -415,7 +417,7 @@ function drush_switchboard_sw_project_update_validate($project_name = FALSE) {
  */
 function drush_switchboard_sw_project_update($project_name) {
   $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  foreach (switchboard_get_drush_options('sw-project-update') as $option) {
+  foreach (array_keys(switchboard_get_drush_options('sw-project-update')) as $option) {
     $option_value = drush_get_option($option);
     if ($option_value && !is_bool($option_value)) {
       $project->$option = $option_value;
@@ -425,6 +427,56 @@ function drush_switchboard_sw_project_update($project_name) {
   return switchboard_message_success(dt('Local project @project_name updated.', array(
     '@project_name' => $project_name,
   )));
+}
+
+function drush_switchboard_sw_project_vcs_clone_validate($project_name = FALSE) {
+  if (!$project_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot update.'));
+  }
+
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+
+  if (!$project->site_id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_SITE', dt('Project does not have a site associated with it.'));
+  }
+
+  $site = new \Fluxsauce\Switchboard\Site();
+  $site->id = $project->site_id;
+  $site->read();
+  if (!$site->id) {
+    return switchboard_message_fail('SWITCHBOARD_SITE_NOT_FOUND', dt('Cannot find site_id #@site_id.', array(
+      '@site_id' => $project->site_id,
+    )));
+  }
+
+  if (!$project->files_path) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_PATH_MISSING', dt('Project does not have a files path.'));
+  }
+
+  if (!switchboard_validate_destination($project->files_path)) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_PATH_UNWRITEABLE', dt('Files path @files_path is not writeable.', array(
+      '@files_path' => $project->files_path,
+    )));
+  }
+
+  drush_set_option('files_path', $project->files_path);
+
+  $url = $site->getVcsUrl();
+
+  if (!$url) {
+    return switchboard_message_fail('SWITCHBOARD_SITE_NO_VCS', dt('Site does not contain VCS info.'));
+  }
+
+  drush_set_option('url', $url);
+}
+
+function drush_switchboard_sw_project_vcs_clone($project_name) {
+  make_download_git($project_name, '', array('url' => drush_get_option('url')), drush_get_option('files_path'));
 }
 
 /**
@@ -722,62 +774,6 @@ function drush_switchboard_sw_site_read_validate($provider_name = FALSE, $site_n
 function drush_switchboard_sw_site_read($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $provider->sites[$site_name]->render();
-}
-
-/**
- * Implements hook_drush_command_validate().
- */
-function drush_switchboard_sw_site_vcs_validate($provider_name = FALSE, $site_name = FALSE) {
-  if (!switchboard_validate_provider_name($provider_name)) {
-    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
-      '@provider_name' => $provider_name,
-    ));
-  }
-  if (!switchboard_validate_auth_logged_in($provider_name)) {
-    return switchboard_message_fail_generate('SWITCHBOARD_NOT_LOGGED_IN', array(
-      '@provider_name' => $provider_name,
-    ));
-  }
-  if (!switchboard_validate_site_name($site_name)) {
-    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_NAME_INVALID', array(
-      '@site_name' => $site_name,
-    ));
-  }
-  if (!switchboard_validate_site($provider_name, $site_name)) {
-    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_INVALID', array(
-      '@site_name' => $site_name,
-    ));
-  }
-}
-
-/**
- * Implements hook_drush_command().
- */
-function drush_switchboard_sw_site_vcs($provider_name, $site_name) {
-  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  $site = $provider->sites[$site_name];
-  $command = '';
-  switch ($site->vcs_type) {
-    case 'git':
-      $command .= 'git clone';
-      break;
-    case 'svn':
-      $command .= 'svn checkout';
-      break;
-    default:
-      return switchboard_message_fail('SWITCHBOARD_SITE_VCS_INVALID_PROTOCOL', dt('Invalid VCS type for site.'));
-  }
-  $command .= ' ';
-  if ($site->vcs_protocol == 'ssh') {
-    $command .= 'ssh://';
-  }
-  $command .= $site->vcs_url . ' ' . $site_name;
-  if (drush_get_option('json')) {
-    drush_print(json_encode($command));
-  }
-  else {
-    drush_print($command);
-  }
 }
 
 /**

@@ -36,8 +36,10 @@ class Site extends Persistent {
         '@name' => $name,
         '@calling_function' => $callers[1]['function'],
       )));
-      $provider =& Provider::getInstance($this->provider);
-      $this->$name = $value = $provider->site_get_field($this->name, $name);
+      if ($this->provider) {
+        $provider =& Provider::getInstance($this->provider);
+        $this->$name = $value = $provider->site_get_field($this->name, $name);
+      }
     }
     return $value;
   }
@@ -107,5 +109,19 @@ class Site extends Persistent {
     $fields = parent::toArray();
     unset($fields['environments']);
     return $fields;
+  }
+
+  /**
+   * Build VCS URL.
+   *
+   * @return string
+   */
+  public function getVcsUrl() {
+    $url = '';
+    if ($this->__get('vcs_protocol') == 'ssh') {
+      $url .= 'ssh://';
+    }
+    $url .= $this->__get('vcs_url');
+    return $url;
   }
 }

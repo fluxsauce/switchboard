@@ -128,6 +128,11 @@ abstract class Persistent {
           $this->$key = $value;
         }
       }
+      else {
+        if ($this->id) {
+          $this->id = NULL;
+        }
+      }
     }
     catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
@@ -158,7 +163,7 @@ abstract class Persistent {
         continue;
       }
       // Protected.
-      if (in_array($key, array('name', 'site_id', 'id', 'updated'))) {
+      if (in_array($key, array('name', 'id', 'updated'))) {
         continue;
       }
       // Safe to update.
