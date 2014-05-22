@@ -149,6 +149,27 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
+  $items['sw-project-get-db'] = array(
+    'description' => dt('Get the database credentials of a Project.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => array(
+      'command' => dt('Display the command to connect to the database.'),
+    ) + $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-get-path'] = array(
+    'description' => dt('Get the path to the files for a particular site.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+      'component' => dt('Name of the component, such as "code" or "files".'),
+    ),
+    'options' => $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
   $items['sw-project-list'] = array(
     'description' => dt('List available local project records.'),
     'options' => $site_options + $json_option,
@@ -287,7 +308,7 @@ function drush_switchboard_sw_project_create($project_name) {
 }
 
 /**
- * Implements hook_drush_command_validate().
+ * Validation callback for drush sw-project-destroy.
  */
 function drush_switchboard_sw_project_destroy_validate($project_name = FALSE) {
   if (!$project_name) {
@@ -311,14 +332,69 @@ function drush_switchboard_sw_project_destroy_validate($project_name = FALSE) {
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for drush sw-project-destroy.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
  */
 function drush_switchboard_sw_project_destroy($project_name) {
   $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
   $project->destroy();
-  return switchboard_message_success(dt('Local project @project_name deleted.', array(
+  switchboard_message_success(dt('Local project @project_name deleted.', array(
     '@project_name' => $project_name,
   )));
+}
+
+/**
+ * Validation callback for drush sw-project-get-path.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ * @param string $component_name
+ *   Name of the Project component in question, such as code or files.
+ */
+function drush_switchboard_sw_project_get_path_validate($project_name = FALSE, $component_name = FALSE) {
+  $property_name = $component_name . '_path';
+  if (!in_array($property_name, array(
+    'files_path',
+    'code_path',
+  ))) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_INVALID_COMPONENT', dt('Invalid component name (expecting "code" or "files").'));
+  }
+  if (!$project_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot destroy.'));
+  }
+  if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  if (!$project->$property_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_PATH_MISSING', dt('@project_name is missing a value for @property_name.', array(
+      '@project_name' => $project_name,
+      '@property_name' => $property_name,
+    )));
+  }
+  drush_set_option('project', $project);
+  drush_set_option('property_name', $property_name);
+}
+
+/**
+ * Command callback for drush sw-project-get-path.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ * @param string $component_name
+ *   Name of the Project component in question, such as files.
+ */
+function drush_switchboard_sw_project_get_path($project_name, $component_name) {
+  $property_name = drush_get_option('property_name');
+  $project = drush_get_option('project');
+  switchboard_message_success($project->$property_name);
 }
 
 /**
@@ -454,17 +530,17 @@ function drush_switchboard_sw_project_vcs_clone_validate($project_name = FALSE) 
     )));
   }
 
-  if (!$project->files_path) {
-    return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_PATH_MISSING', dt('Project does not have a files path.'));
+  if (!$project->code_path) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_PATH_MISSING', dt('Project does not have a code path.'));
   }
 
-  if (!switchboard_validate_destination($project->files_path)) {
-    return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_PATH_UNWRITEABLE', dt('Files path @files_path is not writeable.', array(
-      '@files_path' => $project->files_path,
+  if (!switchboard_validate_destination($project->code_path)) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_PATH_UNWRITEABLE', dt('Code path @code_path is not writeable.', array(
+      '@code_path' => $project->code_path,
     )));
   }
 
-  drush_set_option('files_path', $project->files_path);
+  drush_set_option('code_path', $project->code_path);
 
   $url = $site->getVcsUrl();
 
@@ -476,7 +552,9 @@ function drush_switchboard_sw_project_vcs_clone_validate($project_name = FALSE) 
 }
 
 function drush_switchboard_sw_project_vcs_clone($project_name) {
-  make_download_git($project_name, '', array('url' => drush_get_option('url')), drush_get_option('files_path'));
+  make_download_git($project_name, '', array(
+    'url' => drush_get_option('url'),
+  ), drush_get_option('code_path'));
 }
 
 /**
