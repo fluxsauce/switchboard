@@ -263,9 +263,15 @@ function switchboard_drush_command() {
 }
 
 /**
- * Implements hook_drush_command_validate().
+ * Validation callback for drush sw-project-create.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
-function drush_switchboard_sw_project_create_validate($project_name = FALSE) {
+function drush_switchboard_sw_project_create_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot create.'));
   }
@@ -289,7 +295,13 @@ function drush_switchboard_sw_project_create_validate($project_name = FALSE) {
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for drush sw-project-create.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
 function drush_switchboard_sw_project_create($project_name) {
   $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
@@ -309,8 +321,14 @@ function drush_switchboard_sw_project_create($project_name) {
 
 /**
  * Validation callback for drush sw-project-destroy.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
-function drush_switchboard_sw_project_destroy_validate($project_name = FALSE) {
+function drush_switchboard_sw_project_destroy_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot destroy.'));
   }
@@ -352,8 +370,11 @@ function drush_switchboard_sw_project_destroy($project_name) {
  *   Name of the local project in question.
  * @param string $component_name
  *   Name of the Project component in question, such as code or files.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
-function drush_switchboard_sw_project_get_path_validate($project_name = FALSE, $component_name = FALSE) {
+function drush_switchboard_sw_project_get_path_validate($project_name = '', $component_name = '') {
   $property_name = $component_name . '_path';
   if (!in_array($property_name, array(
     'files_path',
@@ -398,7 +419,7 @@ function drush_switchboard_sw_project_get_path($project_name, $component_name) {
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for drush sw-project-list.
  */
 function drush_switchboard_sw_project_list() {
   $pdo = \Fluxsauce\Switchboard\Sqlite::get();
@@ -448,9 +469,15 @@ function drush_switchboard_sw_project_list() {
 }
 
 /**
- * Implements hook_drush_command_validate().
+ * Validation callback for drush sw-project-read.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
-function drush_switchboard_sw_project_read_validate($project_name = FALSE) {
+function drush_switchboard_sw_project_read_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot create.'));
   }
@@ -463,7 +490,10 @@ function drush_switchboard_sw_project_read_validate($project_name = FALSE) {
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for drush sw-project-read.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
  */
 function drush_switchboard_sw_project_read($project_name) {
   $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
@@ -471,9 +501,15 @@ function drush_switchboard_sw_project_read($project_name) {
 }
 
 /**
- * Implements hook_drush_command_validate().
+ * Validation callback for drush sw-project-update.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
-function drush_switchboard_sw_project_update_validate($project_name = FALSE) {
+function drush_switchboard_sw_project_update_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot update.'));
   }
@@ -489,7 +525,10 @@ function drush_switchboard_sw_project_update_validate($project_name = FALSE) {
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for drush sw-project-update.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
  */
 function drush_switchboard_sw_project_update($project_name) {
   $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
@@ -500,12 +539,21 @@ function drush_switchboard_sw_project_update($project_name) {
     }
   }
   $project->update();
-  return switchboard_message_success(dt('Local project @project_name updated.', array(
+  switchboard_message_success(dt('Local project @project_name updated.', array(
     '@project_name' => $project_name,
   )));
 }
 
-function drush_switchboard_sw_project_vcs_clone_validate($project_name = FALSE) {
+/**
+ * Validation callback for drush sw-project-vcs-clone.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_project_vcs_clone_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot update.'));
   }
@@ -551,6 +599,12 @@ function drush_switchboard_sw_project_vcs_clone_validate($project_name = FALSE) 
   drush_set_option('url', $url);
 }
 
+/**
+ * Command callback for drush sw-project-vcs-clone.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ */
 function drush_switchboard_sw_project_vcs_clone($project_name) {
   make_download_git($project_name, '', array(
     'url' => drush_get_option('url'),
@@ -558,7 +612,7 @@ function drush_switchboard_sw_project_vcs_clone($project_name) {
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for drush sw-project-list.
  */
 function drush_switchboard_sw_provider_list() {
   $provider_names = switchboard_get_provider_names();
@@ -582,7 +636,7 @@ function drush_switchboard_sw_provider_list() {
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for drush sw-brain-read.
  */
 function drush_switchboard_sw_brain_read() {
   $brain_path = \Fluxsauce\Switchboard\Sqlite::getLocation();
@@ -595,9 +649,15 @@ function drush_switchboard_sw_brain_read() {
 }
 
 /**
- * Implements hook_drush_command_validate().
+ * Validation callback for sw-brain-update.
+ *
+ * @param string $path
+ *   The absolute path to the brain location.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
-function drush_switchboard_sw_brain_update_validate($path = FALSE) {
+function drush_switchboard_sw_brain_update_validate($path = '') {
   if (!$path) {
     return switchboard_message_fail('SWITCHBOARD_BRAIN_PATH_MISSING', dt('Path missing, cannot set to nothing.'));
   }
@@ -613,7 +673,10 @@ function drush_switchboard_sw_brain_update_validate($path = FALSE) {
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for sw-brain-update.
+ *
+ * @param string $path
+ *   The absolute path to the brain location.
  */
 function drush_switchboard_sw_brain_update($path) {
   \Fluxsauce\Switchboard\Sqlite::setLocation($path);
@@ -623,7 +686,10 @@ function drush_switchboard_sw_brain_update($path) {
 }
 
 /**
- * Implements hook_drush_command_validate().
+ * Validation callback for sw-brain-destroy.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
 function drush_switchboard_sw_brain_destroy_validate() {
   $tables = drush_get_option('tables');
@@ -641,7 +707,7 @@ function drush_switchboard_sw_brain_destroy_validate() {
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for sw-brain-destroy.
  */
 function drush_switchboard_sw_brain_destroy() {
   $tables = drush_get_option('tables');
