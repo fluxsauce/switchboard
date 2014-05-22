@@ -130,6 +130,9 @@ function switchboard_message_fail_generate($code, $replacements = array()) {
     'SWITCHBOARD_PROVIDER_SITE_INVALID' => dt('Site "@site_name" does not exist locally.', $replacements),
     'SWITCHBOARD_PROVIDER_INVALID' => dt('Invalid provider name "@provider_name".', $replacements),
     'SWITCHBOARD_SITE_ENV_INVALID' => dt('"@env_name" is not a valid environment for @site_name.', $replacements),
+    'SWITCHBOARD_NOT_LOGGED_IN' => dt('Not logged-in to @provider_name, cannot continue.', $replacements),
+    'SWITCHBOARD_DESTINATION_UNAVAILABLE' => dt('"@destination_path" does not exist or is not writeable.', $replacements),
+    'SWITCHBOARD_INVALID_UUID' => dt('"@uuid" is an invalid UUID.', $replacements),
   );
   if (isset($codes[$code])) {
     $message = $codes[$code];
@@ -177,4 +180,20 @@ function switchboard_generate_uuid() {
     // 48 bits for "node"
     mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
   );
+}
+
+/**
+ * Helper to get all the options for a particular command.
+ *
+ * @param $command_name
+ * @return array
+ */
+function switchboard_get_drush_options($command_name) {
+  $command = switchboard_drush_command();
+  if (isset($command[$command_name]['options'])) {
+    $options = $command[$command_name]['options'];
+    unset($options['json']);
+    return $options;
+  }
+  return array();
 }

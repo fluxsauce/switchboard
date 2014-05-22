@@ -4,6 +4,12 @@
  * Custom validators for Switchboard.
  */
 
+/**
+ * Validate a site name; assuming a-z, 0-9 and dash, 255 chars max.
+ *
+ * @param string $site_name
+ * @return bool
+ */
 function switchboard_validate_site_name($site_name) {
   return preg_match('/^[-a-z0-9]{1,255}$/', $site_name) ? TRUE : FALSE;
 }
@@ -33,12 +39,7 @@ function switchboard_validate_site($provider_name, $site_name) {
  */
 function switchboard_validate_auth_logged_in($provider_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  if (!$provider->auth_is_logged_in()) {
-    return switchboard_message_fail('SWITCHBOARD_NOT_LOGGED_IN', dt('Not logged-in to @provider_name, cannot continue.', array(
-      '@provider_name' => $provider_name,
-    )));
-  }
-  return TRUE;
+  return $provider->auth_is_logged_in();
 }
 
 /**
@@ -70,14 +71,9 @@ function switchboard_validate_site_env($provider_name, $site_name, $env_name) {
 
 function switchboard_validate_destination($destination_path) {
   if (!$destination_path) {
-    return switchboard_message_fail('SWITCHBOARD_DESTINATION_MISSING', dt('Destination path not specified.'));
+    return FALSE;
   }
-  if (is_writable($destination_path)) {
-    return TRUE;
-  }
-  return switchboard_message_fail('SWITCHBOARD_DESTINATION_UNWRITEABLE', dt('@destination_path is not writeable.', array(
-    '@destination_path' => $destination_path,
-  )));
+  return is_writable($destination_path);
 }
 
 /**
@@ -89,20 +85,20 @@ function switchboard_validate_uuid($uuid) {
   return preg_match('#^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$#', $uuid) ? TRUE : FALSE;
 }
 
-function switchboard_get_drush_options($command_name) {
-  $command = switchboard_drush_command();
-  if (isset($command[$command_name]['options'])) {
-    $options = $command[$command_name]['options'];
-    unset($options['json']);
-    return array_keys($options);
-  }
-  return array();
-}
-
+/**
+ * Ensure that every option has values.
+ *
+ * @param string $command_name
+ * @return bool
+ */
 function switchboard_validate_drush_option_required_values($command_name) {
-  foreach (switchboard_get_drush_options($command_name) as $option_name) {
-    if (is_bool(drush_get_option($option_name, 'dummy'))) {
-      return FALSE;
+  foreach (switchboard_get_drush_options($command_name) as $option_name => $option) {
+    if (is_array($option)) {
+      if (isset($option['value']) && $option['value'] == 'required') {
+        if (is_bool(drush_get_option($option_name, 'dummy'))) {
+          return FALSE;
+        }
+      }
     }
   }
   return TRUE;

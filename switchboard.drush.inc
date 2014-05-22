@@ -249,6 +249,14 @@ function drush_switchboard_sw_project_create_validate($project_name = FALSE) {
   if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
   }
+  $uuid = drush_get_option('uuid');
+  if ($uuid) {
+    if (!switchboard_validate_uuid($uuid)) {
+      return switchboard_message_fail_generate('SWITCHBOARD_INVALID_UUID', array(
+        '@uuid' => $uuid,
+      ));
+    }
+  }
   $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
   if ($project->id) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_ALREADY_EXISTS', dt('A local project named @project_name already exists.', array(
@@ -273,9 +281,7 @@ function drush_switchboard_sw_project_create($project_name) {
     $project->uuid = switchboard_generate_uuid();
   }
   $project->update();
-  return switchboard_message_success(dt('Local project @project_name created.', array(
-    '@project_name' => $project_name,
-  )));
+  return switchboard_message_success($project->uuid);
 }
 
 /**
@@ -606,7 +612,9 @@ function drush_switchboard_sw_site_list_validate($provider_name = FALSE) {
     ));
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_NOT_LOGGED_IN', array(
+      '@provider_name' => $provider_name,
+    ));
   }
 }
 
@@ -653,7 +661,9 @@ function drush_switchboard_sw_site_env_list_validate($provider_name = FALSE, $si
     ));
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_NOT_LOGGED_IN', array(
+      '@provider_name' => $provider_name,
+    ));
   }
   if (!switchboard_validate_site_name($site_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_NAME_INVALID', array(
@@ -690,7 +700,9 @@ function drush_switchboard_sw_site_read_validate($provider_name = FALSE, $site_n
     ));
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_NOT_LOGGED_IN', array(
+      '@provider_name' => $provider_name,
+    ));
   }
   if (!switchboard_validate_site_name($site_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_NAME_INVALID', array(
@@ -722,7 +734,9 @@ function drush_switchboard_sw_site_vcs_validate($provider_name = FALSE, $site_na
     ));
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_NOT_LOGGED_IN', array(
+      '@provider_name' => $provider_name,
+    ));
   }
   if (!switchboard_validate_site_name($site_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_NAME_INVALID', array(
@@ -776,7 +790,9 @@ function drush_switchboard_sw_site_destroy_validate($provider_name = FALSE, $sit
     ));
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_NOT_LOGGED_IN', array(
+      '@provider_name' => $provider_name,
+    ));
   }
   if (!switchboard_validate_site_name($site_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_NAME_INVALID', array(
@@ -812,7 +828,9 @@ function drush_switchboard_sw_site_env_db_backup_validate($provider_name = FALSE
     ));
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_NOT_LOGGED_IN', array(
+      '@provider_name' => $provider_name,
+    ));
   }
   if (!switchboard_validate_site_name($site_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_NAME_INVALID', array(
@@ -831,7 +849,9 @@ function drush_switchboard_sw_site_env_db_backup_validate($provider_name = FALSE
     ));
   }
   if (!switchboard_validate_destination($destination)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_DESTINATION_UNAVAILABLE', array(
+      '@destination_path' => $destination,
+    ));
   }
 }
 
