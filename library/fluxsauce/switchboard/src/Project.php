@@ -50,4 +50,47 @@ class Project extends Persistent {
     }
     return 'mysql ' . implode(' ', $parameter_strings);
   }
+
+  /**
+   * Generate command to commit all code changes.
+   *
+   * @param string $message
+   *   The git commit message.
+   *
+   * @return string
+   *   The git command.
+   */
+  public function vcsCommitCommand($message) {
+    return 'cd ' . $this->code_path . ' && git add --all . && git commit -m ' . drush_escapeshellarg($message);
+  }
+
+  /**
+   * Generate command to pull code changes from remote.
+   *
+   * @return string
+   *   The git command.
+   */
+  public function vcsPullCommand() {
+    return 'git --git-dir=' . $this->code_path . '/.git pull origin master';
+  }
+
+  /**
+   * Generate command to push code changes to remote.
+   *
+   * @return string
+   *   The git command.
+   */
+  public function vcsPushCommand() {
+    return 'git --git-dir=' . $this->code_path . '/.git push origin master';
+  }
+
+  /**
+   * Generate command to reset all local code changes.
+   *
+   * @return string
+   *   The git command.
+   */
+  public function vcsResetCommand() {
+    return 'cd ' . $this->code_path . ' && git checkout .';
+  }
 }

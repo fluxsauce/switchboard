@@ -195,7 +195,44 @@ function switchboard_drush_command() {
   );
 
   $items['sw-project-vcs-clone'] = array(
-    'description' => dt('Clone a remote Site into a Project.'),
+    'description' => dt('Clone a remote Site into a project.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-vcs-commit'] = array(
+    'description' => dt('Commit changes to code in a local project.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+      'message' => dt('Commit message.'),
+    ),
+    'options' => $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-vcs-pull'] = array(
+    'description' => dt('Pull code from the remote site.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-vcs-push'] = array(
+    'description' => dt('Push code to the remote site.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-vcs-reset'] = array(
+    'description' => dt('Reset all changes in a local project.'),
     'arguments' => array(
       'name' => dt('Name of the project.'),
     ),
@@ -667,6 +704,175 @@ function drush_switchboard_sw_project_vcs_clone($project_name) {
   make_download_git($project_name, '', array(
     'url' => drush_get_option('url'),
   ), drush_get_option('code_path'));
+}
+
+/**
+ * Validation callback for drush sw-project-vcs-commit.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ * @param string $message
+ *   The contents of the commit message.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_project_vcs_commit_validate($project_name = '', $message = '') {
+  if (!$message) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_COMMIT_NO_MESSAGE', dt('Commit message missing, cannot commit.'));
+  }
+  if (!$project_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot commit.'));
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  if (!file_exists($project->code_path . '/.git')) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_GIT_MISSING', dt('Project code path not initialized with git.'));
+  }
+  drush_set_option('project', $project);
+}
+
+/**
+ * Command callback for drush sw-project-vcs-commit.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ */
+function drush_switchboard_sw_project_vcs_commit($project_name, $message) {
+  $project = drush_get_option('project');
+  if (!drush_shell_exec($project->vcsCommitCommand($message))) {
+    switchboard_message_fail('SWITCHBOARD_PROJECT_VCS_COMMIT_FAIL', dt('Unable to commit code.'));
+  }
+  else {
+    switchboard_message_success(dt('Code committed.'));
+  }
+}
+
+/**
+ * Validation callback for drush sw-project-vcs-pull.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_project_vcs_pull_validate($project_name = '') {
+  if (!$project_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot pull.'));
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  if (!file_exists($project->code_path . '/.git')) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_GIT_MISSING', dt('Project code path not initialized with git.'));
+  }
+  drush_set_option('project', $project);
+}
+
+/**
+ * Command callback for drush sw-project-vcs-pull.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ */
+function drush_switchboard_sw_project_vcs_pull($project_name) {
+  $project = drush_get_option('project');
+  if (!drush_shell_exec($project->vcsPullCommand())) {
+    switchboard_message_fail('SWITCHBOARD_PROJECT_VCS_PULL_FAIL', dt('Unable to pull code.'));
+  }
+  else {
+    switchboard_message_success(dt('Code pulled.'));
+  }
+}
+
+/**
+ * Validation callback for drush sw-project-vcs-push.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_project_vcs_push_validate($project_name = '') {
+  if (!$project_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot push.'));
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  if (!file_exists($project->code_path . '/.git')) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_GIT_MISSING', dt('Project code path not initialized with git.'));
+  }
+  drush_set_option('project', $project);
+}
+
+/**
+ * Command callback for drush sw-project-vcs-push.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ */
+function drush_switchboard_sw_project_vcs_push($project_name) {
+  $project = drush_get_option('project');
+  if (!drush_shell_exec($project->vcsPushCommand())) {
+    switchboard_message_fail('SWITCHBOARD_PROJECT_VCS_PUSH_FAIL', dt('Unable to push code.'));
+  }
+  else {
+    switchboard_message_success(dt('Code pushed.'));
+  }
+}
+
+/**
+ * Validation callback for drush sw-project-vcs-reset.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_project_vcs_reset_validate($project_name = '') {
+  if (!$project_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot update.'));
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  if (!file_exists($project->code_path . '/.git')) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_GIT_MISSING', dt('Project code path not initialized with git.'));
+  }
+  drush_set_option('project', $project);
+}
+
+/**
+ * Command callback for drush sw-project-vcs-reset.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ */
+function drush_switchboard_sw_project_vcs_reset($project_name) {
+  $project = drush_get_option('project');
+  if (!drush_shell_exec($project->vcsresetCommand())) {
+    switchboard_message_fail('SWITCHBOARD_PROJECT_VCS_RESET_FAIL', dt('Unable to reset code.'));
+  }
+  else {
+    switchboard_message_success(dt('Code reset to latest commit.'));
+  }
 }
 
 /**
