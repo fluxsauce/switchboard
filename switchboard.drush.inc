@@ -784,9 +784,19 @@ function drush_switchboard_sw_brain_destroy() {
 }
 
 /**
- * Implements hook_drush_command_validate().
+ * Validation callback for sw-auth-login.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ * @param string $email
+ *   The email address used to login.
+ * @param string $password
+ *   The password used to login.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
-function drush_switchboard_sw_auth_login_validate($provider_name = FALSE, $email = FALSE, $password = FALSE) {
+function drush_switchboard_sw_auth_login_validate($provider_name = '', $email = '', $password = '') {
   if (!switchboard_validate_provider_name($provider_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
       '@provider_name' => $provider_name,
@@ -809,7 +819,14 @@ function drush_switchboard_sw_auth_login_validate($provider_name = FALSE, $email
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for sw-auth-login.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ * @param string $email
+ *   The email address used to login.
+ * @param string $password
+ *   The password used to login.
  */
 function drush_switchboard_sw_auth_login($provider_name, $email, $password) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
@@ -829,9 +846,15 @@ function drush_switchboard_sw_auth_login($provider_name, $email, $password) {
 }
 
 /**
- * Implements hook_drush_command_validate().
+ * Validation callback for sw-auth-logout.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
-function drush_switchboard_sw_auth_logout_validate($provider_name = FALSE) {
+function drush_switchboard_sw_auth_logout_validate($provider_name = '') {
   if (!switchboard_validate_provider_name($provider_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
       '@provider_name' => $provider_name,
@@ -846,7 +869,10 @@ function drush_switchboard_sw_auth_logout_validate($provider_name = FALSE) {
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for sw-auth-logout.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
  */
 function drush_switchboard_sw_auth_logout($provider_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
@@ -857,9 +883,15 @@ function drush_switchboard_sw_auth_logout($provider_name) {
 }
 
 /**
- * Implements hook_drush_command_validate().
+ * Validation callback for sw-site-list.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
-function drush_switchboard_sw_site_list_validate($provider_name = FALSE) {
+function drush_switchboard_sw_site_list_validate($provider_name = '') {
   if (!switchboard_validate_provider_name($provider_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
       '@provider_name' => $provider_name,
@@ -873,7 +905,10 @@ function drush_switchboard_sw_site_list_validate($provider_name = FALSE) {
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for sw-site-list.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
  */
 function drush_switchboard_sw_site_list($provider_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
@@ -906,9 +941,17 @@ function drush_switchboard_sw_site_list($provider_name) {
 }
 
 /**
- * Implements hook_drush_command_validate().
+ * Validation callback for sw-site-env-list.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ * @param string $site_name
+ *   The name of the remote Site.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
-function drush_switchboard_sw_site_env_list_validate($provider_name = FALSE, $site_name = FALSE) {
+function drush_switchboard_sw_site_env_list_validate($provider_name = '', $site_name = '') {
   if (!switchboard_validate_provider_name($provider_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
       '@provider_name' => $provider_name,
@@ -932,7 +975,15 @@ function drush_switchboard_sw_site_env_list_validate($provider_name = FALSE, $si
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for sw-site-env-list.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ * @param string $site_name
+ *   The name of the remote Site.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
 function drush_switchboard_sw_site_env_list($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
@@ -945,9 +996,17 @@ function drush_switchboard_sw_site_env_list($provider_name, $site_name) {
 }
 
 /**
- * Implements hook_drush_command_validate().
+ * Validation callback for sw-site-read.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ * @param string $site_name
+ *   The name of the remote Site.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
-function drush_switchboard_sw_site_read_validate($provider_name = FALSE, $site_name = FALSE) {
+function drush_switchboard_sw_site_read_validate($provider_name = '', $site_name = '') {
   if (!switchboard_validate_provider_name($provider_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
       '@provider_name' => $provider_name,
@@ -971,7 +1030,12 @@ function drush_switchboard_sw_site_read_validate($provider_name = FALSE, $site_n
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for sw-site-read.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ * @param string $site_name
+ *   The name of the remote Site.
  */
 function drush_switchboard_sw_site_read($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
@@ -979,9 +1043,17 @@ function drush_switchboard_sw_site_read($provider_name, $site_name) {
 }
 
 /**
- * Implements hook_drush_command_validate().
+ * Validation callback for sw-site-destroy.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ * @param string $site_name
+ *   The name of the remote Site.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
-function drush_switchboard_sw_site_destroy_validate($provider_name = FALSE, $site_name = FALSE) {
+function drush_switchboard_sw_site_destroy_validate($provider_name = '', $site_name = '') {
   if (!switchboard_validate_provider_name($provider_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
       '@provider_name' => $provider_name,
@@ -1005,7 +1077,12 @@ function drush_switchboard_sw_site_destroy_validate($provider_name = FALSE, $sit
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for sw-site-destroy.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ * @param string $site_name
+ *   The name of the remote Site.
  */
 function drush_switchboard_sw_site_destroy($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
@@ -1017,9 +1094,21 @@ function drush_switchboard_sw_site_destroy($provider_name, $site_name) {
 }
 
 /**
- * Implements hook_drush_command_validate().
+ * Validation callback for sw-site-env-db-backup.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ * @param string $site_name
+ *   The name of the remote Site.
+ * @param string $env_name
+ *   The name of the site environment.
+ * @param string $destination
+ *   The directory path of the destination file.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
-function drush_switchboard_sw_site_env_db_backup_validate($provider_name = FALSE, $site_name = FALSE, $env_name = FALSE, $destination = FALSE) {
+function drush_switchboard_sw_site_env_db_backup_validate($provider_name = '', $site_name = '', $env_name = '', $destination = '') {
   if (!switchboard_validate_provider_name($provider_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
       '@provider_name' => $provider_name,
@@ -1054,7 +1143,16 @@ function drush_switchboard_sw_site_env_db_backup_validate($provider_name = FALSE
 }
 
 /**
- * Implements hook_drush_command().
+ * Command callback for sw-site-env-db-backup.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ * @param string $site_name
+ *   The name of the remote Site.
+ * @param string $env_name
+ *   The name of the site environment.
+ * @param string $destination
+ *   The directory path of the destination file.
  */
 function drush_switchboard_sw_site_env_db_backup($provider_name, $site_name, $env_name, $destination) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
