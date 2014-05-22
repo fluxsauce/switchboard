@@ -4,6 +4,10 @@
  * Custom validators for Switchboard.
  */
 
+function switchboard_validate_site_name($site_name) {
+  return preg_match('/^[-a-z0-9]{1,255}$/', $site_name) ? TRUE : FALSE;
+}
+
 /**
  * Reusable validator for provider, site and login check.
  *
@@ -16,15 +20,9 @@
  *   TRUE if all checks pass.
  */
 function switchboard_validate_site($provider_name, $site_name) {
-  if (!$site_name) {
-    return drush_set_error('SWITCHBOARD_PROVIDER_SITE_MISSING', dt('No site was specified.'));
-  }
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if (!$provider->site_exists($site_name)) {
-    return switchboard_message_fail('SWITCHBOARD_PROVIDER_SITE_INVALID', dt('Site @site_name does not exist in provider @provider.', array(
-      '@site_name' => $site_name,
-      '@provider' => $provider_name,
-    )));
+    return FALSE;
   }
   return TRUE;
 }

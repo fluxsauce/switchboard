@@ -40,9 +40,17 @@ class Sqlite {
    * Destroy the SQLite database.
    */
   public static function destroy() {
-    if (file_exists(Sqlite::getLocation())) {
-      unlink(Sqlite::getLocation());
+    $location = Sqlite::getLocation();
+    drush_log(dt('Destroying SQLite database at @location', array(
+      '@location' => $location,
+    )));
+    if (file_exists($location)) {
+      unlink($location);
       drush_cache_clear_all('brain_path', 'switchboard', TRUE);
+      drush_log(dt('SQLite database removed.'));
+    }
+    else {
+      drush_log(dt('SQLite database does not exist, nothing to remove.'));
     }
   }
 

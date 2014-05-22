@@ -124,6 +124,20 @@ function switchboard_message_success($message) {
   drush_log($message, 'success');
 }
 
+function switchboard_message_fail_generate($code, $replacements = array()) {
+  $codes = array(
+    'SWITCHBOARD_PROVIDER_SITE_NAME_INVALID' => dt('"@site_name" is an invalid site name.', $replacements),
+    'SWITCHBOARD_PROVIDER_SITE_INVALID' => dt('Site "@site_name" does not exist locally.', $replacements),
+  );
+  if (isset($codes[$code])) {
+    $message = $codes[$code];
+  }
+  else {
+    throw new \Exception('No message and invalid code, cannot generate failure message.');
+  }
+  return switchboard_message_fail($code, $message);
+}
+
 function switchboard_message_fail($code, $message) {
   if (drush_get_option('json')) {
     drush_set_context('DRUSH_USER_ABORT', TRUE);

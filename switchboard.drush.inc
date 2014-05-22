@@ -518,6 +518,7 @@ function drush_switchboard_sw_brain_destroy() {
     }
   }
   else {
+    Fluxsauce\Switchboard\Sqlite::destroy();
     switchboard_message_success(dt('Switchboard brain ablation completed (file removed).'));
   }
 }
@@ -646,8 +647,15 @@ function drush_switchboard_sw_site_env_list_validate($provider_name = FALSE, $si
   if (!switchboard_validate_auth_logged_in($provider_name)) {
     return FALSE;
   }
+  if (!switchboard_validate_site_name($site_name)) {
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_NAME_INVALID', array(
+      '@site_name' => $site_name,
+    ));
+  }
   if (!switchboard_validate_site($provider_name, $site_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_INVALID', array(
+      '@site_name' => $site_name,
+    ));
   }
 }
 
@@ -674,8 +682,15 @@ function drush_switchboard_sw_site_read_validate($provider_name = FALSE, $site_n
   if (!switchboard_validate_auth_logged_in($provider_name)) {
     return FALSE;
   }
+  if (!switchboard_validate_site_name($site_name)) {
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_NAME_INVALID', array(
+      '@site_name' => $site_name,
+    ));
+  }
   if (!switchboard_validate_site($provider_name, $site_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_INVALID', array(
+      '@site_name' => $site_name,
+    ));
   }
 }
 
@@ -697,8 +712,15 @@ function drush_switchboard_sw_site_vcs_validate($provider_name = FALSE, $site_na
   if (!switchboard_validate_auth_logged_in($provider_name)) {
     return FALSE;
   }
+  if (!switchboard_validate_site_name($site_name)) {
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_NAME_INVALID', array(
+      '@site_name' => $site_name,
+    ));
+  }
   if (!switchboard_validate_site($provider_name, $site_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_INVALID', array(
+      '@site_name' => $site_name,
+    ));
   }
 }
 
@@ -742,8 +764,15 @@ function drush_switchboard_sw_site_destroy_validate($provider_name = FALSE, $sit
   if (!switchboard_validate_auth_logged_in($provider_name)) {
     return FALSE;
   }
+  if (!switchboard_validate_site_name($site_name)) {
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_NAME_INVALID', array(
+      '@site_name' => $site_name,
+    ));
+  }
   if (!switchboard_validate_site($provider_name, $site_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_INVALID', array(
+      '@site_name' => $site_name,
+    ));
   }
 }
 
@@ -769,8 +798,15 @@ function drush_switchboard_sw_site_env_db_backup_validate($provider_name = FALSE
   if (!switchboard_validate_auth_logged_in($provider_name)) {
     return FALSE;
   }
+  if (!switchboard_validate_site_name($site_name)) {
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_NAME_INVALID', array(
+      '@site_name' => $site_name,
+    ));
+  }
   if (!switchboard_validate_site($provider_name, $site_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_INVALID', array(
+      '@site_name' => $site_name,
+    ));
   }
   if (!switchboard_validate_site_env($provider_name, $site_name, $env_name)) {
     return FALSE;
