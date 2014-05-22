@@ -19,4 +19,35 @@ class Project extends Persistent {
   protected $files_path;
 
   protected $external_key_name = 'name';
+
+  /**
+   * Get the minimal database specs.
+   *
+   * @return array
+   *   Keys for database, host, user, password, port.
+   */
+  public function getDatabaseSpecs() {
+    return array(
+      'database' => $this->database_name,
+      'host' => $this->database_host,
+      'user' => $this->database_username,
+      'password' => $this->database_password,
+      'port' => $this->database_port,
+    );
+  }
+
+  /**
+   * Get a database connection string.
+   *
+   * @return string
+   *   The command for connecting to a database.
+   */
+  public function getDatabaseConnection() {
+    $parameter_strings = array();
+    foreach ($this->getDatabaseSpecs() as $key => $value) {
+      $value = drush_escapeshellarg($value);
+      $parameter_strings[] = "--$key=$value";
+    }
+    return 'mysql ' . implode(' ', $parameter_strings);
+  }
 }

@@ -364,6 +364,64 @@ function drush_switchboard_sw_project_destroy($project_name) {
 }
 
 /**
+ * Validation callback for drush sw-project-get-db.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_project_get_db_validate($project_name = '') {
+  if (!$project_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot destroy.'));
+  }
+  if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  foreach ($project->getDatabaseSpecs() as $db_field => $db_value) {
+    if (!$db_value) {
+      return switchboard_message_fail('SWITCHBOARD_PROJECT_DB_FIELD_MISSING', dt('@project_name does not have a value for @field_name.', array(
+        '@project_name' => $project_name,
+        '@field_name' => $db_field,
+      )));
+    }
+  }
+  drush_set_option('project', $project);
+}
+
+/**
+ * Command callback for drush sw-project-get-db.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ */
+function drush_switchboard_sw_project_get_db($project_name) {
+  $project = drush_get_option('project');
+  if (drush_get_option('command')) {
+    switchboard_message_success($project->getDatabaseConnection());
+  }
+  else {
+    if (drush_get_option('json')) {
+      drush_print(json_encode($project->getDatabaseSpecs()));
+    }
+    else {
+      $rows = array(
+        array_keys($project->getDatabaseSpecs()),
+        array_values($project->getDatabaseSpecs()),
+      );
+      drush_print_table($rows, TRUE);
+    }
+  }
+}
+
+/**
  * Validation callback for drush sw-project-get-path.
  *
  * @param string $project_name
