@@ -528,7 +528,9 @@ function drush_switchboard_sw_brain_destroy() {
  */
 function drush_switchboard_sw_auth_login_validate($provider_name = FALSE, $email = FALSE, $password = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
+      '@provider_name' => $provider_name,
+    ));
   }
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if ($provider->auth_is_logged_in()) {
@@ -571,7 +573,9 @@ function drush_switchboard_sw_auth_login($provider_name, $email, $password) {
  */
 function drush_switchboard_sw_auth_logout_validate($provider_name = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
+      '@provider_name' => $provider_name,
+    ));
   }
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if (!$provider->auth_is_logged_in()) {
@@ -597,7 +601,9 @@ function drush_switchboard_sw_auth_logout($provider_name) {
  */
 function drush_switchboard_sw_site_list_validate($provider_name = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
+      '@provider_name' => $provider_name,
+    ));
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
     return FALSE;
@@ -642,7 +648,9 @@ function drush_switchboard_sw_site_list($provider_name) {
  */
 function drush_switchboard_sw_site_env_list_validate($provider_name = FALSE, $site_name = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
+      '@provider_name' => $provider_name,
+    ));
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
     return FALSE;
@@ -677,7 +685,9 @@ function drush_switchboard_sw_site_env_list($provider_name, $site_name) {
  */
 function drush_switchboard_sw_site_read_validate($provider_name = FALSE, $site_name = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
+      '@provider_name' => $provider_name,
+    ));
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
     return FALSE;
@@ -707,7 +717,9 @@ function drush_switchboard_sw_site_read($provider_name, $site_name) {
  */
 function drush_switchboard_sw_site_vcs_validate($provider_name = FALSE, $site_name = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
+      '@provider_name' => $provider_name,
+    ));
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
     return FALSE;
@@ -759,7 +771,9 @@ function drush_switchboard_sw_site_vcs($provider_name, $site_name) {
  */
 function drush_switchboard_sw_site_destroy_validate($provider_name = FALSE, $site_name = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
+      '@provider_name' => $provider_name,
+    ));
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
     return FALSE;
@@ -793,7 +807,9 @@ function drush_switchboard_sw_site_destroy($provider_name, $site_name) {
  */
 function drush_switchboard_sw_site_env_db_backup_validate($provider_name = FALSE, $site_name = FALSE, $env_name = FALSE, $destination = FALSE) {
   if (!switchboard_validate_provider_name($provider_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
+      '@provider_name' => $provider_name,
+    ));
   }
   if (!switchboard_validate_auth_logged_in($provider_name)) {
     return FALSE;
@@ -809,7 +825,10 @@ function drush_switchboard_sw_site_env_db_backup_validate($provider_name = FALSE
     ));
   }
   if (!switchboard_validate_site_env($provider_name, $site_name, $env_name)) {
-    return FALSE;
+    return switchboard_message_fail_generate('SWITCHBOARD_SITE_ENV_INVALID', array(
+      '@env_name' => $env_name,
+      '@site_name' => $site_name,
+    ));
   }
   if (!switchboard_validate_destination($destination)) {
     return FALSE;
@@ -830,6 +849,13 @@ function drush_switchboard_sw_site_env_db_backup($provider_name, $site_name, $en
 
   $result = $provider->api_download_backup($backup, $destination);
   if ($result) {
-    drush_print($result);
+    switchboard_message_success($result);
+  }
+  else {
+    switchboard_message_fail('SWITCHBOARD_SITE_ENV_BACKUP_DOWNLOAD_FAIL', dt('Unable to download latest @site_name:@env_name backup from @provider_name.', array(
+      '@provider_name' => $provider_name,
+      '@site_name' => $site_name,
+      '@env_name' => $env_name,
+    )));
   }
 }

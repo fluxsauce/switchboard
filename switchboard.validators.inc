@@ -9,7 +9,7 @@ function switchboard_validate_site_name($site_name) {
 }
 
 /**
- * Reusable validator for provider, site and login check.
+ * Check to see if a site exists within a particular provider.
  *
  * @param string $provider_name
  *   Name of the provider.
@@ -21,10 +21,7 @@ function switchboard_validate_site_name($site_name) {
  */
 function switchboard_validate_site($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  if (!$provider->site_exists($site_name)) {
-    return FALSE;
-  }
-  return TRUE;
+  return $provider->site_exists($site_name);
 }
 
 /**
@@ -49,36 +46,26 @@ function switchboard_validate_auth_logged_in($provider_name) {
  * @param $provider_name
  * @return boolean
  */
-function switchboard_validate_provider_name($provider_name = FALSE) {
+function switchboard_validate_provider_name($provider_name) {
   if (!$provider_name) {
-    return switchboard_message_fail('SWITCHBOARD_PROVIDER_MISSING', dt('Provider name not specified.'));
+    return FALSE;
   }
-  if (!in_array($provider_name, switchboard_get_provider_names())) {
-    return switchboard_message_fail('SWITCHBOARD_PROVIDER_INVALID', dt('Invalid provider name @provider_name.', array(
-      '@provider_name' => $provider_name,
-    )));
-  }
-  return TRUE;
+  return in_array($provider_name, switchboard_get_provider_names());
 }
 
 /**
  * Determine if an environment exists with a given site.
+ *
  * @param string $provider_name
  * @param string $site_name
  * @param string $env_name
  */
 function switchboard_validate_site_env($provider_name, $site_name, $env_name) {
   if (!$env_name) {
-    return switchboard_message_fail('SWITCHBOARD_SITE_ENV_MISSING', dt('Environment name not specified.'));
+    return FALSE;
   }
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  if (!array_key_exists($env_name, $provider->sites[$site_name]->environments)) {
-    return switchboard_message_fail('SWITCHBOARD_SITE_ENV_INVALID', dt('@env_name is not a valid environment for @site_name.', array(
-      '@env_name' => $env_name,
-      '@site_name' => $site_name,
-    )));
-  }
-  return TRUE;
+  return array_key_exists($env_name, $provider->sites[$site_name]->environments);
 }
 
 function switchboard_validate_destination($destination_path) {

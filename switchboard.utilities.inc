@@ -128,12 +128,16 @@ function switchboard_message_fail_generate($code, $replacements = array()) {
   $codes = array(
     'SWITCHBOARD_PROVIDER_SITE_NAME_INVALID' => dt('"@site_name" is an invalid site name.', $replacements),
     'SWITCHBOARD_PROVIDER_SITE_INVALID' => dt('Site "@site_name" does not exist locally.', $replacements),
+    'SWITCHBOARD_PROVIDER_INVALID' => dt('Invalid provider name "@provider_name".', $replacements),
+    'SWITCHBOARD_SITE_ENV_INVALID' => dt('"@env_name" is not a valid environment for @site_name.', $replacements),
   );
   if (isset($codes[$code])) {
     $message = $codes[$code];
   }
   else {
-    throw new \Exception('No message and invalid code, cannot generate failure message.');
+    throw new \Exception(dt('Invalid code @code, cannot generate failure message.', array(
+      '@code' => $code,
+    )));
   }
   return switchboard_message_fail($code, $message);
 }
