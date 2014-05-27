@@ -52,6 +52,16 @@ class Project extends Persistent {
   }
 
   /**
+   * Get a Drupal v6 database connection string.
+   *
+   * @return string
+   *   The db-url string.
+   */
+  public function getDatabaseUrl() {
+    return "mysql://{$this->database_username}:{$this->database_password}@{$this->database_host}:{$this->database_port}/{$this->database_name}";
+  }
+
+  /**
    * Generate command to commit all code changes.
    *
    * @param string $message

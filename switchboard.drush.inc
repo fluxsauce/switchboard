@@ -172,6 +172,15 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
+  $items['sw-project-wipe-db'] = array(
+    'description' => dt('Wipe the database of a Project.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
   $items['sw-project-get-path'] = array(
     'description' => dt('Get the path to the files for a particular site.'),
     'arguments' => array(
@@ -965,6 +974,61 @@ function drush_switchboard_sw_project_vcs_reset($project_name) {
 }
 
 /**
+ * Validation callback for drush sw-project-wipe-db.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_project_wipe_db_validate($project_name = '') {
+  if (!$project_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot update.'));
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  drush_set_option('project', $project);
+
+  foreach ($project->getDatabaseSpecs() as $db_field => $db_value) {
+    if (!$db_value) {
+      return switchboard_message_fail('SWITCHBOARD_PROJECT_DB_FIELD_MISSING', dt('@project_name does not have a value for @field_name.', array(
+        '@project_name' => $project_name,
+        '@field_name' => $db_field,
+      )));
+    }
+  }
+
+  $confirm = drush_confirm(dt('Are you sure you want to wipe the database for @project_name?', array(
+    '@project_name' => $project_name,
+  )));
+  if (!$confirm) {
+    return drush_user_abort();
+  }
+}
+
+/**
+ * Command callback for drush sw-project-wipe-db.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ */
+function drush_switchboard_sw_project_wipe_db($project_name) {
+  $project = drush_get_option('project');
+  $command = 'drush --db-url=' . $project->getDatabaseUrl() . ' sql-drop -y';
+  if (drush_shell_exec($command)) {
+    switchboard_message_success(dt('Database wiped.'));
+  }
+  else {
+    switchboard_message_fail('SWITCHBOARD_PROJECT_DB_WIPE_FAIL', dt('Database wipe failed.'));
+  }
+}
+
+/**
  * Command callback for drush sw-project-list.
  */
 function drush_switchboard_sw_provider_list() {
@@ -1002,7 +1066,7 @@ function drush_switchboard_sw_brain_read() {
 }
 
 /**
- * Validation callback for sw-brain-update.
+ * Validation callback for drush sw-brain-update.
  *
  * @param string $path
  *   The absolute path to the brain location.
@@ -1026,7 +1090,7 @@ function drush_switchboard_sw_brain_update_validate($path = '') {
 }
 
 /**
- * Command callback for sw-brain-update.
+ * Command callback for drush sw-brain-update.
  *
  * @param string $path
  *   The absolute path to the brain location.
@@ -1039,7 +1103,7 @@ function drush_switchboard_sw_brain_update($path) {
 }
 
 /**
- * Validation callback for sw-brain-destroy.
+ * Validation callback for drush sw-brain-destroy.
  *
  * @return bool
  *   FALSE upon failure.
@@ -1060,7 +1124,7 @@ function drush_switchboard_sw_brain_destroy_validate() {
 }
 
 /**
- * Command callback for sw-brain-destroy.
+ * Command callback for drush sw-brain-destroy.
  */
 function drush_switchboard_sw_brain_destroy() {
   $tables = drush_get_option('tables');
@@ -1079,7 +1143,7 @@ function drush_switchboard_sw_brain_destroy() {
 }
 
 /**
- * Validation callback for sw-auth-login.
+ * Validation callback for drush sw-auth-login.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1114,7 +1178,7 @@ function drush_switchboard_sw_auth_login_validate($provider_name = '', $email = 
 }
 
 /**
- * Command callback for sw-auth-login.
+ * Command callback for drush sw-auth-login.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1141,7 +1205,7 @@ function drush_switchboard_sw_auth_login($provider_name, $email, $password) {
 }
 
 /**
- * Validation callback for sw-auth-logout.
+ * Validation callback for drush sw-auth-logout.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1164,7 +1228,7 @@ function drush_switchboard_sw_auth_logout_validate($provider_name = '') {
 }
 
 /**
- * Command callback for sw-auth-logout.
+ * Command callback for drush sw-auth-logout.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1178,7 +1242,7 @@ function drush_switchboard_sw_auth_logout($provider_name) {
 }
 
 /**
- * Validation callback for sw-site-list.
+ * Validation callback for drush sw-site-list.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1200,7 +1264,7 @@ function drush_switchboard_sw_site_list_validate($provider_name = '') {
 }
 
 /**
- * Command callback for sw-site-list.
+ * Command callback for drush sw-site-list.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1236,7 +1300,7 @@ function drush_switchboard_sw_site_list($provider_name) {
 }
 
 /**
- * Validation callback for sw-site-env-list.
+ * Validation callback for drush sw-site-env-list.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1270,7 +1334,7 @@ function drush_switchboard_sw_site_env_list_validate($provider_name = '', $site_
 }
 
 /**
- * Command callback for sw-site-env-list.
+ * Command callback for drush sw-site-env-list.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1291,7 +1355,7 @@ function drush_switchboard_sw_site_env_list($provider_name, $site_name) {
 }
 
 /**
- * Validation callback for sw-site-read.
+ * Validation callback for drush sw-site-read.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1325,7 +1389,7 @@ function drush_switchboard_sw_site_read_validate($provider_name = '', $site_name
 }
 
 /**
- * Command callback for sw-site-read.
+ * Command callback for drush sw-site-read.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1338,7 +1402,7 @@ function drush_switchboard_sw_site_read($provider_name, $site_name) {
 }
 
 /**
- * Validation callback for sw-site-destroy.
+ * Validation callback for drush sw-site-destroy.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1372,7 +1436,7 @@ function drush_switchboard_sw_site_destroy_validate($provider_name = '', $site_n
 }
 
 /**
- * Command callback for sw-site-destroy.
+ * Command callback for drush sw-site-destroy.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1389,7 +1453,7 @@ function drush_switchboard_sw_site_destroy($provider_name, $site_name) {
 }
 
 /**
- * Validation callback for sw-site-env-db-backup.
+ * Validation callback for drush sw-site-env-db-backup.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1438,7 +1502,7 @@ function drush_switchboard_sw_site_env_db_backup_validate($provider_name = '', $
 }
 
 /**
- * Command callback for sw-site-env-db-backup.
+ * Command callback for drush sw-site-env-db-backup.
  *
  * @param string $provider_name
  *   The name of the Provider.
