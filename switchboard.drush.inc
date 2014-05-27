@@ -149,7 +149,7 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['sw-project-get-db'] = array(
+  $items['sw-project-db-get'] = array(
     'description' => dt('Get the database credentials of a Project.'),
     'arguments' => array(
       'name' => dt('Name of the project.'),
@@ -157,6 +157,18 @@ function switchboard_drush_command() {
     'options' => array(
       'command' => dt('Display the command to connect to the database.'),
     ) + $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-db-import'] = array(
+    'description' => dt('Import the contents of a database dump into a Project.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+      'path' => dt('Path to database backup to import.'),
+    ),
+    'options' => array(
+        'pv' => dt('Display progress using Pipe Viewer.'),
+      ) + $json_option,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
@@ -401,7 +413,7 @@ function drush_switchboard_sw_project_destroy($project_name) {
 }
 
 /**
- * Validation callback for drush sw-project-get-db.
+ * Validation callback for drush sw-project-db-get.
  *
  * @param string $project_name
  *   Name of the local project in question.
@@ -409,7 +421,7 @@ function drush_switchboard_sw_project_destroy($project_name) {
  * @return bool
  *   FALSE upon failure.
  */
-function drush_switchboard_sw_project_get_db_validate($project_name = '') {
+function drush_switchboard_sw_project_db_get_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot destroy.'));
   }
@@ -434,15 +446,21 @@ function drush_switchboard_sw_project_get_db_validate($project_name = '') {
 }
 
 /**
- * Command callback for drush sw-project-get-db.
+ * Command callback for drush sw-project-db-get.
  *
  * @param string $project_name
  *   Name of the local project in question.
  */
-function drush_switchboard_sw_project_get_db($project_name) {
+function drush_switchboard_sw_project_db_get($project_name) {
   $project = drush_get_option('project');
   if (drush_get_option('command')) {
-    switchboard_message_success($project->getDatabaseConnection());
+    $command = $project->getDatabaseConnection();
+    if (drush_get_option('json')) {
+      drush_print(json_encode($command));
+    }
+    else {
+      drush_print($command);
+    }
   }
   else {
     if (drush_get_option('json')) {
@@ -455,6 +473,77 @@ function drush_switchboard_sw_project_get_db($project_name) {
       );
       drush_print_table($rows, TRUE);
     }
+  }
+}
+
+/**
+ * Validation callback for drush sw-project-db-import.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ * @param string $path
+ *   Path to backup to import.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_project_db_import_validate($project_name = '', $path = '') {
+  if (!$project_name) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot destroy.'));
+  }
+  if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  foreach ($project->getDatabaseSpecs() as $db_field => $db_value) {
+    if (!$db_value) {
+      return switchboard_message_fail('SWITCHBOARD_PROJECT_DB_FIELD_MISSING', dt('@project_name does not have a value for @field_name.', array(
+        '@project_name' => $project_name,
+        '@field_name' => $db_field,
+      )));
+    }
+  }
+  drush_set_option('project', $project);
+
+  if (!file_exists($path)) {
+    return switchboard_message_fail('SWITCHBOARD_FILE_MISSING', dt('Unable to locate file at "@path"', array(
+      '@path' => $path,
+    )));
+  }
+
+  if (drush_get_option('pv')) {
+    $result = shell_exec('which pv');
+    if (empty($result)) {
+      return switchboard_message_fail('SWITCHBOARD_PV_MISSING', dt('Pipe Viewer option specified, but Pipe Viewer cannot be found.'));
+    }
+  }
+}
+
+/**
+ * Command callback for drush sw-project-db-import.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ */
+function drush_switchboard_sw_project_db_import($project_name, $path) {
+  $project = drush_get_option('project');
+  $mysql_command = $project->getDatabaseConnection();
+  if (drush_get_option('pv')) {
+    $command = 'pv ' . $path . ' | gunzip | ' . $mysql_command;
+  }
+  else {
+    $command = 'gunzip ' . $path . ' -c | ' . $mysql_command;
+  }
+  if (drush_shell_exec($command)) {
+    return switchboard_message_success(dt('Database imported.'));
+  }
+  else {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_DB_IMPORT_FAIL', dt('Database import failed.'));
   }
 }
 
