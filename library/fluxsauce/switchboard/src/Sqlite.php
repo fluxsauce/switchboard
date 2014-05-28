@@ -117,7 +117,9 @@ class Sqlite {
         $sql_query .= ', site_id INTEGER ';
         $sql_query .= ', name TEXT ';
         $sql_query .= ', host TEXT ';
+        $sql_query .= ', username TEXT ';
         $sql_query .= ', branch TEXT ';
+        $sql_query .= ', files_path TEXT ';
         $sql_query .= ', updated INTEGER ';
         $sql_query .= ') ';
 

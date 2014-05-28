@@ -1,7 +1,18 @@
 # Switchboard
 
-Switchboard is an application for coordinating between local development and
-third-party hosts.
+Switchboard is a application for coordinating between local environments and
+third-party hosts. Switchboard gets information about remote sites, sets up
+local sites, and can be used to synchronize content between the local and
+remote.
+
+Switchboard currently supports operations on both Acquia and Pantheon sites.
+Switchboard is not intended as a replacement for either Acquia Drush commands or
+Pantheon's Terminus; those tools are designed for performing remote site
+operations.
+
+Switchboard is being actively developed to support
+[Kalabox](http://www.kalamuna.com/products/kalabox/), an integrated workflow
+solution for Drupal developers.
 
 ## Requirements
 
@@ -23,7 +34,7 @@ The easiest way to install Composer for *nix (including Mac):
 More detailed installation instructions for multiple platforms can be found in
 the [Composer Documentation](http://getcomposer.org/doc/00-intro.md).
 
-### Normal installation
+Once Composer is installed...
 
     # Download Switchboard.
     git clone https://github.com/fluxsauce/switchboard.git $HOME/.drush/switchboard
@@ -31,6 +42,13 @@ the [Composer Documentation](http://getcomposer.org/doc/00-intro.md).
     cd $HOME/.drush/switchboard
     composer update --no-dev
     # Clear Drush's cache.
+    drush cc drush
+
+### Updates
+
+    cd $HOME/.drush/switchboard
+    git pull
+    composer update --no-dev
     drush cc drush
 
 ## Documentation
@@ -43,3 +61,38 @@ available Switchboard commands:
 For a JSON list of available commands:
 
     drush help --format=json --filter=switchboard
+
+## Demo
+
+    # Login to Pantheon, a Provider.
+    drush sw-auth-login pantheon user@example.com password
+    # List available sites from a Provider.
+    drush sw-site-list pantheon
+    # Get information about a remote site.
+    drush sw-site-info pantheon nameofsite
+    # List remote site environments.
+    drush sw-site-env-list pantheon nameofsite
+    # Download the latest backup from the dev environment to current directory.
+    drush sw-site-env-db-backup pantheon nameofsite dev .
+    # Create a local project; site_id is shown in sw-site-info.
+    drush sw-project-create nameofproject \
+      --site_id=1 \
+      --code_path=/srv/site/code \
+      --files_path=/srv/site/files \
+      --database_host=127.0.0.1 \
+      --database_port=3306 \
+      --database_username=dbuser \
+      --database_password=dbpass \
+      --database_name=dbname
+    # List available projects.
+    drush sw-project-list
+    # Get information about a project.
+    drush sw-project-info nameofproject
+    # Update a field in a project.
+    drush sw-project-update nameofproject --ssh_port=22
+    # See the new information.
+    drush sw-project-info nameofproject
+    # Check out project locally.
+    drush sw-project-vcs-clone nameofproject
+    # Import database to project.
+    drush sw-project-db-import nameofproject ./path/to/db.tar.gz

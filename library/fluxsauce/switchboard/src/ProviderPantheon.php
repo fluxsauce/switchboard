@@ -201,7 +201,9 @@ class ProviderPantheon extends Provider {
     foreach ($environment_data as $environment_name => $environment) {
       $new_environment = new Environment($site->id, $environment_name);
       $new_environment->branch = 'master';
-      $new_environment->host = 'appserver.' . $environment_name . '.' . $site->uuid . '.drush.in';
+      $new_environment->host = "appserver.$environment_name.{$site->uuid}.drush.in";
+      $new_environment->username = "$environment_name.$site_name";
+      $new_environment->files_path = "files";
       $new_environment->update();
       $site->environmentAdd($new_environment);
     }

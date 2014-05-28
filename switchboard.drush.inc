@@ -108,31 +108,37 @@ function switchboard_drush_command() {
     'database_host' => array(
       'description' => dt('Database Hostname'),
       'value' => 'required',
+      'example-value' => 'localhost',
     ),
     'database_username' => array(
       'description' => dt('Database Username'),
       'value' => 'required',
+      'example-value' => 'dbuser',
     ),
     'database_password' => array(
       'description' => dt('Database Password'),
       'value' => 'required',
+      'example-value' => 'dbpass',
     ),
     'database_name' => array(
       'description' => dt('Database Name'),
       'value' => 'required',
+      'example-value' => 'dbname',
     ),
     'database_port' => array(
       'description' => dt('Database Port'),
       'value' => 'required',
+      'example-value' => '3306',
     ),
     'files_path' => array(
       'description' => dt('Absolute path to files'),
       'value' => 'required',
+      'example-value' => '/srv/site/files',
     ),
   );
 
   $items['sw-project-create'] = array(
-    'description' => dt('Create a local project record.'),
+    'description' => dt('Create a local project record. Returns the UUID of the project.'),
     'arguments' => array(
       'name' => dt('Name of the project.'),
     ),
@@ -142,6 +148,25 @@ function switchboard_drush_command() {
 
   $items['sw-project-destroy'] = array(
     'description' => dt('Destroy a local project record.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-files-rsync'] = array(
+    'description' => dt('rsync project files with remote.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+      'direction' => dt('Direction of sync; down (remote to local) and up (local to remote).'),
+    ),
+    'options' => $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-files-wipe'] = array(
+    'description' => dt('Remove all Project files.'),
     'arguments' => array(
       'name' => dt('Name of the project.'),
     ),
@@ -172,15 +197,6 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['sw-project-wipe-db'] = array(
-    'description' => dt('Wipe the database of a Project.'),
-    'arguments' => array(
-      'name' => dt('Name of the project.'),
-    ),
-    'options' => $json_option,
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
-  );
-
   $items['sw-project-get-path'] = array(
     'description' => dt('Get the path to the files for a particular site.'),
     'arguments' => array(
@@ -197,7 +213,7 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['sw-project-read'] = array(
+  $items['sw-project-info'] = array(
     'description' => dt('Get information on a local project record.'),
     'arguments' => array(
       'name' => dt('Name of the project.'),
@@ -261,6 +277,15 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
+  $items['sw-project-db-wipe'] = array(
+    'description' => dt('Wipe the database of a Project.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
   $items['sw-auth-login'] = array(
     'description' => dt('Authenticate with a provider.'),
     'arguments' => array(
@@ -310,7 +335,7 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['sw-site-read'] = array(
+  $items['sw-site-info'] = array(
     'description' => dt('Get site information.'),
     'arguments' => $default_site_arguments,
     'options' => $default_options,
@@ -363,7 +388,7 @@ function drush_switchboard_sw_project_create_validate($project_name = '') {
  */
 function drush_switchboard_sw_project_create($project_name) {
   $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  foreach (switchboard_get_drush_options('sw-project-create') as $option) {
+  foreach (array_keys(switchboard_get_drush_options('sw-project-create')) as $option) {
     $option_value = drush_get_option($option);
     if ($option_value && !is_bool($option_value)) {
       $project->$option = $option_value;
@@ -557,6 +582,44 @@ function drush_switchboard_sw_project_db_import($project_name, $path) {
 }
 
 /**
+ * Validation callback for drush sw-project-files-rsync.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ * @param string $direction
+ *   Direction of the rsync.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_project_files_rsync_validate($project_name = '', $direction = '') {
+  if (!in_array($direction, array('up', 'down'))) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_RSYNC_DIR', dt('Invalid rsync direction (up or down).'));
+  }
+}
+
+/**
+ * Command callback for drush sw-project-files-rsync.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ * @param string $direction
+ *   Direction of the rsync.
+ */
+function drush_switchboard_sw_project_files_rsync($project_name, $direction) {
+  switchboard_message_fail('SWITCHBOARD_NOT_IMPLEMENTED', dt('Not implemented yet.'));
+  return;
+  if ($direction == 'up') {
+    // [user]@[svr].devcloud.hosting.acquia.com:/mnt/files/[site]/sites/default/files
+    // rsync -rltDvPh
+    // rsync -rlvz --size-only --ipv4 --progress -e 'ssh -p 2222' ./files/* $ENV.$SITE@appserver.$ENV.$SITE.drush.in:files/
+  }
+  else {
+    // rsync -rlvz --size-only --ipv4 --progress -e 'ssh -p 2222' $ENV.$SITE@appserver.$ENV.$SITE.drush.in:files/ ~/files
+  }
+}
+
+/**
  * Validation callback for drush sw-project-get-path.
  *
  * @param string $project_name
@@ -662,7 +725,7 @@ function drush_switchboard_sw_project_list() {
 }
 
 /**
- * Validation callback for drush sw-project-read.
+ * Validation callback for drush sw-project-info.
  *
  * @param string $project_name
  *   Name of the local project in question.
@@ -670,7 +733,7 @@ function drush_switchboard_sw_project_list() {
  * @return bool
  *   FALSE upon failure.
  */
-function drush_switchboard_sw_project_read_validate($project_name = '') {
+function drush_switchboard_sw_project_info_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot create.'));
   }
@@ -683,12 +746,12 @@ function drush_switchboard_sw_project_read_validate($project_name = '') {
 }
 
 /**
- * Command callback for drush sw-project-read.
+ * Command callback for drush sw-project-info.
  *
  * @param string $project_name
  *   Name of the local project in question.
  */
-function drush_switchboard_sw_project_read($project_name) {
+function drush_switchboard_sw_project_info($project_name) {
   $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
   $project->render();
 }
@@ -974,7 +1037,7 @@ function drush_switchboard_sw_project_vcs_reset($project_name) {
 }
 
 /**
- * Validation callback for drush sw-project-wipe-db.
+ * Validation callback for drush sw-project-db-wipe.
  *
  * @param string $project_name
  *   Name of the local project in question.
@@ -982,7 +1045,7 @@ function drush_switchboard_sw_project_vcs_reset($project_name) {
  * @return bool
  *   FALSE upon failure.
  */
-function drush_switchboard_sw_project_wipe_db_validate($project_name = '') {
+function drush_switchboard_sw_project_db_wipe_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot update.'));
   }
@@ -1012,12 +1075,12 @@ function drush_switchboard_sw_project_wipe_db_validate($project_name = '') {
 }
 
 /**
- * Command callback for drush sw-project-wipe-db.
+ * Command callback for drush sw-project-db-wipe.
  *
  * @param string $project_name
  *   Name of the local project in question.
  */
-function drush_switchboard_sw_project_wipe_db($project_name) {
+function drush_switchboard_sw_project_db_wipe($project_name) {
   $project = drush_get_option('project');
   $command = 'drush --db-url=' . $project->getDatabaseUrl() . ' sql-drop -y';
   if (drush_shell_exec($command)) {
@@ -1355,7 +1418,7 @@ function drush_switchboard_sw_site_env_list($provider_name, $site_name) {
 }
 
 /**
- * Validation callback for drush sw-site-read.
+ * Validation callback for drush sw-site-info.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1365,7 +1428,7 @@ function drush_switchboard_sw_site_env_list($provider_name, $site_name) {
  * @return bool
  *   FALSE upon failure.
  */
-function drush_switchboard_sw_site_read_validate($provider_name = '', $site_name = '') {
+function drush_switchboard_sw_site_info_validate($provider_name = '', $site_name = '') {
   if (!switchboard_validate_provider_name($provider_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
       '@provider_name' => $provider_name,
@@ -1389,14 +1452,14 @@ function drush_switchboard_sw_site_read_validate($provider_name = '', $site_name
 }
 
 /**
- * Command callback for drush sw-site-read.
+ * Command callback for drush sw-site-info.
  *
  * @param string $provider_name
  *   The name of the Provider.
  * @param string $site_name
  *   The name of the remote Site.
  */
-function drush_switchboard_sw_site_read($provider_name, $site_name) {
+function drush_switchboard_sw_site_info($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   $provider->sites[$site_name]->render();
 }

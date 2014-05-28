@@ -121,6 +121,8 @@ class ProviderAcquia extends Provider {
       $new_environment = new Environment($site->id, $environment->name);
       $new_environment->branch = $environment->vcs_path;
       $new_environment->host = $environment->ssh_host;
+      $new_environment->username = "$site_name.$environment->name";
+      $new_environment->files_path = "/mnt/files/$site_name.$environment/sites/default/files";
       $new_environment->update();
       $site->environmentAdd($new_environment);
     }
