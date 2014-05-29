@@ -166,7 +166,7 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['sw-project-file-wipe'] = array(
+  $items['sw-project-files-wipe'] = array(
     'description' => dt('Remove all Project files.'),
     'arguments' => array(
       'name' => dt('Name of the project.'),
@@ -195,6 +195,15 @@ function switchboard_drush_command() {
     'options' => array(
       'pv' => dt('Display progress using Pipe Viewer.'),
     ) + $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-db-wipe'] = array(
+    'description' => dt('Wipe the database of a Project.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => $json_option,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
@@ -282,15 +291,6 @@ function switchboard_drush_command() {
 
   $items['sw-project-vcs-reset'] = array(
     'description' => dt('Reset all changes in a local project.'),
-    'arguments' => array(
-      'name' => dt('Name of the project.'),
-    ),
-    'options' => $json_option,
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
-  );
-
-  $items['sw-project-db-wipe'] = array(
-    'description' => dt('Wipe the database of a Project.'),
     'arguments' => array(
       'name' => dt('Name of the project.'),
     ),
@@ -681,6 +681,61 @@ function drush_switchboard_sw_project_files_rsync($project_name, $env_name, $dir
   }
   else {
     switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_RSYNC_FAIL', dt('Rsync failed.'));
+  }
+}
+
+/**
+ * Validation callback for drush sw-project-files-wipe.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_project_files_wipe_validate($project_name = '') {
+  if (!$project_name) {
+    return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  if (!switchboard_validate_destination($project->files_path)) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_PATH_UNWRITEABLE', dt('Files path @files_path is not writeable.', array(
+      '@files_path' => $project->files_path,
+    )));
+  }
+  drush_set_option('project', $project);
+
+  $confirm = drush_confirm(dt('Are you sure you want to wipe @files_path for @project_name?', array(
+    '@files_path' => $project->files_path,
+    '@project_name' => $project_name,
+  )));
+  if (!$confirm) {
+    return drush_user_abort();
+  }
+}
+
+/**
+ * Command callback for drush sw-project-files-wipe.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ */
+function drush_switchboard_sw_project_files_wipe($project_name) {
+  $project = drush_get_option('project');
+  if (drush_delete_dir_contents($project->files_path)) {
+    switchboard_message_success(dt('@files_path wiped.', array(
+      '@files_path' => $project->files_path,
+    )));
+  }
+  else {
+    switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_WIPE_FAIL', dt('Unable to wipe @files_path.', array(
+      '@files_path' => $project->files_path,
+    )));
   }
 }
 
