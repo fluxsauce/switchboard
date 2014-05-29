@@ -22,15 +22,14 @@ Development of Switchboard is being generously sponsored by
 
 ## Requirements
 
-* Drush 5.1 or higher - https://github.com/drush-ops/drush
+* [Drush](https://github.com/drush-ops/drush) 5.1 or higher
 * PHP 5.3.3 or higher
-* [Requests](https://github.com/rmccue/Requests) (installed using Composer)
+* [Composer](http://getcomposer.org) - a PHP dependency manager.
+    * [Requests](https://github.com/rmccue/Requests) (installed using Composer)
 
 ## Installation
 
-Switchboard should be installed and updated using git and Composer.
-
-[Composer](http://getcomposer.org) is a dependency manager for PHP.
+Switchboard should be only be installed and updated using git and Composer.
 
 The easiest way to install Composer for *nix (including Mac):
 
