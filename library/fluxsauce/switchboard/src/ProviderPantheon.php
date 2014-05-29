@@ -26,9 +26,10 @@ class ProviderPantheon extends Provider {
       case 'unix_username':
       case 'realm':
       case 'uuid':
-      case 'title':
         $this->api_get_sites();
         break;
+      case 'title':
+        $this->api_get_site_name($site_name);
       case 'environments':
         $this->api_get_site_environments($site_name);
         break;
@@ -70,11 +71,24 @@ class ProviderPantheon extends Provider {
       $site = new Site($this->name, $data->information->name);
       $site->uuid = $uuid;
       $site->realm = $data->information->preferred_zone;
-      $site->title = $site->name;
       $site->unix_username = '';
       $site->update();
       $this->sites[$site->name] = $site;
     }
+  }
+
+  public function api_get_site_name($site_name) {
+    $site =& $this->sites[$site_name];
+    $result = switchboard_request($this, array(
+      'method' => 'GET',
+      'realm' => 'attributes',
+      'resource' => 'site',
+      'uuid' => $site->uuid,
+    ));
+    $site_attributes = json_decode($result->body);
+    $site->title = $site_attributes->label;
+    $site->update();
+    $this->sites[$site->name] = $site;
   }
 
   public function requests_options_custom() {
