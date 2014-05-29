@@ -19,6 +19,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
 date_default_timezone_set('UTC');
 define('SWITCHBOARD_BASE_PATH', __DIR__);
 
@@ -69,8 +70,8 @@ function switchboard_drush_command() {
   $items['sw-brain-destroy'] = array(
     'description' => dt('Destroy the Switchboard brain.'),
     'options' => array(
-        'tables' => dt('List of tables, comma separated, to remove from the database.'),
-      ) + $json_option,
+      'tables' => dt('List of tables, comma separated, to remove from the database.'),
+    ) + $json_option,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
@@ -98,7 +99,7 @@ function switchboard_drush_command() {
     'hostname' => array(
       'description' => dt('Hostname'),
       'value' => 'required',
-      'example-value' => 'caffeine.kala'
+      'example-value' => 'caffeine.kala',
     ),
     'code_path' => array(
       'description' => dt('Absolute path to codebase'),
@@ -866,7 +867,8 @@ function drush_switchboard_sw_project_list() {
       }
       $rows[$row['name']] = $project_row;
     }
-  } catch (\PDOException $e) {
+  }
+  catch (\PDOException $e) {
     switchboard_pdo_exception_debug($e);
   }
 

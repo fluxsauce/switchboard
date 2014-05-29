@@ -8,7 +8,10 @@
  * Validate a site name; assuming a-z, 0-9 and dash, 255 chars max.
  *
  * @param string $site_name
+ *   The machine name of the Site in question.
+ *
  * @return bool
+ *   TRUE if the check passes.
  */
 function switchboard_validate_site_name($site_name) {
   return preg_match('/^[-a-z0-9]{1,255}$/', $site_name) ? TRUE : FALSE;
@@ -22,7 +25,7 @@ function switchboard_validate_site_name($site_name) {
  * @param string $site_name
  *   Name of the site.
  *
- * @return boolean
+ * @return bool
  *   TRUE if all checks pass.
  */
 function switchboard_validate_site($provider_name, $site_name) {
@@ -34,7 +37,9 @@ function switchboard_validate_site($provider_name, $site_name) {
  * Check to see if user is logged-in to provider.
  *
  * @param string $provider_name
- * @return boolean
+ *   The machine name of the Provider.
+ *
+ * @return bool
  *   TRUE if logged-in to provider.
  */
 function switchboard_validate_auth_logged_in($provider_name) {
@@ -44,8 +49,12 @@ function switchboard_validate_auth_logged_in($provider_name) {
 
 /**
  * Determine if a given provider name is in the list of known provider names.
- * @param $provider_name
- * @return boolean
+ *
+ * @param string $provider_name
+ *   The machine name of the Provider.
+ *
+ * @return bool
+ *   TRUE if a valid Provider name.
  */
 function switchboard_validate_provider_name($provider_name) {
   if (!$provider_name) {
@@ -58,8 +67,14 @@ function switchboard_validate_provider_name($provider_name) {
  * Determine if an environment exists with a given site.
  *
  * @param string $provider_name
+ *   The machine name of the Provider.
  * @param string $site_name
+ *   The machine name of the Site.
  * @param string $env_name
+ *   The machine name of the Site Environment.
+ *
+ * @return bool
+ *   TRUE if a valid Site Environment.
  */
 function switchboard_validate_site_env($provider_name, $site_name, $env_name) {
   if (!$env_name) {
@@ -69,6 +84,15 @@ function switchboard_validate_site_env($provider_name, $site_name, $env_name) {
   return array_key_exists($env_name, $provider->sites[$site_name]->environments);
 }
 
+/**
+ * Determine if destination can written to and doesn't exist.
+ *
+ * @param string $destination_path
+ *   Path to be checked.
+ *
+ * @return bool
+ *   TRUE if a valid destination.
+ */
 function switchboard_validate_destination($destination_path) {
   if (!$destination_path) {
     return FALSE;
@@ -81,8 +105,12 @@ function switchboard_validate_destination($destination_path) {
 
 /**
  * Validate a standard 8-4-4-4-12 UUID.
- * @param $uuid
- * @return boolean
+ *
+ * @param string $uuid
+ *   The theoretically valid UUID.
+ *
+ * @return bool
+ *   TRUE if valid.
  */
 function switchboard_validate_uuid($uuid) {
   return preg_match('#^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$#', $uuid) ? TRUE : FALSE;
@@ -91,8 +119,13 @@ function switchboard_validate_uuid($uuid) {
 /**
  * Ensure that every option has values.
  *
+ * Drush should do this, but it doesn't.
+ *
  * @param string $command_name
+ *   The name of the drush command.
+ *
  * @return bool
+ *   TRUE if all options have values.
  */
 function switchboard_validate_drush_option_required_values($command_name) {
   foreach (switchboard_get_drush_options($command_name) as $option_name => $option) {

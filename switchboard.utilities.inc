@@ -6,9 +6,14 @@
 
 /**
  * Send a request.
+ *
  * @param \Fluxsauce\Switchboard\Provider $provider
- * @param $options
+ *   The Provider in question.
+ * @param array $options
+ *   An array of options for Requests::Request().
+ *
  * @return bool|Requests_Response
+ *   FALSE upon failure, Requests_Response upon success.
  */
 function switchboard_request($provider, $options) {
   $url = $provider->endpoint;
@@ -76,7 +81,8 @@ function switchboard_request($provider, $options) {
         break;
 
     }
-  } catch (Requests_Exception $e) {
+  }
+  catch (Requests_Exception $e) {
     return drush_set_error('SWITCHBOARD_REQUEST_FAIL', dt('API failure: @error', array(
       '@error' => $e->getMessage(),
     )));
@@ -102,7 +108,9 @@ function switchboard_get_provider_names() {
 
 /**
  * Helper for debugging PDO exceptions.
+ *
  * @param PDOException $e
+ *   The thrown PDOException.
  */
 function switchboard_pdo_exception_debug(PDOException $e) {
   $trace = $e->getTrace();
@@ -115,6 +123,12 @@ function switchboard_pdo_exception_debug(PDOException $e) {
   exit;
 }
 
+/**
+ * Render a success message; respects JSON option.
+ *
+ * @param string $message
+ *   The success message.
+ */
 function switchboard_message_success($message) {
   if (drush_get_option('json')) {
     drush_set_context('DRUSH_USER_ABORT', TRUE);
@@ -124,6 +138,19 @@ function switchboard_message_success($message) {
   drush_log($message, 'success');
 }
 
+/**
+ * Helper function to generate error messages.
+ *
+ * @param string $code
+ *   Drush machine code for error.
+ * @param array $replacements
+ *   An associative array of replacement items.
+ *
+ * @return bool
+ *   Always returns FALSE.
+ * @throws Exception
+ *   Invalid code.
+ */
 function switchboard_message_fail_generate($code, $replacements = array()) {
   $codes = array(
     'SWITCHBOARD_PROVIDER_SITE_NAME_INVALID' => dt('"@site_name" is an invalid site name.', $replacements),
@@ -146,6 +173,17 @@ function switchboard_message_fail_generate($code, $replacements = array()) {
   return switchboard_message_fail($code, $message);
 }
 
+/**
+ * Render a failure message; respects JSON option.
+ *
+ * @param string $code
+ *   Drush machine code for error.
+ * @param string $message
+ *   The message to display.
+ *
+ * @return bool
+ *   Always FALSE.
+ */
 function switchboard_message_fail($code, $message) {
   if (drush_get_option('json')) {
     drush_set_context('DRUSH_USER_ABORT', TRUE);
@@ -159,26 +197,23 @@ function switchboard_message_fail($code, $message) {
  * Generate a UUID.
  *
  * @link http://www.php.net/manual/en/function.uniqid.php#94959
+ *
  * @return string
+ *   The generated UUID.
  */
 function switchboard_generate_uuid() {
   return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-    // 32 bits for "time_low"
+    // 32 bits for "time_low".
     mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-
-    // 16 bits for "time_mid"
+    // 16 bits for "time_mid".
     mt_rand(0, 0xffff),
-
-    // 16 bits for "time_hi_and_version",
-    // four most significant bits holds version number 4
+    // 16 bits for "time_hi_and_version", four most significant bits holds
+    // version number 4.
     mt_rand(0, 0x0fff) | 0x4000,
-
-    // 16 bits, 8 bits for "clk_seq_hi_res",
-    // 8 bits for "clk_seq_low",
-    // two most significant bits holds zero and one for variant DCE1.1
+    // 16 bits, 8 bits for "clk_seq_hi_res", 8 bits for "clk_seq_low", two most
+    // significant bits holds zero and one for variant DCE1.1.
     mt_rand(0, 0x3fff) | 0x8000,
-
-    // 48 bits for "node"
+    // 48 bits for "node".
     mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
   );
 }
@@ -186,8 +221,11 @@ function switchboard_generate_uuid() {
 /**
  * Helper to get all the options for a particular command.
  *
- * @param $command_name
+ * @param string $command_name
+ *   The name of the command.
+ *
  * @return array
+ *   All options, except JSON.
  */
 function switchboard_get_drush_options($command_name) {
   $command = switchboard_drush_command();
