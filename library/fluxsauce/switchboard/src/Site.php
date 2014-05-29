@@ -1,6 +1,7 @@
 <?php
 /**
  * @file
+ * Remote Site structure.
  */
 
 namespace Fluxsauce\Switchboard;
@@ -21,11 +22,13 @@ class Site extends Persistent {
   protected $external_key_name = 'provider';
 
   /**
-   * Magic __get.
+   * Magic __get, overriding Persistent.
    *
-   * @param $name string
+   * @param string $name
+   *   Name of the property.
+   *
    * @return mixed
-   *  Value of set property.
+   *   Value of set property.
    * @throws \Exception
    */
   public function __get($name) {
@@ -45,6 +48,12 @@ class Site extends Persistent {
     return $value;
   }
 
+  /**
+   * Helper to add an environment to a Site.
+   *
+   * @param Environment $environment
+   *   Environment to add.
+   */
   public function environmentAdd(Environment $environment) {
     if (!is_array($this->environments)) {
       $this->environments = array();
@@ -52,6 +61,12 @@ class Site extends Persistent {
     $this->environments[$environment->name] = $environment;
   }
 
+  /**
+   * Helper to remove an environment from a Site.
+   *
+   * @param Environment $environment
+   *   Environment to remove.
+   */
   public function environmentRemove(Environment $environment) {
     unset($this->environments[$environment->name]);
   }
@@ -79,6 +94,9 @@ class Site extends Persistent {
     }
   }
 
+  /**
+   * Render a Site's environments as a Drush table.
+   */
   public function renderEnvironmentsDrushTable() {
     $rows = array();
     $environment = new Environment();
@@ -92,6 +110,9 @@ class Site extends Persistent {
     drush_print_table($rows, TRUE);
   }
 
+  /**
+   * Render a Site's environments as JSON.
+   */
   public function renderEnvironmentsJson() {
     $rows = array();
     foreach ($this->__get('environments') as $environment) {
@@ -116,6 +137,7 @@ class Site extends Persistent {
    * Build VCS URL.
    *
    * @return string
+   *   A full VCS connection URL.
    */
   public function getVcsUrl() {
     $url = '';

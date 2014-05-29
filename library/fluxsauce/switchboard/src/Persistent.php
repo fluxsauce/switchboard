@@ -1,6 +1,9 @@
 <?php
 /**
  * @file
+ * Generic class providing database persistence.
+ *
+ * @todo Use a real ORM.
  */
 
 namespace Fluxsauce\Switchboard;
@@ -20,9 +23,12 @@ abstract class Persistent {
    *   Optional external identifier.
    * @param string $name
    *   Optional name.
+   *
+   * @throws \Exception
    */
   public function __construct($external_id = NULL, $name = NULL) {
-    // Ensure that implementing classes include an external key name of some sort.
+    // Ensure that implementing classes include an external key name of some
+    // sort.
     if (!$this->external_key_name) {
       throw new \Exception(get_called_class() . ' is missing the external key name.');
     }
@@ -69,7 +75,13 @@ abstract class Persistent {
     $this->$name = $value;
   }
 
-  public function get_table_name() {
+  /**
+   * Get the SQLite3 table name of an extending class.
+   *
+   * @return string
+   *   Name of the table, which is the plural of the class name.
+   */
+  public function getTableName() {
     $reflect = new \ReflectionClass($this);
     return strtolower($reflect->getShortName()) . 's';
   }
@@ -81,7 +93,7 @@ abstract class Persistent {
     $pdo = Sqlite::get();
 
     try {
-      $sql_query = 'INSERT INTO ' . $this->get_table_name() . ' ';
+      $sql_query = 'INSERT INTO ' . $this->getTableName() . ' ';
       $sql_query .= '(' . $this->external_key_name . ', name, updated) ';
       $sql_query .= 'VALUES (:' . $this->external_key_name . ', :name, :updated) ';
       $stmt = $pdo->prepare($sql_query);
@@ -103,7 +115,7 @@ abstract class Persistent {
     $pdo = Sqlite::get();
     try {
       $sql_query = 'SELECT * ';
-      $sql_query .= 'FROM ' . $this->get_table_name() . ' ';
+      $sql_query .= 'FROM ' . $this->getTableName() . ' ';
       // ID known.
       if ($this->id) {
         $sql_query .= 'WHERE id = :id ';
@@ -175,7 +187,7 @@ abstract class Persistent {
     }
 
     try {
-      $sql_query = 'UPDATE ' . $this->get_table_name() . ' SET ';
+      $sql_query = 'UPDATE ' . $this->getTableName() . ' SET ';
       $sql_query_set = array();
       foreach (array_keys($fields_to_update) as $key) {
         $sql_query_set[] = $key . ' = ? ';
@@ -209,7 +221,7 @@ abstract class Persistent {
   public function destroy() {
     $pdo = Sqlite::get();
     try {
-      $stmt = $pdo->prepare('DELETE FROM ' . $this->get_table_name() . ' WHERE id = :id');
+      $stmt = $pdo->prepare('DELETE FROM ' . $this->getTableName() . ' WHERE id = :id');
       $stmt->execute(array(
         $this->id,
       ));
@@ -269,4 +281,4 @@ abstract class Persistent {
     }
     drush_print(json_encode($fields));
   }
-} 
+}

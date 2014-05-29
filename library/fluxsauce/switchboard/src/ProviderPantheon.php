@@ -190,9 +190,9 @@ class ProviderPantheon extends Provider {
       return FALSE;
     }
     // Parse form build ID.
-    $DOM = new \DOMDocument;
-    @$DOM->loadHTML($html);
-    $login_form = $DOM->getElementById('atlas-login-form');
+    $dom = new \DOMDocument;
+    @$dom->loadHTML($html);
+    $login_form = $dom->getElementById('atlas-login-form');
     if (!$login_form) {
       return FALSE;
     }

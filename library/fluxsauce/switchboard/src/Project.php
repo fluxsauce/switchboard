@@ -1,6 +1,7 @@
 <?php
 /**
  * @file
+ * Local Project structure.
  */
 
 namespace Fluxsauce\Switchboard;
