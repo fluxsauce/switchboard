@@ -20,6 +20,8 @@ solution for Drupal developers.
 Development of Switchboard is being generously sponsored by
 [Kalamuna](http://www.kalamuna.com).
 
+Travis CI status: [<img src="https://travis-ci.org/fluxsauce/switchboard.svg?branch=master">](https://travis-ci.org/fluxsauce/switchboard)
+
 ## Requirements
 
 * [Drush](https://github.com/drush-ops/drush) 5.1 or higher
