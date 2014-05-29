@@ -17,6 +17,9 @@ Switchboard is being actively developed to support
 [Kalabox](http://www.kalamuna.com/products/kalabox/), an integrated workflow
 solution for Drupal developers.
 
+Development of Switchboard is being generously sponsored by
+[Kalamuna](http://www.kalamuna.com).
+
 ## Requirements
 
 * Drush 5.1 or higher - https://github.com/drush-ops/drush
