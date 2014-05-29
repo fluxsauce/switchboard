@@ -8,7 +8,6 @@
 
 namespace Fluxsauce\Switchboard;
 
-
 abstract class Persistent {
   protected $id;
   protected $name;
