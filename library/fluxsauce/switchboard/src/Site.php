@@ -14,6 +14,7 @@ class Site extends Persistent {
   protected $vcs_url;
   protected $vcs_type;
   protected $vcs_protocol;
+  protected $ssh_port;
 
   protected $environments;
 

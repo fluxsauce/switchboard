@@ -158,14 +158,15 @@ function switchboard_drush_command() {
   $items['sw-project-files-rsync'] = array(
     'description' => dt('rsync project files with remote.'),
     'arguments' => array(
-      'name' => dt('Name of the project.'),
+      'project_name' => dt('Name of the project.'),
+      'env_name' => dt('Name of the environment.'),
       'direction' => dt('Direction of sync; down (remote to local) and up (local to remote).'),
     ),
     'options' => $json_option,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['sw-project-files-wipe'] = array(
+  $items['sw-project-file-wipe'] = array(
     'description' => dt('Remove all Project files.'),
     'arguments' => array(
       'name' => dt('Name of the project.'),
@@ -356,7 +357,7 @@ function switchboard_drush_command() {
  */
 function drush_switchboard_sw_project_create_validate($project_name = '') {
   if (!$project_name) {
-    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot create.'));
+    return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
   }
   if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
@@ -413,7 +414,7 @@ function drush_switchboard_sw_project_create($project_name) {
  */
 function drush_switchboard_sw_project_destroy_validate($project_name = '') {
   if (!$project_name) {
-    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot destroy.'));
+    return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
   }
   if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
@@ -457,7 +458,7 @@ function drush_switchboard_sw_project_destroy($project_name) {
  */
 function drush_switchboard_sw_project_db_get_validate($project_name = '') {
   if (!$project_name) {
-    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot destroy.'));
+    return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
   }
   if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
@@ -523,10 +524,7 @@ function drush_switchboard_sw_project_db_get($project_name) {
  */
 function drush_switchboard_sw_project_db_import_validate($project_name = '', $path = '') {
   if (!$project_name) {
-    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot destroy.'));
-  }
-  if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
-    return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
+    return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
   }
   $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
   if (!$project->id) {
@@ -586,15 +584,49 @@ function drush_switchboard_sw_project_db_import($project_name, $path) {
  *
  * @param string $project_name
  *   Name of the local project in question.
+ * @param string $env_name
+ *   The name of the site environment.
  * @param string $direction
  *   Direction of the rsync.
  *
  * @return bool
  *   FALSE upon failure.
  */
-function drush_switchboard_sw_project_files_rsync_validate($project_name = '', $direction = '') {
+function drush_switchboard_sw_project_files_rsync_validate($project_name = '', $env_name = '', $direction = '') {
+  if (!$project_name) {
+    return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  if (!switchboard_validate_destination($project->files_path)) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_PATH_UNWRITEABLE', dt('Files path @files_path is not writeable.', array(
+      '@files_path' => $project->files_path,
+    )));
+  }
+  drush_set_option('project', $project);
   if (!in_array($direction, array('up', 'down'))) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_RSYNC_DIR', dt('Invalid rsync direction (up or down).'));
+  }
+
+  $site = new \Fluxsauce\Switchboard\Site();
+  $site->id = $project->site_id;
+  $site->read();
+  if (!$site->id) {
+    return switchboard_message_fail('SWITCHBOARD_SITE_NOT_FOUND', dt('Cannot find site_id #@site_id.', array(
+      '@site_id' => $project->site_id,
+    )));
+  }
+  drush_set_option('site', $site);
+
+  if (!switchboard_validate_site_env($site->provider, $site->name, $env_name)) {
+    return switchboard_message_fail_generate('SWITCHBOARD_SITE_ENV_INVALID', array(
+      '@env_name' => $env_name,
+      '@site_name' => $site->name,
+    ));
   }
 }
 
@@ -603,19 +635,33 @@ function drush_switchboard_sw_project_files_rsync_validate($project_name = '', $
  *
  * @param string $project_name
  *   Name of the local project in question.
+ * @param string $env_name
+ *   The name of the site environment.
  * @param string $direction
  *   Direction of the rsync.
  */
-function drush_switchboard_sw_project_files_rsync($project_name, $direction) {
-  switchboard_message_fail('SWITCHBOARD_NOT_IMPLEMENTED', dt('Not implemented yet.'));
-  return;
+function drush_switchboard_sw_project_files_rsync($project_name, $env_name, $direction) {
+  $project = drush_get_option('project');
+  $site = drush_get_option('site');
+  $provider = \Fluxsauce\Switchboard\Provider::getInstance($site->provider);
+  $site = drush_get_option('site');
+  $command = "rsync -rlvz --size-only --ipv4 --progress -e 'ssh -p {$site->ssh_port}' ";
+  $environment = $site->environments[$env_name];
+  $remote = "{$environment->username}@{$environment->host}:{$provider->get_files_path($site->name, $env_name)}";
+  $local = $project->files_path;
   if ($direction == 'up') {
-    // [user]@[svr].devcloud.hosting.acquia.com:/mnt/files/[site]/sites/default/files
-    // rsync -rltDvPh
-    // rsync -rlvz --size-only --ipv4 --progress -e 'ssh -p 2222' ./files/* $ENV.$SITE@appserver.$ENV.$SITE.drush.in:files/
+    $command .= "$local/ $remote";
   }
   else {
-    // rsync -rlvz --size-only --ipv4 --progress -e 'ssh -p 2222' $ENV.$SITE@appserver.$ENV.$SITE.drush.in:files/ ~/files
+    $command .= "$remote/ $local";
+  }
+  if (drush_shell_exec($command)) {
+    switchboard_message_success(dt('Files synced @direction.', array(
+      '@direction' => $direction,
+    )));
+  }
+  else {
+    switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_RSYNC_FAIL', dt('Rsync failed.'));
   }
 }
 
@@ -639,7 +685,7 @@ function drush_switchboard_sw_project_get_path_validate($project_name = '', $com
     return switchboard_message_fail('SWITCHBOARD_PROJECT_INVALID_COMPONENT', dt('Invalid component name (expecting "code" or "files").'));
   }
   if (!$project_name) {
-    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot destroy.'));
+    return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
   }
   if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
@@ -735,7 +781,7 @@ function drush_switchboard_sw_project_list() {
  */
 function drush_switchboard_sw_project_info_validate($project_name = '') {
   if (!$project_name) {
-    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot create.'));
+    return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
   }
   $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
   if (!$project->id) {
@@ -767,7 +813,7 @@ function drush_switchboard_sw_project_info($project_name) {
  */
 function drush_switchboard_sw_project_update_validate($project_name = '') {
   if (!$project_name) {
-    return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot update.'));
+    return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
   }
   if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));

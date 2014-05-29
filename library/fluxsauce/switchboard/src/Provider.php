@@ -173,6 +173,8 @@ abstract class Provider {
 
   abstract public function api_get_site_env_db_backups($site_name, $env_name);
 
+  abstract public function get_files_path($site_name, $env_name);
+
   public function get_site_env_db_backup_latest($site_name, $env_name) {
     $backups = $this->api_get_site_env_db_backups($site_name, $env_name);
     return array_pop($backups);

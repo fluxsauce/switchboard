@@ -102,6 +102,7 @@ class Sqlite {
         $sql_query .= ', vcs_url TEXT ';
         $sql_query .= ', vcs_type TEXT ';
         $sql_query .= ', vcs_protocol TEXT ';
+        $sql_query .= ', ssh_port TEXT ';
         $sql_query .= ', updated INTEGER ';
         $sql_query .= ') ';
 
@@ -119,7 +120,6 @@ class Sqlite {
         $sql_query .= ', host TEXT ';
         $sql_query .= ', username TEXT ';
         $sql_query .= ', branch TEXT ';
-        $sql_query .= ', files_path TEXT ';
         $sql_query .= ', updated INTEGER ';
         $sql_query .= ') ';
 
@@ -157,7 +157,6 @@ class Sqlite {
         $sql_query .= ', database_password TEXT ';
         $sql_query .= ', database_name TEXT ';
         $sql_query .= ', database_port INTEGER ';
-        $sql_query .= ', files_path TEXT ';
         $sql_query .= ', updated INTEGER ';
         $sql_query .= ') ';
 

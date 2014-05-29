@@ -20,6 +20,7 @@ class ProviderPantheon extends Provider {
       case 'vcs_url':
       case 'vcs_type':
       case 'vcs_protocol':
+      case 'ssh_port':
         $this->api_get_site($site_name);
         break;
       case 'unix_username':
@@ -48,6 +49,7 @@ class ProviderPantheon extends Provider {
       'vcs_url' => $repository,
       'vcs_type' => 'git',
       'vcs_protocol' => 'ssh',
+      'ssh_port' => 2222,
     ));
     $this->sites[$site_name] = $site;
   }
@@ -203,7 +205,6 @@ class ProviderPantheon extends Provider {
       $new_environment->branch = 'master';
       $new_environment->host = "appserver.$environment_name.{$site->uuid}.drush.in";
       $new_environment->username = "$environment_name.$site_name";
-      $new_environment->files_path = "files";
       $new_environment->update();
       $site->environmentAdd($new_environment);
     }
@@ -225,7 +226,6 @@ class ProviderPantheon extends Provider {
       'realm' => 'environments/' . $env_name . '/backups/catalog',
       'uuid' => $site->uuid,
     ));
-    // $result = terminus_api_backup_download_url(drush_get_option('site_uuid'), drush_get_option('environment'), drush_get_option('bucket'), drush_get_option('element'));
     $backups = array();
     $backup_data = json_decode($result->body);
     foreach ($backup_data as $id => $backup) {
@@ -274,5 +274,9 @@ class ProviderPantheon extends Provider {
     else {
       return drush_set_error('SWITCHBOARD_PANTHEON_BACKUP_DL_FAIL', dt('Unable to download!'));
     }
+  }
+
+  public function get_files_path($site_name, $env_name) {
+    return 'files';
   }
 }

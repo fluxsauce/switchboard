@@ -96,3 +96,5 @@ For a JSON list of available commands:
     drush sw-project-vcs-clone nameofproject
     # Import database to project.
     drush sw-project-db-import nameofproject ./path/to/db.tar.gz
+    # Get files from remote dev site via rsync.
+    drush sw-project-files-rsync nameofproject dev down

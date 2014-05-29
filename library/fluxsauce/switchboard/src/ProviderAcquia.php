@@ -23,6 +23,7 @@ class ProviderAcquia extends Provider {
       case 'vcs_protocol':
       case 'uuid':
       case 'title':
+      case 'ssh_port':
         $this->api_get_site($site_name);
         break;
       case 'realm':
@@ -106,6 +107,7 @@ class ProviderAcquia extends Provider {
       'vcs_protocol' => 'git',
       'uuid' => $site_info->uuid,
       'title' => $site_info->title,
+      'ssh_port' => 22,
     ));
     $this->sites[$site_name] = $site;
   }
@@ -122,7 +124,6 @@ class ProviderAcquia extends Provider {
       $new_environment->branch = $environment->vcs_path;
       $new_environment->host = $environment->ssh_host;
       $new_environment->username = "$site_name.$environment->name";
-      $new_environment->files_path = "/mnt/files/$site_name.$environment/sites/default/files";
       $new_environment->update();
       $site->environmentAdd($new_environment);
     }
@@ -185,5 +186,9 @@ class ProviderAcquia extends Provider {
     $destination_path = $destination . DIRECTORY_SEPARATOR . $backup['filename'];
     drush_move_dir($destination_tmp, $destination_path, TRUE);
     return $destination_path;
+  }
+
+  public function get_files_path($site_name, $env_name) {
+    return "/mnt/files/$site_name.$env_name/sites/default/files";
   }
 }

@@ -133,6 +133,7 @@ function switchboard_message_fail_generate($code, $replacements = array()) {
     'SWITCHBOARD_NOT_LOGGED_IN' => dt('Not logged-in to @provider_name, cannot continue.', $replacements),
     'SWITCHBOARD_DESTINATION_UNAVAILABLE' => dt('"@destination_path" does not exist or is not writeable.', $replacements),
     'SWITCHBOARD_INVALID_UUID' => dt('"@uuid" is an invalid UUID.', $replacements),
+    'SWITCHBOARD_PROJECT_NO_NAME' => dt('Project name missing, aborting.'),
   );
   if (isset($codes[$code])) {
     $message = $codes[$code];

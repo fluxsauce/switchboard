@@ -11,7 +11,6 @@ class Environment extends Persistent {
   protected $host;
   protected $username;
   protected $branch;
-  protected $files_path;
 
   protected $external_key_name = 'site_id';
 }
