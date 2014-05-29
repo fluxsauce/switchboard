@@ -106,6 +106,14 @@ abstract class Provider {
   }
 
   /**
+   * Perform an API call to get site information from a Provider.
+   *
+   * @param string $site_name
+   *   The name of the site in question.
+   */
+  abstract public function apiGetSite($site_name);
+
+  /**
    * Destroy a site associated with a Provider.
    *
    * @param string $site_name
@@ -166,6 +174,8 @@ abstract class Provider {
    *
    * @return string
    *   The value of the field.
+   * @throws \Exception
+   *   Unknown field name.
    */
   abstract public function siteGetField($site_name, $field);
 
@@ -183,6 +193,16 @@ abstract class Provider {
   abstract public function apiGetSiteEnvironments($site_name);
 
   /**
+   * Get and populate list of Databases for a particular Environment.
+   *
+   * @param string $site_name
+   *   The machine name of the Site.
+   * @param string $env_name
+   *   The machine name of the Site Environment.
+   */
+  abstract public function apiGetSiteEnvDbs($site_name, $env_name);
+
+  /**
    * Provider specific options for Requests.
    *
    * @return array
@@ -191,7 +211,7 @@ abstract class Provider {
   abstract public function requestsOptionsCustom();
 
   /**
-   * Log in to target provider.
+   * Log in to target Provider.
    *
    * @param string $email
    *   The email address of the user.

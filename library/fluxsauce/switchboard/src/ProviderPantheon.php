@@ -1,6 +1,7 @@
 <?php
 /**
  * @file
+ * Pantheon specific API interactions.
  */
 
 namespace Fluxsauce\Switchboard;
@@ -11,35 +12,58 @@ class ProviderPantheon extends Provider {
   protected $homepage = 'https://www.getpantheon.com/';
   protected $endpoint = 'https://terminus.getpantheon.com';
 
+  /**
+   * A mapping function that calls the appropriate API to populate a field.
+   *
+   * @param string $site_name
+   *   Machine name of the site in question.
+   * @param string $field
+   *   Name of the field to populate.
+   *
+   * @return string
+   *   The value of the field.
+   * @throws \Exception
+   *   Unknown field name.
+   */
   public function siteGetField($site_name, $field) {
     switch ($field) {
       // No API required.
       case 'name':
       case 'provider':
         break;
+
       case 'vcs_url':
       case 'vcs_type':
       case 'vcs_protocol':
       case 'ssh_port':
-        $this->api_get_site($site_name);
+        $this->apiGetSite($site_name);
         break;
+
       case 'unix_username':
       case 'realm':
       case 'uuid':
         $this->apiGetSites();
         break;
+
       case 'title':
-        $this->api_get_site_name($site_name);
+        $this->apiGetSiteName($site_name);
       case 'environments':
         $this->apiGetSiteEnvironments($site_name);
         break;
+
       default:
         throw new \Exception('Unknown field ' . $field . ' in ' . __CLASS__);
     }
     return $this->sites[$site_name]->$field;
   }
 
-  public function api_get_site($site_name) {
+  /**
+   * Perform an API call to get site information from a Provider.
+   *
+   * @param string $site_name
+   *   The name of the site in question.
+   */
+  public function apiGetSite($site_name) {
     $site = new Site('pantheon', $site_name);
 
     $repository = 'codeserver.dev.' . $site->uuid;
@@ -55,6 +79,9 @@ class ProviderPantheon extends Provider {
     $this->sites[$site_name] = $site;
   }
 
+  /**
+   * Populate available Sites from a Provider.
+   */
   public function apiGetSites() {
     $user_uuid = drush_cache_get('user_uuid', $this->drushCacheBinAuthName());
     $result = switchboard_request($this, array(
@@ -77,7 +104,13 @@ class ProviderPantheon extends Provider {
     }
   }
 
-  public function api_get_site_name($site_name) {
+  /**
+   * API call to get the human readable name of a Site.
+   *
+   * @param string $site_name
+   *   The machine name of a site.
+   */
+  public function apiGetSiteName($site_name) {
     $site =& $this->sites[$site_name];
     $result = switchboard_request($this, array(
       'method' => 'GET',
@@ -91,6 +124,12 @@ class ProviderPantheon extends Provider {
     $this->sites[$site->name] = $site;
   }
 
+  /**
+   * Provider specific options for Requests.
+   *
+   * @return array
+   *   Options for the request; see Requests::request for details.
+   */
   public function requestsOptionsCustom() {
     $options = array();
     $cookies = drush_cache_get('session', $this->drushCacheBinAuthName());
@@ -102,6 +141,17 @@ class ProviderPantheon extends Provider {
     return $options;
   }
 
+  /**
+   * Log in to target Provider.
+   *
+   * @param string $email
+   *   The email address of the user.
+   * @param string $password
+   *   The password of the user.
+   *
+   * @return bool
+   *   Indicates success.
+   */
   public function authLogin($email, $password) {
     $url = $this->endpoint . '/login';
 
@@ -114,7 +164,7 @@ class ProviderPantheon extends Provider {
         '@error' => $e->getMessage(),
       )));
     }
-    $form_build_id = $this->auth_login_get_form_build_id($response->body);
+    $form_build_id = $this->authLoginGetFormBuildId($response->body);
     if (!$form_build_id) {
       return drush_set_error('SWITCHBOARD_AUTH_LOGIN_PANTHEON_LOGIN_UNAVAILABLE', dt('Pantheon login unavailable.'));
     }
@@ -135,7 +185,7 @@ class ProviderPantheon extends Provider {
       )));
     }
 
-    $session = $this->auth_login_get_session_from_headers($response->headers->getValues('set-cookie'));
+    $session = $this->authLoginGetSessionFromHeaders($response->headers->getValues('set-cookie'));
 
     if (!$session) {
       return drush_set_error('SWITCHBOARD_AUTH_LOGIN_PANTHEON_NO_SESSION', dt('Pantheon Session not found; please check your credentials and try again.'));
@@ -154,19 +204,29 @@ class ProviderPantheon extends Provider {
     return TRUE;
   }
 
+  /**
+   * Determine whether a user is logged-in to a Provider.
+   *
+   * @return bool
+   *   TRUE if they are.
+   */
   public function authIsLoggedIn() {
     $session = drush_cache_get('session', $this->drushCacheBinAuthName());
     return isset($session->data) ? TRUE : FALSE;
   }
 
   /**
-   * Parse session out of a header, based on terminus_pauth_get_session_from_headers().
-   * https://github.com/pantheon-systems/terminus
+   * Parse session out of a header.
+   *
+   * Based on terminus_pauth_get_session_from_headers().
    *
    * @param array $headers
+   *   Headers to parse.
+   *
    * @return string
+   *   The session cookie, if found.
    */
-  function auth_login_get_session_from_headers($headers) {
+  public function authLoginGetSessionFromHeaders($headers) {
     $session = FALSE;
     foreach ($headers as $header) {
       foreach (explode('; ', $header) as $cookie) {
@@ -180,17 +240,19 @@ class ProviderPantheon extends Provider {
 
   /**
    * Parse form build ID, based on terminus_pauth_login_get_form_build_id().
-   * https://github.com/pantheon-systems/terminus
    *
-   * @param $html
+   * @param string $html
+   *   The raw HTML to parse.
+   *
    * @return string
+   *   The login form_build_id, if found.
    */
-  public function auth_login_get_form_build_id($html) {
+  public function authLoginGetFormBuildId($html) {
     if (!$html) {
       return FALSE;
     }
     // Parse form build ID.
-    $dom = new \DOMDocument;
+    $dom = new \DOMDocument();
     @$dom->loadHTML($html);
     $login_form = $dom->getElementById('atlas-login-form');
     if (!$login_form) {
@@ -205,6 +267,12 @@ class ProviderPantheon extends Provider {
     return FALSE;
   }
 
+  /**
+   * Populate available Site Environments from a Provider.
+   *
+   * @param string $site_name
+   *   The machine name of the site in question.
+   */
   public function apiGetSiteEnvironments($site_name) {
     $site =& $this->sites[$site_name];
     $result = switchboard_request($this, array(
@@ -224,7 +292,15 @@ class ProviderPantheon extends Provider {
     }
   }
 
-  public function api_get_site_env_dbs($site_name, $env_name) {
+  /**
+   * Get and populate list of Databases for a particular Environment.
+   *
+   * @param string $site_name
+   *   The machine name of the Site.
+   * @param string $env_name
+   *   The machine name of the Site Environment.
+   */
+  public function apiGetSiteEnvDbs($site_name, $env_name) {
     $site =& $this->sites[$site_name];
     $env =& $site->environments[$env_name];
     $new_db = new EnvDb($env->id, 'pantheon');
@@ -232,6 +308,21 @@ class ProviderPantheon extends Provider {
     $env->dbAdd($new_db);
   }
 
+  /**
+   * Get a list of database backups for a particular Site Environment.
+   *
+   * @param string $site_name
+   *   The machine name of the Site.
+   * @param string $env_name
+   *   The machine name of the Site Environment.
+   *
+   * @return array
+   *   An array of Backup arrays keyed by the timestamp. Each Backup
+   *   array has the following keys:
+   *   - 'filename'
+   *   - 'url'
+   *   - 'timestamp'
+   */
   public function apiGetSiteEnvDbBackups($site_name, $env_name) {
     $site = $this->sites[$site_name];
     $result = switchboard_request($this, array(
@@ -258,14 +349,40 @@ class ProviderPantheon extends Provider {
     return $backups;
   }
 
+  /**
+   * Helper function to get the latest database backup.
+   *
+   * @param string $site_name
+   *   The machine name of the Site in question.
+   * @param string $env_name
+   *   The machine name of the Site Environment in question.
+   *
+   * @return array
+   *   A backup array as defined in apiGetSiteEnvDbBackups().
+   */
   public function getSiteEnvDbBackupLatest($site_name, $env_name) {
     $backup = parent::getSiteEnvDbBackupLatest($site_name, $env_name);
-    $backup['url'] = $this->api_get_backup_download_url($site_name, $env_name, $backup['bucket'], 'database');
+    $backup['url'] = $this->apiGetBackupDownloadUrl($site_name, $env_name, $backup['bucket'], 'database');
     unset($backup['bucket']);
     return $backup;
   }
 
-  public function api_get_backup_download_url($site_name, $env_name, $bucket, $element) {
+  /**
+   * Helper function to get the S3 backup URL.
+   *
+   * @param string $site_name
+   *   The machine name of the Site in question.
+   * @param string $env_name
+   *   The machine name of the Site Environment in question.
+   * @param string $bucket
+   *   The S3 bucket.
+   * @param string $element
+   *   Elements are db, code, files.
+   *
+   * @return string
+   *   The S3 URL of the backup.
+   */
+  public function apiGetBackupDownloadUrl($site_name, $env_name, $bucket, $element) {
     $site = $this->sites[$site_name];
     $result = switchboard_request($this, array(
       'method' => 'POST',
@@ -278,6 +395,17 @@ class ProviderPantheon extends Provider {
     return $token->url;
   }
 
+  /**
+   * Download a backup.
+   *
+   * @param array $backup
+   *   An array from apiGetSiteEnvDbBackups().
+   * @param string $destination
+   *   The path to the destination.
+   *
+   * @return string
+   *   The full path to the downloaded backup.
+   */
   public function apiDownloadBackup($backup, $destination) {
     // See Drush's package_handler_download_project().
     $destination_path = $destination . DIRECTORY_SEPARATOR . $backup['filename'];
@@ -290,6 +418,17 @@ class ProviderPantheon extends Provider {
     }
   }
 
+  /**
+   * Get the remote path to files for a particular Site Environment.
+   *
+   * @param string $site_name
+   *   The machine name of the Site in question.
+   * @param string $env_name
+   *   The machine name of the Site Environment in question.
+   *
+   * @return string
+   *   The full path of the files directory.
+   */
   public function getFilesPath($site_name, $env_name) {
     return 'files';
   }

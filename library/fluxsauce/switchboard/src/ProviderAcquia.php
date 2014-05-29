@@ -1,6 +1,7 @@
 <?php
 /**
  * @file
+ * Acquia specific API interactions.
  */
 
 namespace Fluxsauce\Switchboard;
@@ -11,12 +12,26 @@ class ProviderAcquia extends Provider {
   protected $homepage = 'http://www.acquia.com/';
   protected $endpoint = 'https://cloudapi.acquia.com/v1';
 
+  /**
+   * A mapping function that calls the appropriate API to populate a field.
+   *
+   * @param string $site_name
+   *   Machine name of the site in question.
+   * @param string $field
+   *   Name of the field to populate.
+   *
+   * @return string
+   *   The value of the field.
+   * @throws \Exception
+   *   Unknown field name.
+   */
   public function siteGetField($site_name, $field) {
     switch ($field) {
       // No API required.
       case 'name':
       case 'provider':
         break;
+
       case 'unix_username':
       case 'vcs_url':
       case 'vcs_type':
@@ -24,20 +39,29 @@ class ProviderAcquia extends Provider {
       case 'uuid':
       case 'title':
       case 'ssh_port':
-        $this->api_get_site($site_name);
+        $this->apiGetSite($site_name);
         break;
+
       case 'realm':
         $this->apiGetSites();
         break;
+
       case 'environments':
         $this->apiGetSiteEnvironments($site_name);
         break;
+
       default:
         throw new \Exception('Unknown field ' . $field . ' in ' . __CLASS__);
     }
     return $this->sites[$site_name]->$field;
   }
 
+  /**
+   * Provider specific options for Requests.
+   *
+   * @return array
+   *   Options for the request; see Requests::request for details.
+   */
   public function requestsOptionsCustom() {
     $email = drush_cache_get('email', $this->drushCacheBinAuthName());
     $password = drush_cache_get('password', $this->drushCacheBinAuthName());
@@ -50,6 +74,17 @@ class ProviderAcquia extends Provider {
     return $options;
   }
 
+  /**
+   * Log in to target Provider.
+   *
+   * @param string $email
+   *   The email address of the user.
+   * @param string $password
+   *   The password of the user.
+   *
+   * @return bool
+   *   Indicates success.
+   */
   public function authLogin($email, $password) {
     drush_cache_clear_all('*', $this->drushCacheBinAuthName(), TRUE);
     drush_cache_set('email', $email, $this->drushCacheBinAuthName());
@@ -57,26 +92,47 @@ class ProviderAcquia extends Provider {
     return TRUE;
   }
 
-  protected function auth_email_get() {
+  /**
+   * Helper function to get the cached email.
+   *
+   * @return mixed
+   *   The password in question or NULL.
+   */
+  protected function authEmailGet() {
     $email = drush_cache_get('email', $this->drushCacheBinAuthName());
     if (isset($email->data)) {
       return $email->data;
     }
   }
 
-  protected function auth_password_get() {
+  /**
+   * Helper function to get the cached password.
+   *
+   * @return mixed
+   *   The password in question or NULL.
+   */
+  protected function authPasswordGet() {
     $password = drush_cache_get('password', $this->drushCacheBinAuthName());
     if (isset($password->data)) {
       return $password->data;
     }
   }
 
+  /**
+   * Determine whether a user is logged-in to a Provider.
+   *
+   * @return bool
+   *   TRUE if they are.
+   */
   public function authIsLoggedIn() {
     $email = drush_cache_get('email', $this->drushCacheBinAuthName());
     $password = drush_cache_get('password', $this->drushCacheBinAuthName());
     return (isset($email->data) && isset($password->data)) ? TRUE : FALSE;
   }
 
+  /**
+   * Populate available Sites from a Provider.
+   */
   public function apiGetSites() {
     $result = switchboard_request($this, array(
       'method' => 'GET',
@@ -93,7 +149,13 @@ class ProviderAcquia extends Provider {
     }
   }
 
-  public function api_get_site($site_name) {
+  /**
+   * Perform an API call to get site information from a Provider.
+   *
+   * @param string $site_name
+   *   The name of the site in question.
+   */
+  public function apiGetSite($site_name) {
     $site = new Site('acquia', $site_name);
     $result = switchboard_request($this, array(
       'method' => 'GET',
@@ -112,6 +174,12 @@ class ProviderAcquia extends Provider {
     $this->sites[$site_name] = $site;
   }
 
+  /**
+   * Populate available Site Environments from a Provider.
+   *
+   * @param string $site_name
+   *   The machine name of the site in question.
+   */
   public function apiGetSiteEnvironments($site_name) {
     $site =& $this->sites[$site_name];
     $result = switchboard_request($this, array(
@@ -129,7 +197,15 @@ class ProviderAcquia extends Provider {
     }
   }
 
-  public function api_get_site_env_dbs($site_name, $env_name) {
+  /**
+   * Get and populate list of Databases for a particular Environment.
+   *
+   * @param string $site_name
+   *   The machine name of the Site.
+   * @param string $env_name
+   *   The machine name of the Site Environment.
+   */
+  public function apiGetSiteEnvDbs($site_name, $env_name) {
     $site =& $this->sites[$site_name];
     $env =& $site->environments[$env_name];
     $result = switchboard_request($this, array(
@@ -144,6 +220,21 @@ class ProviderAcquia extends Provider {
     }
   }
 
+  /**
+   * Get a list of database backups for a particular Site Environment.
+   *
+   * @param string $site_name
+   *   The machine name of the Site.
+   * @param string $env_name
+   *   The machine name of the Site Environment.
+   *
+   * @return array
+   *   An array of Backup arrays keyed by the timestamp. Each Backup
+   *   array has the following keys:
+   *   - 'filename'
+   *   - 'url'
+   *   - 'timestamp'
+   */
   public function apiGetSiteEnvDbBackups($site_name, $env_name) {
     $site = $this->sites[$site_name];
     $result = switchboard_request($this, array(
@@ -165,6 +256,17 @@ class ProviderAcquia extends Provider {
     return $backups;
   }
 
+  /**
+   * Helper function to get the latest database backup.
+   *
+   * @param string $site_name
+   *   The machine name of the Site in question.
+   * @param string $env_name
+   *   The machine name of the Site Environment in question.
+   *
+   * @return array
+   *   A backup array as defined in apiGetSiteEnvDbBackups().
+   */
   public function getSiteEnvDbBackupLatest($site_name, $env_name) {
     $site = $this->sites[$site_name];
     $backup = parent::getSiteEnvDbBackupLatest($site_name, $env_name);
@@ -173,10 +275,21 @@ class ProviderAcquia extends Provider {
     return $backup;
   }
 
+  /**
+   * Download a backup.
+   *
+   * @param array $backup
+   *   An array from apiGetSiteEnvDbBackups().
+   * @param string $destination
+   *   The path to the destination.
+   *
+   * @return string
+   *   The full path to the downloaded backup.
+   */
   public function apiDownloadBackup($backup, $destination) {
     drush_log(var_export($backup, TRUE));
     $destination_tmp = drush_tempnam('download_file');
-    drush_shell_exec("curl --fail -s -L -u " . $this->auth_email_get() . ":" . $this->auth_password_get() . " --connect-timeout 30 -o %s %s", $destination_tmp, $backup['url']);
+    drush_shell_exec("curl --fail -s -L -u " . $this->authEmailGet() . ":" . $this->authPasswordGet() . " --connect-timeout 30 -o %s %s", $destination_tmp, $backup['url']);
     if (!drush_file_not_empty($destination_tmp) && $file = @file_get_contents($backup['url'])) {
       @file_put_contents($destination_tmp, $file);
     }
@@ -188,6 +301,17 @@ class ProviderAcquia extends Provider {
     return $destination_path;
   }
 
+  /**
+   * Get the remote path to files for a particular Site Environment.
+   *
+   * @param string $site_name
+   *   The machine name of the Site in question.
+   * @param string $env_name
+   *   The machine name of the Site Environment in question.
+   *
+   * @return string
+   *   The full path of the files directory.
+   */
   public function getFilesPath($site_name, $env_name) {
     return "/mnt/files/$site_name.$env_name/sites/default/files";
   }
