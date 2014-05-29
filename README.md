@@ -5,6 +5,9 @@ third-party hosts. Switchboard gets information about remote sites, sets up
 local sites, and can be used to synchronize content between the local and
 remote.
 
+Switchboard uses Drush for validation and input. All commands can respond with
+Drush format (default), or with JSON output using option ````--json````.
+
 Switchboard currently supports operations on both Acquia and Pantheon sites.
 Switchboard is not intended as a replacement for either Acquia Drush commands or
 Pantheon's Terminus; those tools are designed for performing remote site
@@ -83,7 +86,8 @@ For a JSON list of available commands:
       --database_port=3306 \
       --database_username=dbuser \
       --database_password=dbpass \
-      --database_name=dbname
+      --database_name=dbname \
+      --hostname=site.tld
     # List available projects.
     drush sw-project-list
     # Get information about a project.

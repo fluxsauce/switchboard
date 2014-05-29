@@ -193,8 +193,19 @@ function switchboard_drush_command() {
       'path' => dt('Path to database backup to import.'),
     ),
     'options' => array(
-        'pv' => dt('Display progress using Pipe Viewer.'),
-      ) + $json_option,
+      'pv' => dt('Display progress using Pipe Viewer.'),
+    ) + $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-project-get-host'] = array(
+    'description' => dt('Get the hostname for a particular site.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => array(
+      'format' => dt('Format of hostname, such as "url"'),
+    ) + $json_option,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
@@ -671,6 +682,51 @@ function drush_switchboard_sw_project_files_rsync($project_name, $env_name, $dir
   else {
     switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_RSYNC_FAIL', dt('Rsync failed.'));
   }
+}
+
+/**
+ * Validation callback for drush sw-project-get-host.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_project_get_host_validate($project_name = '') {
+  if (!$project_name) {
+    return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
+  }
+  if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  if (!$project->hostname) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_HOSTNAME_MISSING', dt('@project_name is missing a hostname.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  drush_set_option('project', $project);
+}
+
+/**
+ * Command callback for drush sw-project-get-host.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ */
+function drush_switchboard_sw_project_get_host($project_name) {
+  $project = drush_get_option('project');
+  $ret_val = $project->hostname;
+  if (drush_get_option('format') == 'url') {
+    $ret_val = "http://$ret_val";
+  }
+  switchboard_message_success($ret_val);
 }
 
 /**
