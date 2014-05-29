@@ -147,7 +147,7 @@ abstract class Provider {
   /**
    * @return array
    */
-  abstract public function requests_options_custom();
+  abstract public function requestsOptionsCustom();
 
   /**
    * Log in to target provider.
@@ -157,7 +157,7 @@ abstract class Provider {
    */
   abstract public function auth_login($email, $password);
 
-  abstract public function api_download_backup($backup, $destination);
+  abstract public function apiDownloadBackup($backup, $destination);
 
   /**
    * Log out of target provider.
@@ -180,20 +180,20 @@ abstract class Provider {
     return array_pop($backups);
   }
 
-  public function requests_options($options = array()) {
+  public function requestsOptions($options = array()) {
     $defaults = array(
       'timeout' => 30,
     );
 
     // Get provider specific options.
-    $provider_options = $this->requests_options_custom();
+    $provider_options = $this->requestsOptionsCustom();
     if (!empty($provider_options)) {
-      $defaults = array_merge($defaults, $provider_options);
+      $defaults += $provider_options;
     }
 
     // Get custom options.
     if (!empty($options)) {
-      $defaults = array_merge($defaults, $options);
+      $defaults += $options;
     }
 
     return $defaults;

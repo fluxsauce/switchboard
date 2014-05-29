@@ -27,7 +27,7 @@ function switchboard_request($provider, $options) {
     $url .= '.json';
   }
 
-  $requests_options = $provider->requests_options();
+  $requests_options = $provider->requestsOptions();
 
   if (!in_array($options['method'], array('GET', 'DELETE', 'POST', 'PUT'))) {
     return drush_set_error('SWITCHBOARD_REQUEST_INVALID_METHOD');

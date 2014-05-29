@@ -38,7 +38,7 @@ class ProviderAcquia extends Provider {
     return $this->sites[$site_name]->$field;
   }
 
-  public function requests_options_custom() {
+  public function requestsOptionsCustom() {
     $email = drush_cache_get('email', 'switchboard-auth-acquia');
     $password = drush_cache_get('password', 'switchboard-auth-acquia');
     $options = array(
@@ -173,7 +173,7 @@ class ProviderAcquia extends Provider {
     return $backup;
   }
 
-  public function api_download_backup($backup, $destination) {
+  public function apiDownloadBackup($backup, $destination) {
     drush_log(var_export($backup, TRUE));
     $destination_tmp = drush_tempnam('download_file');
     drush_shell_exec("curl --fail -s -L -u " . $this->auth_email_get() . ":" . $this->auth_password_get() . " --connect-timeout 30 -o %s %s", $destination_tmp, $backup['url']);

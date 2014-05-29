@@ -1750,7 +1750,7 @@ function drush_switchboard_sw_site_env_db_backup($provider_name, $site_name, $en
     '@date' => date('r', $backup['timestamp']),
   )));
 
-  $result = $provider->api_download_backup($backup, $destination);
+  $result = $provider->apiDownloadBackup($backup, $destination);
   if ($result) {
     switchboard_message_success($result);
   }

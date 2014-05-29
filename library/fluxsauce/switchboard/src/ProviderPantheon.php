@@ -91,7 +91,7 @@ class ProviderPantheon extends Provider {
     $this->sites[$site->name] = $site;
   }
 
-  public function requests_options_custom() {
+  public function requestsOptionsCustom() {
     $options = array();
     $cookies = drush_cache_get('session', 'switchboard-auth-pantheon');
     if (isset($cookies->data)) {
@@ -127,7 +127,7 @@ class ProviderPantheon extends Provider {
         'form_build_id' => $form_build_id,
         'form_id' => 'atlas_login_form',
         'op' => 'Login',
-      ), $this->requests_options(array('follow_redirects' => FALSE)));
+      ), $this->requestsOptions(array('follow_redirects' => FALSE)));
     }
     catch (\Requests_Exception $e) {
       return drush_set_error('SWITCHBOARD_AUTH_LOGIN_PANTHEON_LOGIN_FAILURE', dt('Pantheon login failure: @error', array(
@@ -278,7 +278,7 @@ class ProviderPantheon extends Provider {
     return $token->url;
   }
 
-  public function api_download_backup($backup, $destination) {
+  public function apiDownloadBackup($backup, $destination) {
     // See Drush's package_handler_download_project().
     $destination_path = $destination . DIRECTORY_SEPARATOR . $backup['filename'];
     $path = _drush_download_file($backup['url'], $destination_path, 31556926);
