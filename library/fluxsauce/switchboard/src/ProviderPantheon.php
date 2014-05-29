@@ -11,7 +11,7 @@ class ProviderPantheon extends Provider {
   protected $homepage = 'https://www.getpantheon.com/';
   protected $endpoint = 'https://terminus.getpantheon.com';
 
-  public function site_get_field($site_name, $field) {
+  public function siteGetField($site_name, $field) {
     switch ($field) {
       // No API required.
       case 'name':
@@ -26,12 +26,12 @@ class ProviderPantheon extends Provider {
       case 'unix_username':
       case 'realm':
       case 'uuid':
-        $this->api_get_sites();
+        $this->apiGetSites();
         break;
       case 'title':
         $this->api_get_site_name($site_name);
       case 'environments':
-        $this->api_get_site_environments($site_name);
+        $this->apiGetSiteEnvironments($site_name);
         break;
       default:
         throw new \Exception('Unknown field ' . $field . ' in ' . __CLASS__);
@@ -55,8 +55,8 @@ class ProviderPantheon extends Provider {
     $this->sites[$site_name] = $site;
   }
 
-  public function api_get_sites() {
-    $user_uuid = drush_cache_get('user_uuid', 'switchboard-auth-pantheon');
+  public function apiGetSites() {
+    $user_uuid = drush_cache_get('user_uuid', $this->drushCacheBinAuthName());
     $result = switchboard_request($this, array(
       'method' => 'GET',
       'realm' => 'sites',
@@ -93,7 +93,7 @@ class ProviderPantheon extends Provider {
 
   public function requestsOptionsCustom() {
     $options = array();
-    $cookies = drush_cache_get('session', 'switchboard-auth-pantheon');
+    $cookies = drush_cache_get('session', $this->drushCacheBinAuthName());
     if (isset($cookies->data)) {
       $options = array(
         'cookies' => array($cookies->data),
@@ -102,7 +102,7 @@ class ProviderPantheon extends Provider {
     return $options;
   }
 
-  public function auth_login($email, $password) {
+  public function authLogin($email, $password) {
     $url = $this->endpoint . '/login';
 
     // Get the form build ID.
@@ -147,15 +147,15 @@ class ProviderPantheon extends Provider {
       return drush_set_error('SWITCHBOARD_AUTH_LOGIN_PANTHEON_NO_UUID', dt('Pantheon User UUID not found; please check your credentials and try again.'));
     }
 
-    drush_cache_clear_all('*', 'switchboard-auth-pantheon', TRUE);
-    drush_cache_set('user_uuid', $user_uuid, 'switchboard-auth-pantheon');
-    drush_cache_set('session', $session, 'switchboard-auth-pantheon');
-    drush_cache_set('email', $email, 'switchboard-auth-pantheon');
+    drush_cache_clear_all('*', $this->drushCacheBinAuthName(), TRUE);
+    drush_cache_set('user_uuid', $user_uuid, $this->drushCacheBinAuthName());
+    drush_cache_set('session', $session, $this->drushCacheBinAuthName());
+    drush_cache_set('email', $email, $this->drushCacheBinAuthName());
     return TRUE;
   }
 
-  public function auth_is_logged_in() {
-    $session = drush_cache_get('session', 'switchboard-auth-pantheon');
+  public function authIsLoggedIn() {
+    $session = drush_cache_get('session', $this->drushCacheBinAuthName());
     return isset($session->data) ? TRUE : FALSE;
   }
 
@@ -205,7 +205,7 @@ class ProviderPantheon extends Provider {
     return FALSE;
   }
 
-  public function api_get_site_environments($site_name) {
+  public function apiGetSiteEnvironments($site_name) {
     $site =& $this->sites[$site_name];
     $result = switchboard_request($this, array(
       'method' => 'GET',
@@ -232,7 +232,7 @@ class ProviderPantheon extends Provider {
     $env->dbAdd($new_db);
   }
 
-  public function api_get_site_env_db_backups($site_name, $env_name) {
+  public function apiGetSiteEnvDbBackups($site_name, $env_name) {
     $site = $this->sites[$site_name];
     $result = switchboard_request($this, array(
       'method' => 'GET',
@@ -258,8 +258,8 @@ class ProviderPantheon extends Provider {
     return $backups;
   }
 
-  public function get_site_env_db_backup_latest($site_name, $env_name) {
-    $backup = parent::get_site_env_db_backup_latest($site_name, $env_name);
+  public function getSiteEnvDbBackupLatest($site_name, $env_name) {
+    $backup = parent::getSiteEnvDbBackupLatest($site_name, $env_name);
     $backup['url'] = $this->api_get_backup_download_url($site_name, $env_name, $backup['bucket'], 'database');
     unset($backup['bucket']);
     return $backup;
@@ -290,7 +290,7 @@ class ProviderPantheon extends Provider {
     }
   }
 
-  public function get_files_path($site_name, $env_name) {
+  public function getFilesPath($site_name, $env_name) {
     return 'files';
   }
 }

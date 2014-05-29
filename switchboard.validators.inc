@@ -27,7 +27,7 @@ function switchboard_validate_site_name($site_name) {
  */
 function switchboard_validate_site($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  return $provider->site_exists($site_name);
+  return $provider->siteExists($site_name);
 }
 
 /**
@@ -39,7 +39,7 @@ function switchboard_validate_site($provider_name, $site_name) {
  */
 function switchboard_validate_auth_logged_in($provider_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  return $provider->auth_is_logged_in();
+  return $provider->authIsLoggedIn();
 }
 
 /**

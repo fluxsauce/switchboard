@@ -1,6 +1,7 @@
 <?php
 /**
  * @file
+ * Generic class for hosting / PaaS Providers.
  */
 
 namespace Fluxsauce\Switchboard;
@@ -17,19 +18,22 @@ abstract class Provider {
    * Returns a singleton Provider.
    *
    * @param string $provider_name
+   *   The machine name of a Provider.
+   *
    * @return mixed
+   *   A Provider subclass.
    */
-  static function getInstance($provider_name) {
+  static public function getInstance($provider_name) {
     static $instance = array();
     if (!isset($instance[$provider_name])) {
       $class_name = '\Fluxsauce\Switchboard\Provider' . ucfirst($provider_name);
-      $instance[$provider_name] = new $class_name;
+      $instance[$provider_name] = new $class_name();
     }
     return $instance[$provider_name];
   }
 
   /**
-   * Protected constructor.
+   * Protected constructor; use getInstance.
    */
   protected function __construct() {
     // Ensure implementing classes have necessary properties.
@@ -60,12 +64,13 @@ abstract class Provider {
         $site = new Site($this->name, $row['name']);
         $this->sites[$row['name']] = $site;
       }
-    } catch (\PDOException $e) {
+    }
+    catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
     }
 
     if (drush_get_option('refresh')) {
-      $this->api_get_sites();
+      $this->apiGetSites();
       foreach ($this->sites as $site) {
         $site->update();
       }
@@ -80,14 +85,16 @@ abstract class Provider {
   /**
    * Prevent unserializing of the Provider Singleton.
    */
-  private function __wakeup(){}
+  private function __wakeup() {}
 
   /**
    * Magic __get.
    *
-   * @param $name string
+   * @param string $name
+   *   The name of the property to get.
+   *
    * @return mixed
-   *  Value of set property.
+   *   Value of set property.
    * @throws \Exception
    */
   public function __get($name) {
@@ -98,7 +105,15 @@ abstract class Provider {
     return $this->$name;
   }
 
-  public function site_destroy($site_name) {
+  /**
+   * Destroy a site associated with a Provider.
+   *
+   * @param string $site_name
+   *   The machine name of the Site to destroy.
+   *
+   * @throws \Exception
+   */
+  public function siteDestroy($site_name) {
     if (!isset($this->sites[$site_name])) {
       throw new \Exception(__CLASS__ . ' site ' . $site_name . ' does not exist, cannot destroy.');
     }
@@ -106,24 +121,37 @@ abstract class Provider {
     unset($this->sites[$site_name]);
   }
 
-  public function sites_destroy() {
+  /**
+   * Delete all Sites associated with a Provider.
+   */
+  public function sitesDestroy() {
     $this->sites = array();
     $pdo = Sqlite::get();
     try {
       $stmt = $pdo->prepare('DELETE FROM sites WHERE provider = :provider');
       $stmt->bindParam(':provider', $this->name, PDO::PARAM_STR);
       $stmt->execute();
-    } catch (\PDOException $e) {
+    }
+    catch (\PDOException $e) {
       switchboard_pdo_exception_debug($e);
     }
   }
 
-  public function site_exists($site_name) {
+  /**
+   * Determine if a Site exists within a Provider.
+   *
+   * @param string $site_name
+   *   The machine name of the Site to check.
+   *
+   * @return bool
+   *   TRUE if Site exists within a provider, FALSE if it does not.
+   */
+  public function siteExists($site_name) {
     if (!$site_name) {
       return FALSE;
     }
     if (empty($this->sites)) {
-      $this->api_get_sites();
+      $this->apiGetSites();
     }
     return array_key_exists($site_name, $this->sites);
   }
@@ -131,67 +159,155 @@ abstract class Provider {
   /**
    * A mapping function that calls the appropriate API to populate a field.
    *
-   * @param $site_name
-   * @param $field
+   * @param string $site_name
+   *   Machine name of the site in question.
+   * @param string $field
+   *   Name of the field to populate.
+   *
    * @return string
+   *   The value of the field.
    */
-  abstract public function site_get_field($site_name, $field);
+  abstract public function siteGetField($site_name, $field);
 
   /**
-   * Update list of sites from provider.
+   * Populate available Sites from a Provider.
    */
-  abstract public function api_get_sites();
-
-  abstract public function api_get_site_environments($site_name);
+  abstract public function apiGetSites();
 
   /**
+   * Populate available Site Environments from a Provider.
+   *
+   * @param string $site_name
+   *   The machine name of the site in question.
+   */
+  abstract public function apiGetSiteEnvironments($site_name);
+
+  /**
+   * Provider specific options for Requests.
+   *
    * @return array
+   *   Options for the request; see Requests::request for details.
    */
   abstract public function requestsOptionsCustom();
 
   /**
    * Log in to target provider.
-   * @param $email
-   * @param $password
-   * @return boolean
+   *
+   * @param string $email
+   *   The email address of the user.
+   * @param string $password
+   *   The password of the user.
+   *
+   * @return bool
+   *   Indicates success.
    */
-  abstract public function auth_login($email, $password);
+  abstract public function authLogin($email, $password);
 
+  /**
+   * Get a list of database backups for a particular Site Environment.
+   *
+   * @param string $site_name
+   *   The machine name of the Site.
+   * @param string $env_name
+   *   The machine name of the Site Environment.
+   *
+   * @return array
+   *   An array of Backup arrays keyed by the timestamp. Each Backup
+   *   array has the following keys:
+   *   - 'filename'
+   *   - 'url'
+   *   - 'timestamp'
+   */
+  abstract public function apiGetSiteEnvDbBackups($site_name, $env_name);
+
+  /**
+   * Download a backup.
+   *
+   * @param array $backup
+   *   An array from apiGetSiteEnvDbBackups().
+   * @param string $destination
+   *   The path to the destination.
+   *
+   * @return string
+   *   The full path to the downloaded backup.
+   */
   abstract public function apiDownloadBackup($backup, $destination);
+
+  /**
+   * Helper function to get the latest database backup.
+   *
+   * @param string $site_name
+   *   The machine name of the Site in question.
+   * @param string $env_name
+   *   The machine name of the Site Environment in question.
+   *
+   * @return array
+   *   A backup array as defined in apiGetSiteEnvDbBackups().
+   */
+  public function getSiteEnvDbBackupLatest($site_name, $env_name) {
+    $backups = $this->apiGetSiteEnvDbBackups($site_name, $env_name);
+    return array_pop($backups);
+  }
+
+  /**
+   * Get the name of the Drush cache bin for a particular Provider.
+   *
+   * @return string
+   *   The name of the drush cache bin.
+   */
+  public function drushCacheBinAuthName() {
+    return 'switchboard-auth-' . $this->name;
+  }
 
   /**
    * Log out of target provider.
    */
-  public function auth_logout() {
-    drush_cache_clear_all('*', 'switchboard-auth-' . $this->name, TRUE);
+  public function authLogout() {
+    drush_cache_clear_all('*', $this->drushCacheBinAuthName(), TRUE);
   }
 
   /**
-   * @return boolean
+   * Determine whether a user is logged-in to a Provider.
+   *
+   * @return bool
+   *   TRUE if they are.
    */
-  abstract public function auth_is_logged_in();
+  abstract public function authIsLoggedIn();
 
-  abstract public function api_get_site_env_db_backups($site_name, $env_name);
+  /**
+   * Get the remote path to files for a particular Site Environment.
+   *
+   * @param string $site_name
+   *   The machine name of the Site in question.
+   * @param string $env_name
+   *   The machine name of the Site Environment in question.
+   *
+   * @return string
+   *   The full path of the files directory.
+   */
+  abstract public function getFilesPath($site_name, $env_name);
 
-  abstract public function get_files_path($site_name, $env_name);
-
-  public function get_site_env_db_backup_latest($site_name, $env_name) {
-    $backups = $this->api_get_site_env_db_backups($site_name, $env_name);
-    return array_pop($backups);
-  }
-
+  /**
+   * Get all Provider specific and custom options for the Requests library.
+   *
+   * @param array $options
+   *   Optional overriding options.
+   *
+   * @return array
+   *   Options for the request; see Requests::request for details.
+   */
   public function requestsOptions($options = array()) {
     $defaults = array(
       'timeout' => 30,
     );
 
-    // Get provider specific options.
+    // Provider specific options.
     $provider_options = $this->requestsOptionsCustom();
     if (!empty($provider_options)) {
       $defaults += $provider_options;
     }
 
-    // Get custom options.
+    // Custom options.
     if (!empty($options)) {
       $defaults += $options;
     }

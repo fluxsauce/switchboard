@@ -11,7 +11,7 @@ class ProviderAcquia extends Provider {
   protected $homepage = 'http://www.acquia.com/';
   protected $endpoint = 'https://cloudapi.acquia.com/v1';
 
-  public function site_get_field($site_name, $field) {
+  public function siteGetField($site_name, $field) {
     switch ($field) {
       // No API required.
       case 'name':
@@ -27,10 +27,10 @@ class ProviderAcquia extends Provider {
         $this->api_get_site($site_name);
         break;
       case 'realm':
-        $this->api_get_sites();
+        $this->apiGetSites();
         break;
       case 'environments':
-        $this->api_get_site_environments($site_name);
+        $this->apiGetSiteEnvironments($site_name);
         break;
       default:
         throw new \Exception('Unknown field ' . $field . ' in ' . __CLASS__);
@@ -39,8 +39,8 @@ class ProviderAcquia extends Provider {
   }
 
   public function requestsOptionsCustom() {
-    $email = drush_cache_get('email', 'switchboard-auth-acquia');
-    $password = drush_cache_get('password', 'switchboard-auth-acquia');
+    $email = drush_cache_get('email', $this->drushCacheBinAuthName());
+    $password = drush_cache_get('password', $this->drushCacheBinAuthName());
     $options = array(
       'auth' => new \Requests_Auth_Basic(array(
         $email->data,
@@ -50,34 +50,34 @@ class ProviderAcquia extends Provider {
     return $options;
   }
 
-  public function auth_login($email, $password) {
-    drush_cache_clear_all('*', 'switchboard-auth-acquia', TRUE);
-    drush_cache_set('email', $email, 'switchboard-auth-acquia');
-    drush_cache_set('password', $password, 'switchboard-auth-acquia');
+  public function authLogin($email, $password) {
+    drush_cache_clear_all('*', $this->drushCacheBinAuthName(), TRUE);
+    drush_cache_set('email', $email, $this->drushCacheBinAuthName());
+    drush_cache_set('password', $password, $this->drushCacheBinAuthName());
     return TRUE;
   }
 
   protected function auth_email_get() {
-    $email = drush_cache_get('email', 'switchboard-auth-acquia');
+    $email = drush_cache_get('email', $this->drushCacheBinAuthName());
     if (isset($email->data)) {
       return $email->data;
     }
   }
 
   protected function auth_password_get() {
-    $password = drush_cache_get('password', 'switchboard-auth-acquia');
+    $password = drush_cache_get('password', $this->drushCacheBinAuthName());
     if (isset($password->data)) {
       return $password->data;
     }
   }
 
-  public function auth_is_logged_in() {
-    $email = drush_cache_get('email', 'switchboard-auth-acquia');
-    $password = drush_cache_get('password', 'switchboard-auth-acquia');
+  public function authIsLoggedIn() {
+    $email = drush_cache_get('email', $this->drushCacheBinAuthName());
+    $password = drush_cache_get('password', $this->drushCacheBinAuthName());
     return (isset($email->data) && isset($password->data)) ? TRUE : FALSE;
   }
 
-  public function api_get_sites() {
+  public function apiGetSites() {
     $result = switchboard_request($this, array(
       'method' => 'GET',
       'resource' => '/sites',
@@ -112,7 +112,7 @@ class ProviderAcquia extends Provider {
     $this->sites[$site_name] = $site;
   }
 
-  public function api_get_site_environments($site_name) {
+  public function apiGetSiteEnvironments($site_name) {
     $site =& $this->sites[$site_name];
     $result = switchboard_request($this, array(
       'method' => 'GET',
@@ -144,7 +144,7 @@ class ProviderAcquia extends Provider {
     }
   }
 
-  public function api_get_site_env_db_backups($site_name, $env_name) {
+  public function apiGetSiteEnvDbBackups($site_name, $env_name) {
     $site = $this->sites[$site_name];
     $result = switchboard_request($this, array(
       'method' => 'GET',
@@ -165,9 +165,9 @@ class ProviderAcquia extends Provider {
     return $backups;
   }
 
-  public function get_site_env_db_backup_latest($site_name, $env_name) {
+  public function getSiteEnvDbBackupLatest($site_name, $env_name) {
     $site = $this->sites[$site_name];
-    $backup = parent::get_site_env_db_backup_latest($site_name, $env_name);
+    $backup = parent::getSiteEnvDbBackupLatest($site_name, $env_name);
     $backup['url'] = 'https://cloudapi.acquia.com/v1/sites/' . $site->realm . ':' . $site_name . '/envs/' . $env_name . '/dbs/' . $site_name . '/backups/' . $backup['id'] . '/download.json';
     unset($backup['id']);
     return $backup;
@@ -188,7 +188,7 @@ class ProviderAcquia extends Provider {
     return $destination_path;
   }
 
-  public function get_files_path($site_name, $env_name) {
+  public function getFilesPath($site_name, $env_name) {
     return "/mnt/files/$site_name.$env_name/sites/default/files";
   }
 }

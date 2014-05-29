@@ -42,7 +42,7 @@ class Site extends Persistent {
       )));
       if ($this->provider) {
         $provider =& Provider::getInstance($this->provider);
-        $this->$name = $value = $provider->site_get_field($this->name, $name);
+        $this->$name = $value = $provider->siteGetField($this->name, $name);
       }
     }
     return $value;

@@ -1390,7 +1390,7 @@ function drush_switchboard_sw_auth_login_validate($provider_name = '', $email = 
     ));
   }
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  if ($provider->auth_is_logged_in()) {
+  if ($provider->authIsLoggedIn()) {
     return switchboard_message_fail('SWITCHBOARD_AUTH_LOGIN_ALREADY_LOGGEDIN', dt('Already logged-in to @provider_name.', array(
       '@provider_name' => $provider_name,
     )));
@@ -1418,7 +1418,7 @@ function drush_switchboard_sw_auth_login_validate($provider_name = '', $email = 
 function drush_switchboard_sw_auth_login($provider_name, $email, $password) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
 
-  $result = $provider->auth_login($email, $password);
+  $result = $provider->authLogin($email, $password);
   if ($result) {
     switchboard_message_success(dt('Logged into @provider_name as @email.', array(
       '@provider_name' => $provider_name,
@@ -1448,7 +1448,7 @@ function drush_switchboard_sw_auth_logout_validate($provider_name = '') {
     ));
   }
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  if (!$provider->auth_is_logged_in()) {
+  if (!$provider->authIsLoggedIn()) {
     return switchboard_message_fail('SWITCHBOARD_AUTH_LOGOUT_ALREADY_LOGGEDOUT', dt('Already logged-out of @provider_name.', array(
       '@provider_name' => $provider_name,
     )));
@@ -1463,7 +1463,7 @@ function drush_switchboard_sw_auth_logout_validate($provider_name = '') {
  */
 function drush_switchboard_sw_auth_logout($provider_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  $provider->auth_logout();
+  $provider->authLogout();
   switchboard_message_success(dt('Logged out of @provider.', array(
     '@provider' => $provider_name,
   )));
@@ -1501,7 +1501,7 @@ function drush_switchboard_sw_site_list($provider_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
 
   if (count($provider->sites) == 0) {
-    $provider->api_get_sites();
+    $provider->apiGetSites();
   }
   if (count($provider->sites) == 0) {
     if (drush_get_option('json')) {
@@ -1673,7 +1673,7 @@ function drush_switchboard_sw_site_destroy_validate($provider_name = '', $site_n
  */
 function drush_switchboard_sw_site_destroy($provider_name, $site_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  $provider->site_destroy($site_name);
+  $provider->siteDestroy($site_name);
   switchboard_message_success(dt('Locally deleted @site_name from @provider.', array(
     '@site_name' => $site_name,
     '@provider' => $provider_name,
