@@ -181,7 +181,7 @@ function switchboard_drush_command() {
       'name' => dt('Name of the project.'),
     ),
     'options' => array(
-      'command' => dt('Display the command to connect to the database.'),
+      'format' => dt('Specify the format for the credentials, such as "conf" or "command".'),
     ) + $json_option,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
@@ -477,6 +477,9 @@ function drush_switchboard_sw_project_db_get_validate($project_name = '') {
       )));
     }
   }
+  if (drush_get_option('format') && !in_array(drush_get_option('format'), array('conf', 'command'))) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_DB_BAD_FORMAT', dt('Format not recognized; "conf" or "command" are accepted.'));
+  }
   drush_set_option('project', $project);
 }
 
@@ -488,8 +491,13 @@ function drush_switchboard_sw_project_db_get_validate($project_name = '') {
  */
 function drush_switchboard_sw_project_db_get($project_name) {
   $project = drush_get_option('project');
-  if (drush_get_option('command')) {
-    $command = $project->getDatabaseConnection();
+  if (drush_get_option('format')) {
+    if (drush_get_option('format') == 'command') {
+      $command = $project->getDatabaseConnection();
+    }
+    if (drush_get_option('format') == 'conf') {
+      $command = $project->getDatabaseSettings();
+    }
     if (drush_get_option('json')) {
       drush_print(json_encode($command));
     }

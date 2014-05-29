@@ -62,6 +62,25 @@ class Project extends Persistent {
   }
 
   /**
+   * Get a Drupal v7 database connection settings.
+   *
+   * @return string
+   *   The databases array.
+   */
+  public function getDatabaseSettings() {
+    return <<<CONF
+\$databases['default']['default'] = array(
+  'driver' => 'mysql',
+  'username' => '{$this->database_username}',
+  'password' => '{$this->database_password}',
+  'host' => '{$this->database_host}',
+  'port' => '{$this->database_port}',
+  'database' => '{$this->database_name}',
+);
+CONF;
+  }
+
+  /**
    * Generate command to commit all code changes.
    *
    * @param string $message
