@@ -13,7 +13,7 @@ abstract class Persistent {
   protected $name;
   protected $updated;
 
-  protected $external_key_name;
+  protected $externalKeyName;
 
   /**
    * Constructor.
@@ -28,10 +28,10 @@ abstract class Persistent {
   public function __construct($external_id = NULL, $name = NULL) {
     // Ensure that implementing classes include an external key name of some
     // sort.
-    if (!$this->external_key_name) {
+    if (!$this->externalKeyName) {
       throw new \Exception(get_called_class() . ' is missing the external key name.');
     }
-    $this->{$this->external_key_name} = $external_id;
+    $this->{$this->externalKeyName} = $external_id;
     $this->name = $name;
 
     if ($external_id && $name) {
@@ -50,6 +50,7 @@ abstract class Persistent {
    * @throws \Exception
    */
   public function __get($name) {
+    $name = switchboard_to_camel_case($name);
     if (!property_exists($this, $name)) {
       drush_print_r(debug_backtrace());
       throw new \Exception(get_called_class() . ' property ' . $name . ' does not exist, cannot get.');
@@ -68,7 +69,9 @@ abstract class Persistent {
    * @throws \Exception
    */
   public function __set($name, $value) {
+    $name = switchboard_to_camel_case($name);
     if (!property_exists($this, $name)) {
+      drush_print_r(debug_backtrace());
       throw new \Exception(get_called_class() . ' property ' . $name . ' does not exist, cannot set.');
     }
     $this->$name = $value;
@@ -93,10 +96,10 @@ abstract class Persistent {
 
     try {
       $sql_query = 'INSERT INTO ' . $this->getTableName() . ' ';
-      $sql_query .= '(' . $this->external_key_name . ', name, updated) ';
-      $sql_query .= 'VALUES (:' . $this->external_key_name . ', :name, :updated) ';
+      $sql_query .= '(' . $this->externalKeyName . ', name, updated) ';
+      $sql_query .= 'VALUES (:' . $this->externalKeyName . ', :name, :updated) ';
       $stmt = $pdo->prepare($sql_query);
-      $stmt->bindParam(':' . $this->external_key_name, $this->{$this->external_key_name});
+      $stmt->bindParam(':' . $this->externalKeyName, $this->{$this->externalKeyName});
       $stmt->bindParam(':name', $this->name);
       $stmt->bindParam(':updated', time());
       $stmt->execute();
@@ -122,11 +125,11 @@ abstract class Persistent {
         $stmt->bindParam(':id', $this->id);
       }
       // Name and id known.
-      elseif ($this->name && $this->{$this->external_key_name}) {
-        $sql_query .= 'WHERE ' . $this->external_key_name . ' = :' . $this->external_key_name . ' ';
+      elseif ($this->name && $this->{$this->externalKeyName}) {
+        $sql_query .= 'WHERE ' . $this->externalKeyName . ' = :' . $this->externalKeyName . ' ';
         $sql_query .= 'AND name = :name ';
         $stmt = $pdo->prepare($sql_query);
-        $stmt->bindParam(':' . $this->external_key_name, $this->{$this->external_key_name});
+        $stmt->bindParam(':' . $this->externalKeyName, $this->{$this->externalKeyName});
         $stmt->bindParam(':name', $this->name);
       }
       // Not enough information.
@@ -202,7 +205,7 @@ abstract class Persistent {
       $result = $stmt->execute(array_values($values));
       drush_log(dt('Updated @class @external_key_id:@name - @fields_to_update', array(
         '@class' => get_class($this),
-        '@external_key_id' => $this->{$this->external_key_name},
+        '@external_key_id' => $this->{$this->externalKeyName},
         '@name' => $this->name,
         '@fields_to_update' => implode(', ', array_keys($fields_to_update)),
       )));
@@ -239,7 +242,7 @@ abstract class Persistent {
    */
   public function toArray() {
     $fields = get_object_vars($this);
-    unset($fields['external_key_name']);
+    unset($fields['externalKeyName']);
     return $fields;
   }
 

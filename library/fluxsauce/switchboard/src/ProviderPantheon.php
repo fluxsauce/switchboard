@@ -32,14 +32,14 @@ class ProviderPantheon extends Provider {
       case 'provider':
         break;
 
-      case 'vcs_url':
-      case 'vcs_type':
-      case 'vcs_protocol':
-      case 'ssh_port':
+      case 'vcsUrl':
+      case 'vcsType':
+      case 'vcsProtocol':
+      case 'sshPort':
         $this->apiGetSite($site_name);
         break;
 
-      case 'unix_username':
+      case 'unixUsername':
       case 'realm':
       case 'uuid':
         $this->apiGetSites();
@@ -71,10 +71,10 @@ class ProviderPantheon extends Provider {
     $repository .= '.drush.in:2222/~/repository.git';
 
     $site->update(array(
-      'vcs_url' => $repository,
-      'vcs_type' => 'git',
-      'vcs_protocol' => 'ssh',
-      'ssh_port' => 2222,
+      'vcsUrl' => $repository,
+      'vcsType' => 'git',
+      'vcsProtocol' => 'ssh',
+      'sshPort' => 2222,
     ));
     $this->sites[$site_name] = $site;
   }
@@ -98,7 +98,7 @@ class ProviderPantheon extends Provider {
       $site = new Site($this->name, $data->information->name);
       $site->uuid = $uuid;
       $site->realm = $data->information->preferred_zone;
-      $site->unix_username = '';
+      $site->unixUsername = '';
       $site->update();
       $this->sites[$site->name] = $site;
     }

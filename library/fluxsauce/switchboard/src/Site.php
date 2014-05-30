@@ -11,15 +11,15 @@ class Site extends Persistent {
   protected $uuid;
   protected $realm;
   protected $title;
-  protected $unix_username;
-  protected $vcs_url;
-  protected $vcs_type;
-  protected $vcs_protocol;
-  protected $ssh_port;
+  protected $unixUsername;
+  protected $vcsUrl;
+  protected $vcsType;
+  protected $vcsProtocol;
+  protected $sshPort;
 
   protected $environments;
 
-  protected $external_key_name = 'provider';
+  protected $externalKeyName = 'provider';
 
   /**
    * Magic __get, overriding Persistent.
@@ -32,6 +32,7 @@ class Site extends Persistent {
    * @throws \Exception
    */
   public function __get($name) {
+    $name = switchboard_to_camel_case($name);
     $value = parent::__get($name);
     if (is_null($value) || drush_get_option('refresh')) {
       $callers = debug_backtrace();
@@ -81,7 +82,7 @@ class Site extends Persistent {
     try {
       $sql_query = 'SELECT name ';
       $sql_query .= 'FROM environments ';
-      $sql_query .= 'WHERE site_id = :id ';
+      $sql_query .= 'WHERE siteId = :id ';
       $stmt = $pdo->prepare($sql_query);
       $stmt->bindParam(':id', $this->id);
       $result = $stmt->execute();
@@ -141,10 +142,10 @@ class Site extends Persistent {
    */
   public function getVcsUrl() {
     $url = '';
-    if ($this->__get('vcs_protocol') == 'ssh') {
+    if ($this->__get('vcsProtocol') == 'ssh') {
       $url .= 'ssh://';
     }
-    $url .= $this->__get('vcs_url');
+    $url .= $this->__get('vcsUrl');
     return $url;
   }
 }

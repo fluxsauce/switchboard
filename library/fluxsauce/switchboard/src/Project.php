@@ -8,18 +8,18 @@ namespace Fluxsauce\Switchboard;
 
 class Project extends Persistent {
   protected $uuid;
-  protected $site_id;
+  protected $siteId;
   protected $hostname;
-  protected $ssh_port;
-  protected $code_path;
-  protected $database_host;
-  protected $database_username;
-  protected $database_password;
-  protected $database_name;
-  protected $database_port;
-  protected $files_path;
+  protected $sshPort;
+  protected $codePath;
+  protected $databaseHost;
+  protected $databaseUsername;
+  protected $databasePassword;
+  protected $databaseName;
+  protected $databasePort;
+  protected $filesPath;
 
-  protected $external_key_name = 'name';
+  protected $externalKeyName = 'name';
 
   /**
    * Get the minimal database specs.
@@ -29,11 +29,11 @@ class Project extends Persistent {
    */
   public function getDatabaseSpecs() {
     return array(
-      'database' => $this->database_name,
-      'host' => $this->database_host,
-      'user' => $this->database_username,
-      'password' => $this->database_password,
-      'port' => $this->database_port,
+      'database' => $this->databaseName,
+      'host' => $this->databaseHost,
+      'user' => $this->databaseUsername,
+      'password' => $this->databasePassword,
+      'port' => $this->databasePort,
     );
   }
 
@@ -59,7 +59,7 @@ class Project extends Persistent {
    *   The db-url string.
    */
   public function getDatabaseUrl() {
-    return "mysql://{$this->database_username}:{$this->database_password}@{$this->database_host}:{$this->database_port}/{$this->database_name}";
+    return "mysql://{$this->databaseUsername}:{$this->databasePassword}@{$this->databaseHost}:{$this->databasePort}/{$this->databaseName}";
   }
 
   /**
@@ -72,11 +72,11 @@ class Project extends Persistent {
     return <<<CONF
 \$databases['default']['default'] = array(
   'driver' => 'mysql',
-  'username' => '{$this->database_username}',
-  'password' => '{$this->database_password}',
-  'host' => '{$this->database_host}',
-  'port' => '{$this->database_port}',
-  'database' => '{$this->database_name}',
+  'username' => '{$this->databaseUsername}',
+  'password' => '{$this->databasePassword}',
+  'host' => '{$this->databaseHost}',
+  'port' => '{$this->databasePort}',
+  'database' => '{$this->databaseName}',
 );
 CONF;
   }
@@ -91,7 +91,7 @@ CONF;
    *   The git command.
    */
   public function vcsCommitCommand($message) {
-    return 'cd ' . $this->code_path . ' && git add --all . && git commit -m ' . drush_escapeshellarg($message);
+    return 'cd ' . $this->codePath . ' && git add --all . && git commit -m ' . drush_escapeshellarg($message);
   }
 
   /**
@@ -101,7 +101,7 @@ CONF;
    *   The git command.
    */
   public function vcsPullCommand() {
-    return 'git --git-dir=' . $this->code_path . '/.git pull origin master';
+    return 'git --git-dir=' . $this->codePath . '/.git pull origin master';
   }
 
   /**
@@ -111,7 +111,7 @@ CONF;
    *   The git command.
    */
   public function vcsPushCommand() {
-    return 'git --git-dir=' . $this->code_path . '/.git push origin master';
+    return 'git --git-dir=' . $this->codePath . '/.git push origin master';
   }
 
   /**
@@ -121,6 +121,6 @@ CONF;
    *   The git command.
    */
   public function vcsResetCommand() {
-    return 'cd ' . $this->code_path . ' && git checkout .';
+    return 'cd ' . $this->codePath . ' && git checkout .';
   }
 }

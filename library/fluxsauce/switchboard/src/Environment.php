@@ -7,10 +7,10 @@
 namespace Fluxsauce\Switchboard;
 
 class Environment extends Persistent {
-  protected $site_id;
+  protected $siteId;
   protected $host;
   protected $username;
   protected $branch;
 
-  protected $external_key_name = 'site_id';
+  protected $externalKeyName = 'siteId';
 }

@@ -622,9 +622,9 @@ function drush_switchboard_sw_project_files_rsync_validate($project_name = '', $
       '@project_name' => $project_name,
     )));
   }
-  if (!switchboard_validate_destination($project->files_path)) {
+  if (!switchboard_validate_destination($project->filesPath)) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_PATH_UNWRITEABLE', dt('Files path @files_path is not writeable.', array(
-      '@files_path' => $project->files_path,
+      '@files_path' => $project->filesPath,
     )));
   }
   drush_set_option('project', $project);
@@ -633,11 +633,11 @@ function drush_switchboard_sw_project_files_rsync_validate($project_name = '', $
   }
 
   $site = new \Fluxsauce\Switchboard\Site();
-  $site->id = $project->site_id;
+  $site->id = $project->siteId;
   $site->read();
   if (!$site->id) {
     return switchboard_message_fail('SWITCHBOARD_SITE_NOT_FOUND', dt('Cannot find site_id #@site_id.', array(
-      '@site_id' => $project->site_id,
+      '@site_id' => $project->siteId,
     )));
   }
   drush_set_option('site', $site);
@@ -665,10 +665,10 @@ function drush_switchboard_sw_project_files_rsync($project_name, $env_name, $dir
   $site = drush_get_option('site');
   $provider = \Fluxsauce\Switchboard\Provider::getInstance($site->provider);
   $site = drush_get_option('site');
-  $command = "rsync -rlvz --size-only --ipv4 --progress -e 'ssh -p {$site->ssh_port}' ";
+  $command = "rsync -rlvz --size-only --ipv4 --progress -e 'ssh -p {$site->sshPort}' ";
   $environment = $site->environments[$env_name];
-  $remote = "{$environment->username}@{$environment->host}:{$provider->get_files_path($site->name, $env_name)}";
-  $local = $project->files_path;
+  $remote = "{$environment->username}@{$environment->host}:{$provider->getFilesPath($site->name, $env_name)}";
+  $local = $project->filesPath;
   if ($direction == 'up') {
     $command .= "$local/ $remote";
   }
@@ -704,15 +704,15 @@ function drush_switchboard_sw_project_files_wipe_validate($project_name = '') {
       '@project_name' => $project_name,
     )));
   }
-  if (!switchboard_validate_destination($project->files_path)) {
+  if (!switchboard_validate_destination($project->filesPath)) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_PATH_UNWRITEABLE', dt('Files path @files_path is not writeable.', array(
-      '@files_path' => $project->files_path,
+      '@files_path' => $project->filesPath,
     )));
   }
   drush_set_option('project', $project);
 
   $confirm = drush_confirm(dt('Are you sure you want to wipe @files_path for @project_name?', array(
-    '@files_path' => $project->files_path,
+    '@files_path' => $project->filesPath,
     '@project_name' => $project_name,
   )));
   if (!$confirm) {
@@ -728,14 +728,14 @@ function drush_switchboard_sw_project_files_wipe_validate($project_name = '') {
  */
 function drush_switchboard_sw_project_files_wipe($project_name) {
   $project = drush_get_option('project');
-  if (drush_delete_dir_contents($project->files_path)) {
+  if (drush_delete_dir_contents($project->filesPath)) {
     switchboard_message_success(dt('@files_path wiped.', array(
-      '@files_path' => $project->files_path,
+      '@files_path' => $project->filesPath,
     )));
   }
   else {
     switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_WIPE_FAIL', dt('Unable to wipe @files_path.', array(
-      '@files_path' => $project->files_path,
+      '@files_path' => $project->filesPath,
     )));
   }
 }
@@ -797,10 +797,10 @@ function drush_switchboard_sw_project_get_host($project_name) {
  *   FALSE upon failure.
  */
 function drush_switchboard_sw_project_get_path_validate($project_name = '', $component_name = '') {
-  $property_name = $component_name . '_path';
+  $property_name = $component_name . 'Path';
   if (!in_array($property_name, array(
-    'files_path',
-    'code_path',
+    'filesPath',
+    'codePath',
   ))) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_INVALID_COMPONENT', dt('Invalid component name (expecting "code" or "files").'));
   }
@@ -988,30 +988,30 @@ function drush_switchboard_sw_project_vcs_clone_validate($project_name = '') {
     )));
   }
 
-  if (!$project->site_id) {
+  if (!$project->siteId) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_SITE', dt('Project does not have a site associated with it.'));
   }
 
   $site = new \Fluxsauce\Switchboard\Site();
-  $site->id = $project->site_id;
+  $site->id = $project->siteId;
   $site->read();
   if (!$site->id) {
     return switchboard_message_fail('SWITCHBOARD_SITE_NOT_FOUND', dt('Cannot find site_id #@site_id.', array(
-      '@site_id' => $project->site_id,
+      '@site_id' => $project->siteId,
     )));
   }
 
-  if (!$project->code_path) {
+  if (!$project->codePath) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_PATH_MISSING', dt('Project does not have a code path.'));
   }
 
-  if (!switchboard_validate_destination($project->code_path)) {
+  if (!switchboard_validate_destination($project->codePath)) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_PATH_UNWRITEABLE', dt('Code path @code_path is not writeable.', array(
-      '@code_path' => $project->code_path,
+      '@code_path' => $project->codePath,
     )));
   }
 
-  drush_set_option('code_path', $project->code_path);
+  drush_set_option('code_path', $project->codePath);
 
   $url = $site->getVcsUrl();
 
@@ -1058,7 +1058,7 @@ function drush_switchboard_sw_project_vcs_commit_validate($project_name = '', $m
       '@project_name' => $project_name,
     )));
   }
-  if (!file_exists($project->code_path . '/.git')) {
+  if (!file_exists($project->codePath . '/.git')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_GIT_MISSING', dt('Project code path not initialized with git.'));
   }
   drush_set_option('project', $project);
@@ -1099,7 +1099,7 @@ function drush_switchboard_sw_project_vcs_pull_validate($project_name = '') {
       '@project_name' => $project_name,
     )));
   }
-  if (!file_exists($project->code_path . '/.git')) {
+  if (!file_exists($project->codePath . '/.git')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_GIT_MISSING', dt('Project code path not initialized with git.'));
   }
   drush_set_option('project', $project);
@@ -1140,7 +1140,7 @@ function drush_switchboard_sw_project_vcs_push_validate($project_name = '') {
       '@project_name' => $project_name,
     )));
   }
-  if (!file_exists($project->code_path . '/.git')) {
+  if (!file_exists($project->codePath . '/.git')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_GIT_MISSING', dt('Project code path not initialized with git.'));
   }
   drush_set_option('project', $project);
@@ -1181,7 +1181,7 @@ function drush_switchboard_sw_project_vcs_reset_validate($project_name = '') {
       '@project_name' => $project_name,
     )));
   }
-  if (!file_exists($project->code_path . '/.git')) {
+  if (!file_exists($project->codePath . '/.git')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_GIT_MISSING', dt('Project code path not initialized with git.'));
   }
   drush_set_option('project', $project);
@@ -1745,7 +1745,7 @@ function drush_switchboard_sw_site_env_db_backup_validate($provider_name = '', $
  */
 function drush_switchboard_sw_site_env_db_backup($provider_name, $site_name, $env_name, $destination) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  $backup = $provider->get_site_env_db_backup_latest($site_name, $env_name);
+  $backup = $provider->getSiteEnvDbBackupLatest($site_name, $env_name);
 
   drush_log(dt('Downloading @filename from @date...', array(
     '@filename' => $backup['filename'],

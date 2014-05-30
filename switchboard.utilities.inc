@@ -219,7 +219,7 @@ function switchboard_generate_uuid() {
 }
 
 /**
- * Helper to get all the options for a particular command.
+ * Get all the options for a particular command.
  *
  * @param string $command_name
  *   The name of the command.
@@ -235,4 +235,20 @@ function switchboard_get_drush_options($command_name) {
     return $options;
   }
   return array();
+}
+
+/**
+ * Convert an underscore_delimited string to CamelCase.
+ *
+ * @param string $string
+ *   The string to be converted.
+ *
+ * @return string
+ *   The converted string.
+ */
+function switchboard_to_camel_case($string) {
+  $ret_val = preg_replace_callback('/_(.?)/', function ($matches) {
+    return str_replace('_', '', strtoupper($matches[0]));
+  }, $string);
+  return $ret_val;
 }

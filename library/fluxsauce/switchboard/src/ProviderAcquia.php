@@ -32,13 +32,13 @@ class ProviderAcquia extends Provider {
       case 'provider':
         break;
 
-      case 'unix_username':
-      case 'vcs_url':
-      case 'vcs_type':
-      case 'vcs_protocol':
+      case 'unixUsername':
+      case 'vcsUrl':
+      case 'vcsType':
+      case 'vcsProtocol':
       case 'uuid':
       case 'title':
-      case 'ssh_port':
+      case 'sshPort':
         $this->apiGetSite($site_name);
         break;
 
@@ -163,13 +163,13 @@ class ProviderAcquia extends Provider {
     ));
     $site_info = json_decode($result->body);
     $site->update(array(
-      'unix_username' => $site_info->unix_username,
-      'vcs_url' => $site_info->vcs_url,
-      'vcs_type' => $site_info->vcs_type,
-      'vcs_protocol' => 'git',
+      'unixUsername' => $site_info->unix_username,
+      'vcsUrl' => $site_info->vcs_url,
+      'vcsType' => $site_info->vcs_type,
+      'vcsProtocol' => 'git',
       'uuid' => $site_info->uuid,
       'title' => $site_info->title,
-      'ssh_port' => 22,
+      'sshPort' => 22,
     ));
     $this->sites[$site_name] = $site;
   }

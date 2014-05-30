@@ -98,11 +98,11 @@ class Sqlite {
         $sql_query .= ', realm TEXT ';
         $sql_query .= ', name TEXT ';
         $sql_query .= ', title TEXT ';
-        $sql_query .= ', unix_username TEXT ';
-        $sql_query .= ', vcs_url TEXT ';
-        $sql_query .= ', vcs_type TEXT ';
-        $sql_query .= ', vcs_protocol TEXT ';
-        $sql_query .= ', ssh_port TEXT ';
+        $sql_query .= ', unixUsername TEXT ';
+        $sql_query .= ', vcsUrl TEXT ';
+        $sql_query .= ', vcsType TEXT ';
+        $sql_query .= ', vcsProtocol TEXT ';
+        $sql_query .= ', sshPort INTEGER ';
         $sql_query .= ', updated INTEGER ';
         $sql_query .= ') ';
 
@@ -115,7 +115,7 @@ class Sqlite {
       try {
         $sql_query = 'CREATE TABLE IF NOT EXISTS environments ( ';
         $sql_query .= 'id INTEGER PRIMARY KEY ';
-        $sql_query .= ', site_id INTEGER ';
+        $sql_query .= ', siteId INTEGER ';
         $sql_query .= ', name TEXT ';
         $sql_query .= ', host TEXT ';
         $sql_query .= ', username TEXT ';
@@ -132,7 +132,7 @@ class Sqlite {
       try {
         $sql_query = 'CREATE TABLE IF NOT EXISTS envdbs ( ';
         $sql_query .= 'id INTEGER PRIMARY KEY ';
-        $sql_query .= ', environment_id INTEGER ';
+        $sql_query .= ', environmentId INTEGER ';
         $sql_query .= ', name TEXT ';
         $sql_query .= ', updated INTEGER ';
         $sql_query .= ') ';
@@ -148,15 +148,16 @@ class Sqlite {
         $sql_query .= 'id INTEGER PRIMARY KEY ';
         $sql_query .= ', name TEXT ';
         $sql_query .= ', uuid TEXT ';
-        $sql_query .= ', site_id INTEGER ';
+        $sql_query .= ', siteId INTEGER ';
         $sql_query .= ', hostname TEXT ';
-        $sql_query .= ', ssh_port INTEGER ';
-        $sql_query .= ', code_path TEXT ';
-        $sql_query .= ', database_host TEXT ';
-        $sql_query .= ', database_username TEXT ';
-        $sql_query .= ', database_password TEXT ';
-        $sql_query .= ', database_name TEXT ';
-        $sql_query .= ', database_port INTEGER ';
+        $sql_query .= ', sshPort INTEGER ';
+        $sql_query .= ', codePath TEXT ';
+        $sql_query .= ', filesPath TEXT ';
+        $sql_query .= ', databaseHost TEXT ';
+        $sql_query .= ', databaseUsername TEXT ';
+        $sql_query .= ', databasePassword TEXT ';
+        $sql_query .= ', databaseName TEXT ';
+        $sql_query .= ', databasePort INTEGER ';
         $sql_query .= ', updated INTEGER ';
         $sql_query .= ') ';
 
