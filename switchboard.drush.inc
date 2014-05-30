@@ -75,6 +75,12 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
+  $items['sw-manual'] = array(
+    'description' => dt('Generate a GitHub Markdown manual for Switchboard.'),
+    'hidden' => TRUE,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
   $items['sw-provider-list'] = array(
     'description' => dt('List all available providers.'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
@@ -372,6 +378,53 @@ function switchboard_drush_command() {
   );
 
   return $items;
+}
+
+/**
+ * Command callback for drush sw-manual.
+ */
+function drush_switchboard_sw_manual() {
+  $commands = drush_get_commands();
+  asort($commands);
+  drush_print(dt('# Switchboard Commands'));
+  foreach ($commands as $command_name => $command) {
+    if (array_key_exists($command_name, switchboard_drush_command())) {
+      drush_print(dt('## @command_name', array('@command_name' => $command_name)));
+
+      _drush_help_merge_subcommand_information($command);
+
+      if (!$help = drush_command_invoke_all('drush_help', 'drush:'. $command['command'])) {
+        $help = array($command['description']);
+      }
+
+      if ($command['strict-option-handling']) {
+        $command['topics'][] = 'docs-strict-options';
+      }
+
+      drush_print(implode("\n", $help));
+      drush_print();
+
+      // Sort command options.
+      uksort($command['options'], '_drush_help_sort_command_options');
+
+      // Print command sections help.
+      foreach ($command['sections'] as $key => $value) {
+        if (!empty($command[$key])) {
+          drush_print(dt($value) . ':');
+          $rows = drush_format_help_section($command, $key);
+          drush_print('````');
+          drush_print_table($rows, FALSE, array('label' => 40));
+          unset($rows);
+          drush_print('````');
+        }
+      }
+
+      // Append aliases if any.
+      if ($command['aliases']) {
+        drush_print(dt("Aliases: ") . implode(', ', $command['aliases']));
+      }
+    }
+  }
 }
 
 /**
