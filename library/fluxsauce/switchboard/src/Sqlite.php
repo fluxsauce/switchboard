@@ -150,6 +150,7 @@ class Sqlite {
         $sql_query .= ', uuid TEXT ';
         $sql_query .= ', siteId INTEGER ';
         $sql_query .= ', hostname TEXT ';
+        $sql_query .= ', username TEXT ';
         $sql_query .= ', sshPort INTEGER ';
         $sql_query .= ', codePath TEXT ';
         $sql_query .= ', filesPath TEXT ';

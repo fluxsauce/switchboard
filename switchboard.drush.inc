@@ -81,6 +81,17 @@ function switchboard_drush_command() {
     'options' => $json_option,
   );
 
+  $items['sw-project-alias'] = array(
+    'description' => dt('Generate a Drush alias for a project.'),
+    'arguments' => array(
+      'name' => dt('Name of the project.'),
+    ),
+    'options' => array(
+      'write' => dt('If set, writes alias file to local .drush directory.'),
+    ) + $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
   $site_options = array(
     'uuid' => array(
       'description' => dt('UUID of the project'),
@@ -99,7 +110,12 @@ function switchboard_drush_command() {
     'hostname' => array(
       'description' => dt('Hostname'),
       'value' => 'required',
-      'example-value' => 'caffeine.kala',
+      'example-value' => 'hops.kala',
+    ),
+    'username' => array(
+      'description' => dt('Username'),
+      'value' => 'required',
+      'example-value' => 'user',
     ),
     'code_path' => array(
       'description' => dt('Absolute path to codebase'),
@@ -359,6 +375,70 @@ function switchboard_drush_command() {
 }
 
 /**
+ * Validation callback for drush sw-project-alias.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_project_alias_validate($project_name = '') {
+  if (!$project_name) {
+    return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
+  }
+  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  if (!$project->id) {
+    return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
+      '@project_name' => $project_name,
+    )));
+  }
+  drush_set_option('project', $project);
+
+  if (drush_get_option('write')) {
+    $destination = drush_normalize_path(drush_server_home() . '/.drush/' . $project_name . '.aliases.drushrc.php');
+    // Ensure destination can be written to.
+    $fh = fopen($destination, 'w');
+    if ($fh === FALSE) {
+      return switchboard_message_fail('SWITCHBOARD_ALIASES_NO_WRITE', dt('Cannot write aliases to @destination - verify this location is writable.', array(
+        '@destination' => $destination,
+      )));
+    }
+    drush_set_option('fh', $fh);
+  }
+}
+
+/**
+ * Command callback for drush sw-project-alias.
+ *
+ * @param string $project_name
+ *   Name of the local project in question.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_project_alias($project_name) {
+  $project = drush_get_option('project');
+  $ret_val = <<<ALIAS
+<?php
+{$project->toDrushAlias()}
+ALIAS;
+  if (drush_get_option('write')) {
+    $fh = drush_get_option('fh');
+    fwrite($fh, $ret_val);
+    fclose($fh);
+    return switchboard_message_success(dt('Drush alias created; you should clear your drush cache.'));
+  }
+
+  if (drush_get_option('json')) {
+    drush_print(json_encode($ret_val));
+  }
+  else {
+    drush_print($ret_val);
+  }
+}
+
+/**
  * Validation callback for drush sw-project-create.
  *
  * @param string $project_name
@@ -471,9 +551,6 @@ function drush_switchboard_sw_project_destroy($project_name) {
 function drush_switchboard_sw_project_db_get_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
-  }
-  if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
-    return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
   }
   $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
   if (!$project->id) {

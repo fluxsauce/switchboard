@@ -10,6 +10,7 @@ class Project extends Persistent {
   protected $uuid;
   protected $siteId;
   protected $hostname;
+  protected $username;
   protected $sshPort;
   protected $codePath;
   protected $databaseHost;
@@ -122,5 +123,27 @@ CONF;
    */
   public function vcsResetCommand() {
     return 'cd ' . $this->codePath . ' && git checkout .';
+  }
+
+  /**
+   * Renders a project as a Drush alias.
+   *
+   * @return string
+   *   Drush alias.
+   */
+  public function toDrushAlias() {
+    return <<<ALIAS
+\$aliases['{$this->name}'] = array(
+  'root' => '{$this->codePath}',
+  'uri' => '{$this->hostname}',
+  'db-url' => '{$this->getDatabaseUrl()}',
+  'remote-host' => '{$this->hostname}',
+  'remote-user' => '{$this->username}',
+  'ssh-options' => '-p {$this->sshPort}',
+  'path-aliases' => array(
+    '%files' => '{$this->filesPath}',
+  ),
+);
+ALIAS;
   }
 }

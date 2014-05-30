@@ -91,7 +91,8 @@ For a JSON list of available commands:
       --database_username=dbuser \
       --database_password=dbpass \
       --database_name=dbname \
-      --hostname=site.tld
+      --hostname=site.tld \
+      --username=user
     # List available projects.
     drush sw-project-list
     # Get information about a project.
