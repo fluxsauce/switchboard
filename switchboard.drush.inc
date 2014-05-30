@@ -393,7 +393,7 @@ function drush_switchboard_sw_manual() {
 
       _drush_help_merge_subcommand_information($command);
 
-      if (!$help = drush_command_invoke_all('drush_help', 'drush:'. $command['command'])) {
+      if (!$help = drush_command_invoke_all('drush_help', 'drush:' . $command['command'])) {
         $help = array($command['description']);
       }
 
