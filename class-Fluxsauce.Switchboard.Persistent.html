@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="generator" content="ApiGen 2.8.0">
+
+	<title>Class Fluxsauce\Switchboard\Persistent | Switchboard</title>
+
+	<script type="text/javascript" src="resources/combined.js?2056766658"></script>
+	<script type="text/javascript" src="elementlist.js?3788840315"></script>
+	<link rel="stylesheet" type="text/css" media="all" href="resources/bootstrap.min.css?260161822">
+	<link rel="stylesheet" type="text/css" media="all" href="resources/style.css?2015443609">
+
+</head>
+
+<body>
+	<div id="navigation" class="navbar navbar-fixed-top">
+		<div class="navbar-inner">
+			<div class="container">
+				<a href="index.html" class="brand">Switchboard</a>
+				<div class="nav-collapse">
+					<ul class="nav">
+						<li>
+							<a href="namespace-Fluxsauce.Switchboard.html" title="Summary of Fluxsauce\Switchboard"><span>Namespace</span></a>
+						</li>
+						<li class="active">
+<span>Class</span>						</li>
+
+						<li class="divider-vertical"></li>
+
+						<li>
+							<a href="tree.html" title="Tree view of classes, interfaces, traits and exceptions"><span>Tree</span></a>
+						</li>
+
+
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="left">
+	<div id="menu">
+		<form id="search" class="form-search">
+			<input type="hidden" name="cx" value="">
+			<input type="hidden" name="ie" value="UTF-8">
+			<input type="text" name="q" class="search-query" placeholder="Search">
+		</form>
+
+
+		<div id="groups">
+			<h3>Namespaces</h3>
+			<ul>
+				<li class="active"><a href="namespace-Fluxsauce.html">Fluxsauce<span></span></a>
+						<ul>
+				<li class="active"><a href="namespace-Fluxsauce.Switchboard.html">Switchboard</a>
+						</li>
+							</ul></li>
+			</ul>
+		</div>
+
+
+		<div id="elements">
+			<h3>Classes</h3>
+			<ul>
+				<li><a href="class-Fluxsauce.Switchboard.EnvDb.html">EnvDb</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Environment.html">Environment</a></li>
+				<li class="active"><a href="class-Fluxsauce.Switchboard.Persistent.html">Persistent</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Project.html">Project</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Provider.html">Provider</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.ProviderAcquia.html">ProviderAcquia</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.ProviderPantheon.html">ProviderPantheon</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Site.html">Site</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Sqlite.html">Sqlite</a></li>
+			</ul>
+
+
+
+
+
+		</div>
+	</div>
+</div>
+
+<div id="splitter"></div>
+
+<div id="right">
+	<div id="rightInner">
+<div id="content" class="class">
+	<h1>Class Persistent</h1>
+
+
+	<div class="description">
+	
+<p>Generic class providing database persistence.</p>
+
+	</div>
+
+
+
+	<div>
+		<h3>Direct known subclasses</h3>
+		<p class="elementList">
+			<code><a href="class-Fluxsauce.Switchboard.EnvDb.html">Fluxsauce\Switchboard\EnvDb</a></code>, 
+			<code><a href="class-Fluxsauce.Switchboard.Environment.html">Fluxsauce\Switchboard\Environment</a></code>, 
+			<code><a href="class-Fluxsauce.Switchboard.Project.html">Fluxsauce\Switchboard\Project</a></code>, 
+			<code><a href="class-Fluxsauce.Switchboard.Site.html">Fluxsauce\Switchboard\Site</a></code>
+		</p>
+	</div>
+
+
+
+
+
+
+	<div class="alert alert-info">
+		<b>Abstract</b><br>
+		
+		<b>Namespace:</b> <a href="namespace-Fluxsauce.html">Fluxsauce</a>\<a href="namespace-Fluxsauce.Switchboard.html">Switchboard</a><br>
+		<b>Package:</b> Fluxsauce\Switchboard<br>
+
+		<b>Located at</b> <a href="source-class-Fluxsauce.Switchboard.Persistent.html#11-304" title="Go to source code">library/fluxsauce/switchboard/src/Persistent.php</a><br>
+	</div>
+
+
+
+		<h2>Methods summary</h2>
+		<table class="summary table table-bordered table-striped" id="methods">
+		<tr data-order="__construct" id="___construct">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#___construct">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Persistent.html#36-58" title="Go to source code">__construct</a>( <span>integer <var>$external_id</var> = <span class="php-keyword1">NULL</span></span>, <span>string <var>$name</var> = <span class="php-keyword1">NULL</span></span> )</code>
+
+			<div class="description short">
+				
+<p>Constructor.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Constructor.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$external_id</var></dt>
+						<dd><code>integer</code><br>$external_id Optional external identifier.</dd>
+						<dt><var>$name</var></dt>
+						<dd><code>string</code><br>$name Optional name.</dd>
+					</dl></div>
+
+
+					<h4>Throws</h4>
+					<div class="list">
+						<code>Exception</code><br>
+					</div>
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="__get" id="___get">
+
+			<td class="attributes"><code>
+				 public 
+				mixed
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#___get">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Persistent.html#60-77" title="Go to source code">__get</a>( <span>string <var>$name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Magic __get.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Magic __get.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$name</var></dt>
+						<dd><code>string</code><br>$name Name of the property to get.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>mixed</code><br>Value of set property.<br>
+					</div>
+
+					<h4>Throws</h4>
+					<div class="list">
+						<code>Exception</code><br>
+					</div>
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="__set" id="___set">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#___set">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Persistent.html#79-96" title="Go to source code">__set</a>( <span>string <var>$name</var></span>, <span>mixed <var>$value</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Magic __set.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Magic __set.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$name</var></dt>
+						<dd><code>string</code><br>$name Name of the property to set.</dd>
+						<dt><var>$value</var></dt>
+						<dd><code>mixed</code><br>$value Value of said property.</dd>
+					</dl></div>
+
+
+					<h4>Throws</h4>
+					<div class="list">
+						<code>Exception</code><br>
+					</div>
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="getTableName" id="_getTableName">
+
+			<td class="attributes"><code>
+				 public 
+				string
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_getTableName">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Persistent.html#98-107" title="Go to source code">getTableName</a>( )</code>
+
+			<div class="description short">
+				
+<p>Get the SQLite3 table name of an extending class.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Get the SQLite3 table name of an extending class.</p>
+
+
+
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>string</code><br>Name of the table, which is the plural of the class name.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="create" id="_create">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_create">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Persistent.html#109-129" title="Go to source code">create</a>( )</code>
+
+			<div class="description short">
+				
+<p>Create a persistent record.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Create a persistent record.</p>
+
+
+
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="read" id="_read">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_read">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Persistent.html#131-172" title="Go to source code">read</a>( )</code>
+
+			<div class="description short">
+				
+<p>Read an environment.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Read an environment.</p>
+
+
+
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="update" id="_update">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_update">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Persistent.html#174-236" title="Go to source code">update</a>( <span>mixed <var>$update</var> = <span class="php-keyword1">array</span>()</span> )</code>
+
+			<div class="description short">
+				
+<p>Update a record.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Update a record.</p>
+
+
+
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="destroy" id="_destroy">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_destroy">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Persistent.html#238-253" title="Go to source code">destroy</a>( )</code>
+
+			<div class="description short">
+				
+<p>Delete a record.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Delete a record.</p>
+
+
+
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="toArray" id="_toArray">
+
+			<td class="attributes"><code>
+				 public 
+				array
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_toArray">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Persistent.html#255-265" title="Go to source code">toArray</a>( )</code>
+
+			<div class="description short">
+				
+<p>Dump to an array.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Dump to an array.</p>
+
+
+
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>array</code><br>Property names and values.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="render" id="_render">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_render">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Persistent.html#267-277" title="Go to source code">render</a>( )</code>
+
+			<div class="description short">
+				
+<p>Render to standard output.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Render to standard output.</p>
+
+
+
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="renderDrushTable" id="_renderDrushTable">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_renderDrushTable">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Persistent.html#279-292" title="Go to source code">renderDrushTable</a>( )</code>
+
+			<div class="description short">
+				
+<p>Render as a Drush table.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Render as a Drush table.</p>
+
+
+
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="renderJson" id="_renderJson">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_renderJson">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Persistent.html#294-303" title="Go to source code">renderJson</a>( )</code>
+
+			<div class="description short">
+				
+<p>Render as a JSON array.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Render as a JSON array.</p>
+
+
+
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		</table>
+
+
+
+		<h3>Magic methods summary</h3>
+
+
+
+
+
+
+
+
+		<h2>Properties summary</h2>
+		<table class="summary table table-bordered table-striped" id="properties">
+		<tr data-order="id" id="$id">
+			<td class="attributes"><code>
+				protected  
+				integer
+			</code></td>
+
+			<td class="name">
+					<a href="source-class-Fluxsauce.Switchboard.Persistent.html#16-19" title="Go to source code"><var>$id</var></a>
+			</td>
+			<td class="description"><div>
+				<a href="#$id" class="anchor">#</a>
+
+				<div class="description short">
+					
+<p>The Primary Key of the record.</p>
+
+				</div>
+
+				<div class="description detailed hidden">
+					
+<p>The Primary Key of the record.</p>
+
+
+				</div>
+			</div></td>
+		</tr>
+		<tr data-order="name" id="$name">
+			<td class="attributes"><code>
+				protected  
+				string
+			</code></td>
+
+			<td class="name">
+					<a href="source-class-Fluxsauce.Switchboard.Persistent.html#21-24" title="Go to source code"><var>$name</var></a>
+			</td>
+			<td class="description"><div>
+				<a href="#$name" class="anchor">#</a>
+
+				<div class="description short">
+					
+<p>The machine name of the record.</p>
+
+				</div>
+
+				<div class="description detailed hidden">
+					
+<p>The machine name of the record.</p>
+
+
+				</div>
+			</div></td>
+		</tr>
+		<tr data-order="updated" id="$updated">
+			<td class="attributes"><code>
+				protected  
+				integer
+			</code></td>
+
+			<td class="name">
+					<a href="source-class-Fluxsauce.Switchboard.Persistent.html#26-29" title="Go to source code"><var>$updated</var></a>
+			</td>
+			<td class="description"><div>
+				<a href="#$updated" class="anchor">#</a>
+
+				<div class="description short">
+					
+<p>The UNIX timestamp of when the record was last updated.</p>
+
+				</div>
+
+				<div class="description detailed hidden">
+					
+<p>The UNIX timestamp of when the record was last updated.</p>
+
+
+				</div>
+			</div></td>
+		</tr>
+		<tr data-order="externalKeyName" id="$externalKeyName">
+			<td class="attributes"><code>
+				protected  
+				string
+			</code></td>
+
+			<td class="name">
+					<a href="source-class-Fluxsauce.Switchboard.Persistent.html#31-34" title="Go to source code"><var>$externalKeyName</var></a>
+			</td>
+			<td class="description"><div>
+				<a href="#$externalKeyName" class="anchor">#</a>
+
+				<div class="description short">
+					
+<p>Metadata for ORM defining database structure.</p>
+
+				</div>
+
+				<div class="description detailed hidden">
+					
+<p>Metadata for ORM defining database structure.</p>
+
+
+				</div>
+			</div></td>
+		</tr>
+		</table>
+
+
+
+
+
+
+</div>
+	</div>
+
+	<div id="footer">
+		Switchboard API documentation generated by <a href="http://apigen.org">ApiGen 2.8.0</a>
+	</div>
+</div>
+</body>
+</html>

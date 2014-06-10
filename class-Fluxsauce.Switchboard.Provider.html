@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="generator" content="ApiGen 2.8.0">
+
+	<title>Class Fluxsauce\Switchboard\Provider | Switchboard</title>
+
+	<script type="text/javascript" src="resources/combined.js?2056766658"></script>
+	<script type="text/javascript" src="elementlist.js?3788840315"></script>
+	<link rel="stylesheet" type="text/css" media="all" href="resources/bootstrap.min.css?260161822">
+	<link rel="stylesheet" type="text/css" media="all" href="resources/style.css?2015443609">
+
+</head>
+
+<body>
+	<div id="navigation" class="navbar navbar-fixed-top">
+		<div class="navbar-inner">
+			<div class="container">
+				<a href="index.html" class="brand">Switchboard</a>
+				<div class="nav-collapse">
+					<ul class="nav">
+						<li>
+							<a href="namespace-Fluxsauce.Switchboard.html" title="Summary of Fluxsauce\Switchboard"><span>Namespace</span></a>
+						</li>
+						<li class="active">
+<span>Class</span>						</li>
+
+						<li class="divider-vertical"></li>
+
+						<li>
+							<a href="tree.html" title="Tree view of classes, interfaces, traits and exceptions"><span>Tree</span></a>
+						</li>
+
+
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="left">
+	<div id="menu">
+		<form id="search" class="form-search">
+			<input type="hidden" name="cx" value="">
+			<input type="hidden" name="ie" value="UTF-8">
+			<input type="text" name="q" class="search-query" placeholder="Search">
+		</form>
+
+
+		<div id="groups">
+			<h3>Namespaces</h3>
+			<ul>
+				<li class="active"><a href="namespace-Fluxsauce.html">Fluxsauce<span></span></a>
+						<ul>
+				<li class="active"><a href="namespace-Fluxsauce.Switchboard.html">Switchboard</a>
+						</li>
+							</ul></li>
+			</ul>
+		</div>
+
+
+		<div id="elements">
+			<h3>Classes</h3>
+			<ul>
+				<li><a href="class-Fluxsauce.Switchboard.EnvDb.html">EnvDb</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Environment.html">Environment</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Persistent.html">Persistent</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Project.html">Project</a></li>
+				<li class="active"><a href="class-Fluxsauce.Switchboard.Provider.html">Provider</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.ProviderAcquia.html">ProviderAcquia</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.ProviderPantheon.html">ProviderPantheon</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Site.html">Site</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Sqlite.html">Sqlite</a></li>
+			</ul>
+
+
+
+
+
+		</div>
+	</div>
+</div>
+
+<div id="splitter"></div>
+
+<div id="right">
+	<div id="rightInner">
+<div id="content" class="class">
+	<h1>Class Provider</h1>
+
+
+	<div class="description">
+	
+<p>Generic class for hosting / PaaS Providers.</p>
+
+	</div>
+
+
+
+	<div>
+		<h3>Direct known subclasses</h3>
+		<p class="elementList">
+			<code><a href="class-Fluxsauce.Switchboard.ProviderAcquia.html">Fluxsauce\Switchboard\ProviderAcquia</a></code>, 
+			<code><a href="class-Fluxsauce.Switchboard.ProviderPantheon.html">Fluxsauce\Switchboard\ProviderPantheon</a></code>
+		</p>
+	</div>
+
+
+
+
+
+
+	<div class="alert alert-info">
+		<b>Abstract</b><br>
+		
+		<b>Namespace:</b> <a href="namespace-Fluxsauce.html">Fluxsauce</a>\<a href="namespace-Fluxsauce.Switchboard.html">Switchboard</a><br>
+		<b>Package:</b> Fluxsauce\Switchboard<br>
+
+		<b>Located at</b> <a href="source-class-Fluxsauce.Switchboard.Provider.html#9-359" title="Go to source code">library/fluxsauce/switchboard/src/Provider.php</a><br>
+	</div>
+
+
+
+		<h2>Methods summary</h2>
+		<table class="summary table table-bordered table-striped" id="methods">
+		<tr data-order="getInstance" id="_getInstance">
+
+			<td class="attributes"><code>
+				 public static
+				mixed
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_getInstance">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#39-55" title="Go to source code">getInstance</a>( <span>string <var>$provider_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Returns a singleton Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Returns a singleton Provider.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$provider_name</var></dt>
+						<dd><code>string</code><br>$provider_name The machine name of a Provider.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>mixed</code><br>A Provider subclass.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="__construct" id="___construct">
+
+			<td class="attributes"><code>
+				 protected 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#___construct">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#57-100" title="Go to source code">__construct</a>( )</code>
+
+			<div class="description short">
+				
+<p>Protected constructor; use getInstance.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Protected constructor; use getInstance.</p>
+
+
+
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="__get" id="___get">
+
+			<td class="attributes"><code>
+				 public 
+				mixed
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#___get">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#112-128" title="Go to source code">__get</a>( <span>string <var>$name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Magic __get.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Magic __get.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$name</var></dt>
+						<dd><code>string</code><br>$name The name of the property to get.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>mixed</code><br>Value of set property.<br>
+					</div>
+
+					<h4>Throws</h4>
+					<div class="list">
+						<code>Exception</code><br>
+					</div>
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="apiGetSite" id="_apiGetSite">
+
+			<td class="attributes"><code>
+				abstract public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_apiGetSite">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#130-136" title="Go to source code">apiGetSite</a>( <span>string <var>$site_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Perform an API call to get site information from a Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Perform an API call to get site information from a Provider.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The name of the site in question.</dd>
+					</dl></div>
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="siteDestroy" id="_siteDestroy">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_siteDestroy">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#138-152" title="Go to source code">siteDestroy</a>( <span>string <var>$site_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Destroy a site associated with a Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Destroy a site associated with a Provider.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The machine name of the Site to destroy.</dd>
+					</dl></div>
+
+
+					<h4>Throws</h4>
+					<div class="list">
+						<code>Exception</code><br>
+					</div>
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="sitesDestroy" id="_sitesDestroy">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_sitesDestroy">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#154-168" title="Go to source code">sitesDestroy</a>( )</code>
+
+			<div class="description short">
+				
+<p>Delete all Sites associated with a Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Delete all Sites associated with a Provider.</p>
+
+
+
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="siteExists" id="_siteExists">
+
+			<td class="attributes"><code>
+				 public 
+				boolean
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_siteExists">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#170-187" title="Go to source code">siteExists</a>( <span>string <var>$site_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Determine if a Site exists within a Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Determine if a Site exists within a Provider.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The machine name of the Site to check.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>boolean</code><br>TRUE if Site exists within a provider, FALSE if it does not.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="siteGetField" id="_siteGetField">
+
+			<td class="attributes"><code>
+				abstract public 
+				string
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_siteGetField">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#189-202" title="Go to source code">siteGetField</a>( <span>string <var>$site_name</var></span>, <span>string <var>$field</var></span> )</code>
+
+			<div class="description short">
+				
+<p>A mapping function that calls the appropriate API to populate a field.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>A mapping function that calls the appropriate API to populate a field.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name Machine name of the site in question.</dd>
+						<dt><var>$field</var></dt>
+						<dd><code>string</code><br>$field Name of the field to populate.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>string</code><br>The value of the field.<br>
+					</div>
+
+					<h4>Throws</h4>
+					<div class="list">
+						<code>Exception</code><br>Unknown field name.<br>
+					</div>
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="apiGetSites" id="_apiGetSites">
+
+			<td class="attributes"><code>
+				abstract public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_apiGetSites">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#204-207" title="Go to source code">apiGetSites</a>( )</code>
+
+			<div class="description short">
+				
+<p>Populate available Sites from a Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Populate available Sites from a Provider.</p>
+
+
+
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="apiGetSiteEnvironments" id="_apiGetSiteEnvironments">
+
+			<td class="attributes"><code>
+				abstract public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_apiGetSiteEnvironments">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#209-215" title="Go to source code">apiGetSiteEnvironments</a>( <span>string <var>$site_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Populate available Site Environments from a Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Populate available Site Environments from a Provider.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The machine name of the site in question.</dd>
+					</dl></div>
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="apiGetSiteEnvDbs" id="_apiGetSiteEnvDbs">
+
+			<td class="attributes"><code>
+				abstract public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_apiGetSiteEnvDbs">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#217-225" title="Go to source code">apiGetSiteEnvDbs</a>( <span>string <var>$site_name</var></span>, <span>string <var>$env_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Get and populate list of Databases for a particular Environment.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Get and populate list of Databases for a particular Environment.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The machine name of the Site.</dd>
+						<dt><var>$env_name</var></dt>
+						<dd><code>string</code><br>$env_name The machine name of the Site Environment.</dd>
+					</dl></div>
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="requestsOptionsCustom" id="_requestsOptionsCustom">
+
+			<td class="attributes"><code>
+				abstract public 
+				array
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_requestsOptionsCustom">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#227-233" title="Go to source code">requestsOptionsCustom</a>( )</code>
+
+			<div class="description short">
+				
+<p>Provider specific options for Requests.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Provider specific options for Requests.</p>
+
+
+
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>array</code><br>Options for the request; see Requests::request for details.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="authLogin" id="_authLogin">
+
+			<td class="attributes"><code>
+				abstract public 
+				boolean
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_authLogin">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#235-246" title="Go to source code">authLogin</a>( <span>string <var>$email</var></span>, <span>string <var>$password</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Log in to target Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Log in to target Provider.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$email</var></dt>
+						<dd><code>string</code><br>$email The email address of the user.</dd>
+						<dt><var>$password</var></dt>
+						<dd><code>string</code><br>$password The password of the user.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>boolean</code><br>Indicates success.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="apiGetSiteEnvDbBackups" id="_apiGetSiteEnvDbBackups">
+
+			<td class="attributes"><code>
+				abstract public 
+				array
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_apiGetSiteEnvDbBackups">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#248-263" title="Go to source code">apiGetSiteEnvDbBackups</a>( <span>string <var>$site_name</var></span>, <span>string <var>$env_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Get a list of database backups for a particular Site Environment.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Get a list of database backups for a particular Site Environment.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The machine name of the Site.</dd>
+						<dt><var>$env_name</var></dt>
+						<dd><code>string</code><br>$env_name The machine name of the Site Environment.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>array</code><br>An array of Backup arrays keyed by the timestamp. Each Backup array has the
+following keys: - 'filename' - 'url' - 'timestamp'<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="apiDownloadBackup" id="_apiDownloadBackup">
+
+			<td class="attributes"><code>
+				abstract public 
+				string
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_apiDownloadBackup">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#265-276" title="Go to source code">apiDownloadBackup</a>( <span>array <var>$backup</var></span>, <span>string <var>$destination</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Download a backup.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Download a backup.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$backup</var></dt>
+						<dd><code>array</code><br>$backup An array from apiGetSiteEnvDbBackups().</dd>
+						<dt><var>$destination</var></dt>
+						<dd><code>string</code><br>$destination The path to the destination.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>string</code><br>The full path to the downloaded backup.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="getSiteEnvDbBackupLatest" id="_getSiteEnvDbBackupLatest">
+
+			<td class="attributes"><code>
+				 public 
+				array
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_getSiteEnvDbBackupLatest">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#278-292" title="Go to source code">getSiteEnvDbBackupLatest</a>( <span>string <var>$site_name</var></span>, <span>string <var>$env_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Helper function to get the latest database backup.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Helper function to get the latest database backup.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The machine name of the Site in question.</dd>
+						<dt><var>$env_name</var></dt>
+						<dd><code>string</code><br>$env_name The machine name of the Site Environment in question.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>array</code><br>A backup array as defined in apiGetSiteEnvDbBackups().<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="drushCacheBinAuthName" id="_drushCacheBinAuthName">
+
+			<td class="attributes"><code>
+				 public 
+				string
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_drushCacheBinAuthName">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#294-302" title="Go to source code">drushCacheBinAuthName</a>( )</code>
+
+			<div class="description short">
+				
+<p>Get the name of the Drush cache bin for a particular Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Get the name of the Drush cache bin for a particular Provider.</p>
+
+
+
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>string</code><br>The name of the drush cache bin.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="authLogout" id="_authLogout">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_authLogout">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#304-309" title="Go to source code">authLogout</a>( )</code>
+
+			<div class="description short">
+				
+<p>Log out of target provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Log out of target provider.</p>
+
+
+
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="authIsLoggedIn" id="_authIsLoggedIn">
+
+			<td class="attributes"><code>
+				abstract public 
+				boolean
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_authIsLoggedIn">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#311-317" title="Go to source code">authIsLoggedIn</a>( )</code>
+
+			<div class="description short">
+				
+<p>Determine whether a user is logged-in to a Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Determine whether a user is logged-in to a Provider.</p>
+
+
+
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>boolean</code><br>TRUE if they are.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="getFilesPath" id="_getFilesPath">
+
+			<td class="attributes"><code>
+				abstract public 
+				string
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_getFilesPath">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#319-330" title="Go to source code">getFilesPath</a>( <span>string <var>$site_name</var></span>, <span>string <var>$env_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Get the remote path to files for a particular Site Environment.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Get the remote path to files for a particular Site Environment.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The machine name of the Site in question.</dd>
+						<dt><var>$env_name</var></dt>
+						<dd><code>string</code><br>$env_name The machine name of the Site Environment in question.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>string</code><br>The full path of the files directory.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="requestsOptions" id="_requestsOptions">
+
+			<td class="attributes"><code>
+				 public 
+				array
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_requestsOptions">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.Provider.html#332-358" title="Go to source code">requestsOptions</a>( <span>array <var>$options</var> = <span class="php-keyword1">array</span>()</span> )</code>
+
+			<div class="description short">
+				
+<p>Get all Provider specific and custom options for the Requests library.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Get all Provider specific and custom options for the Requests library.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$options</var></dt>
+						<dd><code>array</code><br>$options Optional overriding options.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>array</code><br>Options for the request; see Requests::request for details.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		</table>
+
+
+
+		<h3>Magic methods summary</h3>
+
+
+
+
+
+
+
+
+		<h2>Properties summary</h2>
+		<table class="summary table table-bordered table-striped" id="properties">
+		<tr data-order="name" id="$name">
+			<td class="attributes"><code>
+				protected  
+				string
+			</code></td>
+
+			<td class="name">
+					<a href="source-class-Fluxsauce.Switchboard.Provider.html#14-17" title="Go to source code"><var>$name</var></a>
+			</td>
+			<td class="description"><div>
+				<a href="#$name" class="anchor">#</a>
+
+				<div class="description short">
+					
+<p>Machine name of the Provider.</p>
+
+				</div>
+
+				<div class="description detailed hidden">
+					
+<p>Machine name of the Provider.</p>
+
+
+				</div>
+			</div></td>
+		</tr>
+		<tr data-order="label" id="$label">
+			<td class="attributes"><code>
+				protected  
+				string
+			</code></td>
+
+			<td class="name">
+					<a href="source-class-Fluxsauce.Switchboard.Provider.html#19-22" title="Go to source code"><var>$label</var></a>
+			</td>
+			<td class="description"><div>
+				<a href="#$label" class="anchor">#</a>
+
+				<div class="description short">
+					
+<p>Human readable label for the Provider.</p>
+
+				</div>
+
+				<div class="description detailed hidden">
+					
+<p>Human readable label for the Provider.</p>
+
+
+				</div>
+			</div></td>
+		</tr>
+		<tr data-order="homepage" id="$homepage">
+			<td class="attributes"><code>
+				protected  
+				string
+			</code></td>
+
+			<td class="name">
+					<a href="source-class-Fluxsauce.Switchboard.Provider.html#24-27" title="Go to source code"><var>$homepage</var></a>
+			</td>
+			<td class="description"><div>
+				<a href="#$homepage" class="anchor">#</a>
+
+				<div class="description short">
+					
+<p>Homepage URL for the provider.</p>
+
+				</div>
+
+				<div class="description detailed hidden">
+					
+<p>Homepage URL for the provider.</p>
+
+
+				</div>
+			</div></td>
+		</tr>
+		<tr data-order="endpoint" id="$endpoint">
+			<td class="attributes"><code>
+				protected  
+				string
+			</code></td>
+
+			<td class="name">
+					<a href="source-class-Fluxsauce.Switchboard.Provider.html#29-32" title="Go to source code"><var>$endpoint</var></a>
+			</td>
+			<td class="description"><div>
+				<a href="#$endpoint" class="anchor">#</a>
+
+				<div class="description short">
+					
+<p>Endpoint URL for the provider.</p>
+
+				</div>
+
+				<div class="description detailed hidden">
+					
+<p>Endpoint URL for the provider.</p>
+
+
+				</div>
+			</div></td>
+		</tr>
+		<tr data-order="sites" id="$sites">
+			<td class="attributes"><code>
+				protected  
+				array
+			</code></td>
+
+			<td class="name">
+					<a href="source-class-Fluxsauce.Switchboard.Provider.html#34-37" title="Go to source code"><var>$sites</var></a>
+			</td>
+			<td class="description"><div>
+				<a href="#$sites" class="anchor">#</a>
+
+				<div class="description short">
+					
+<p>Contains instances of Fluxsauce\Switchboard\Site</p>
+
+				</div>
+
+				<div class="description detailed hidden">
+					
+<p>Contains instances of Fluxsauce\Switchboard\Site</p>
+
+
+				</div>
+			</div></td>
+		</tr>
+		</table>
+
+
+
+
+
+
+</div>
+	</div>
+
+	<div id="footer">
+		Switchboard API documentation generated by <a href="http://apigen.org">ApiGen 2.8.0</a>
+	</div>
+</div>
+</body>
+</html>

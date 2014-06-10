@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="generator" content="ApiGen 2.8.0">
+
+	<title>Class Fluxsauce\Switchboard\ProviderAcquia | Switchboard</title>
+
+	<script type="text/javascript" src="resources/combined.js?2056766658"></script>
+	<script type="text/javascript" src="elementlist.js?3788840315"></script>
+	<link rel="stylesheet" type="text/css" media="all" href="resources/bootstrap.min.css?260161822">
+	<link rel="stylesheet" type="text/css" media="all" href="resources/style.css?2015443609">
+
+</head>
+
+<body>
+	<div id="navigation" class="navbar navbar-fixed-top">
+		<div class="navbar-inner">
+			<div class="container">
+				<a href="index.html" class="brand">Switchboard</a>
+				<div class="nav-collapse">
+					<ul class="nav">
+						<li>
+							<a href="namespace-Fluxsauce.Switchboard.html" title="Summary of Fluxsauce\Switchboard"><span>Namespace</span></a>
+						</li>
+						<li class="active">
+<span>Class</span>						</li>
+
+						<li class="divider-vertical"></li>
+
+						<li>
+							<a href="tree.html" title="Tree view of classes, interfaces, traits and exceptions"><span>Tree</span></a>
+						</li>
+
+
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="left">
+	<div id="menu">
+		<form id="search" class="form-search">
+			<input type="hidden" name="cx" value="">
+			<input type="hidden" name="ie" value="UTF-8">
+			<input type="text" name="q" class="search-query" placeholder="Search">
+		</form>
+
+
+		<div id="groups">
+			<h3>Namespaces</h3>
+			<ul>
+				<li class="active"><a href="namespace-Fluxsauce.html">Fluxsauce<span></span></a>
+						<ul>
+				<li class="active"><a href="namespace-Fluxsauce.Switchboard.html">Switchboard</a>
+						</li>
+							</ul></li>
+			</ul>
+		</div>
+
+
+		<div id="elements">
+			<h3>Classes</h3>
+			<ul>
+				<li><a href="class-Fluxsauce.Switchboard.EnvDb.html">EnvDb</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Environment.html">Environment</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Persistent.html">Persistent</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Project.html">Project</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Provider.html">Provider</a></li>
+				<li class="active"><a href="class-Fluxsauce.Switchboard.ProviderAcquia.html">ProviderAcquia</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.ProviderPantheon.html">ProviderPantheon</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Site.html">Site</a></li>
+				<li><a href="class-Fluxsauce.Switchboard.Sqlite.html">Sqlite</a></li>
+			</ul>
+
+
+
+
+
+		</div>
+	</div>
+</div>
+
+<div id="splitter"></div>
+
+<div id="right">
+	<div id="rightInner">
+<div id="content" class="class">
+	<h1>Class ProviderAcquia</h1>
+
+
+	<div class="description">
+	
+<p>Acquia specific API interactions.</p>
+
+	</div>
+
+	<dl class="tree well">
+		<dd style="padding-left:0px">
+			<a href="class-Fluxsauce.Switchboard.Provider.html"><span>Fluxsauce\Switchboard\Provider</span></a>
+			
+			
+			
+		</dd>
+		<dd style="padding-left:30px">
+			<img src="resources/inherit.png" alt="Extended by">
+<b><span>Fluxsauce\Switchboard\ProviderAcquia</span></b>			
+			
+			
+		</dd>
+	</dl>
+
+
+
+
+
+
+
+
+	<div class="alert alert-info">
+		
+		
+		<b>Namespace:</b> <a href="namespace-Fluxsauce.html">Fluxsauce</a>\<a href="namespace-Fluxsauce.Switchboard.html">Switchboard</a><br>
+		<b>Package:</b> Fluxsauce\Switchboard<br>
+
+		<b>Located at</b> <a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#9-337" title="Go to source code">library/fluxsauce/switchboard/src/ProviderAcquia.php</a><br>
+	</div>
+
+
+
+		<h2>Methods summary</h2>
+		<table class="summary table table-bordered table-striped" id="methods">
+		<tr data-order="siteGetField" id="_siteGetField">
+
+			<td class="attributes"><code>
+				 public 
+				string
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_siteGetField">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#34-76" title="Go to source code">siteGetField</a>( <span>string <var>$site_name</var></span>, <span>string <var>$field</var></span> )</code>
+
+			<div class="description short">
+				
+<p>A mapping function that calls the appropriate API to populate a field.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>A mapping function that calls the appropriate API to populate a field.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name Machine name of the site in question.</dd>
+						<dt><var>$field</var></dt>
+						<dd><code>string</code><br>$field Name of the field to populate.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>string</code><br>The value of the field.<br>
+					</div>
+
+					<h4>Throws</h4>
+					<div class="list">
+						<code>Exception</code><br>Unknown field name.<br>
+					</div>
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="requestsOptionsCustom" id="_requestsOptionsCustom">
+
+			<td class="attributes"><code>
+				 public 
+				array
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_requestsOptionsCustom">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#78-94" title="Go to source code">requestsOptionsCustom</a>( )</code>
+
+			<div class="description short">
+				
+<p>Provider specific options for Requests.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Provider specific options for Requests.</p>
+
+
+
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>array</code><br>Options for the request; see Requests::request for details.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="authLogin" id="_authLogin">
+
+			<td class="attributes"><code>
+				 public 
+				boolean
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_authLogin">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#96-112" title="Go to source code">authLogin</a>( <span>string <var>$email</var></span>, <span>string <var>$password</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Log in to target Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Log in to target Provider.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$email</var></dt>
+						<dd><code>string</code><br>$email The email address of the user.</dd>
+						<dt><var>$password</var></dt>
+						<dd><code>string</code><br>$password The password of the user.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>boolean</code><br>Indicates success.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="authEmailGet" id="_authEmailGet">
+
+			<td class="attributes"><code>
+				 protected 
+				mixed
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_authEmailGet">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#114-125" title="Go to source code">authEmailGet</a>( )</code>
+
+			<div class="description short">
+				
+<p>Helper function to get the cached email.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Helper function to get the cached email.</p>
+
+
+
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>mixed</code><br>The password in question or NULL.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="authPasswordGet" id="_authPasswordGet">
+
+			<td class="attributes"><code>
+				 protected 
+				mixed
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_authPasswordGet">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#127-138" title="Go to source code">authPasswordGet</a>( )</code>
+
+			<div class="description short">
+				
+<p>Helper function to get the cached password.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Helper function to get the cached password.</p>
+
+
+
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>mixed</code><br>The password in question or NULL.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="authIsLoggedIn" id="_authIsLoggedIn">
+
+			<td class="attributes"><code>
+				 public 
+				boolean
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_authIsLoggedIn">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#140-150" title="Go to source code">authIsLoggedIn</a>( )</code>
+
+			<div class="description short">
+				
+<p>Determine whether a user is logged-in to a Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Determine whether a user is logged-in to a Provider.</p>
+
+
+
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>boolean</code><br>TRUE if they are.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="apiGetSites" id="_apiGetSites">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_apiGetSites">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#152-169" title="Go to source code">apiGetSites</a>( )</code>
+
+			<div class="description short">
+				
+<p>Populate available Sites from a Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Populate available Sites from a Provider.</p>
+
+
+
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="apiGetSite" id="_apiGetSite">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_apiGetSite">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#171-194" title="Go to source code">apiGetSite</a>( <span>string <var>$site_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Perform an API call to get site information from a Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Perform an API call to get site information from a Provider.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The name of the site in question.</dd>
+					</dl></div>
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="apiGetSiteEnvironments" id="_apiGetSiteEnvironments">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_apiGetSiteEnvironments">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#196-217" title="Go to source code">apiGetSiteEnvironments</a>( <span>string <var>$site_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Populate available Site Environments from a Provider.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Populate available Site Environments from a Provider.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The machine name of the site in question.</dd>
+					</dl></div>
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="apiGetSiteEnvDbs" id="_apiGetSiteEnvDbs">
+
+			<td class="attributes"><code>
+				 public 
+				
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_apiGetSiteEnvDbs">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#219-240" title="Go to source code">apiGetSiteEnvDbs</a>( <span>string <var>$site_name</var></span>, <span>string <var>$env_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Get and populate list of Databases for a particular Environment.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Get and populate list of Databases for a particular Environment.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The machine name of the Site.</dd>
+						<dt><var>$env_name</var></dt>
+						<dd><code>string</code><br>$env_name The machine name of the Site Environment.</dd>
+					</dl></div>
+
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="apiGetSiteEnvDbBackups" id="_apiGetSiteEnvDbBackups">
+
+			<td class="attributes"><code>
+				 public 
+				array
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_apiGetSiteEnvDbBackups">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#242-276" title="Go to source code">apiGetSiteEnvDbBackups</a>( <span>string <var>$site_name</var></span>, <span>string <var>$env_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Get a list of database backups for a particular Site Environment.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Get a list of database backups for a particular Site Environment.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The machine name of the Site.</dd>
+						<dt><var>$env_name</var></dt>
+						<dd><code>string</code><br>$env_name The machine name of the Site Environment.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>array</code><br>An array of Backup arrays keyed by the timestamp. Each Backup array has the
+following keys: - 'filename' - 'url' - 'timestamp'<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="getSiteEnvDbBackupLatest" id="_getSiteEnvDbBackupLatest">
+
+			<td class="attributes"><code>
+				 public 
+				array
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_getSiteEnvDbBackupLatest">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#278-295" title="Go to source code">getSiteEnvDbBackupLatest</a>( <span>string <var>$site_name</var></span>, <span>string <var>$env_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Helper function to get the latest database backup.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Helper function to get the latest database backup.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The machine name of the Site in question.</dd>
+						<dt><var>$env_name</var></dt>
+						<dd><code>string</code><br>$env_name The machine name of the Site Environment in question.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>array</code><br>A backup array as defined in apiGetSiteEnvDbBackups().<br>
+					</div>
+
+
+
+					<h4>Overrides</h4>
+					<div class="list"><code><a href="class-Fluxsauce.Switchboard.Provider.html#_getSiteEnvDbBackupLatest">Fluxsauce\Switchboard\Provider::getSiteEnvDbBackupLatest</a></code></div>
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="apiDownloadBackup" id="_apiDownloadBackup">
+
+			<td class="attributes"><code>
+				 public 
+				string
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_apiDownloadBackup">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#297-321" title="Go to source code">apiDownloadBackup</a>( <span>array <var>$backup</var></span>, <span>string <var>$destination</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Download a backup.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Download a backup.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$backup</var></dt>
+						<dd><code>array</code><br>$backup An array from apiGetSiteEnvDbBackups().</dd>
+						<dt><var>$destination</var></dt>
+						<dd><code>string</code><br>$destination The path to the destination.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>string</code><br>The full path to the downloaded backup.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		<tr data-order="getFilesPath" id="_getFilesPath">
+
+			<td class="attributes"><code>
+				 public 
+				string
+				
+				</code>
+			</td>
+
+			<td class="name"><div>
+			<a class="anchor" href="#_getFilesPath">#</a>
+			<code><a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#323-336" title="Go to source code">getFilesPath</a>( <span>string <var>$site_name</var></span>, <span>string <var>$env_name</var></span> )</code>
+
+			<div class="description short">
+				
+<p>Get the remote path to files for a particular Site Environment.</p>
+
+			</div>
+
+			<div class="description detailed hidden">
+				
+<p>Get the remote path to files for a particular Site Environment.</p>
+
+
+
+					<h4>Parameters</h4>
+					<div class="list"><dl>
+						<dt><var>$site_name</var></dt>
+						<dd><code>string</code><br>$site_name The machine name of the Site in question.</dd>
+						<dt><var>$env_name</var></dt>
+						<dd><code>string</code><br>$env_name The machine name of the Site Environment in question.</dd>
+					</dl></div>
+
+					<h4>Returns</h4>
+					<div class="list">
+						<code>string</code><br>The full path of the files directory.<br>
+					</div>
+
+
+
+
+			</div>
+			</div></td>
+		</tr>
+		</table>
+
+		<h3>Methods inherited from <a href="class-Fluxsauce.Switchboard.Provider.html#methods">Fluxsauce\Switchboard\Provider</a></h3>
+		<p class="elementList">
+			<code><a href="class-Fluxsauce.Switchboard.Provider.html#___construct">__construct()</a></code>, 
+			<code><a href="class-Fluxsauce.Switchboard.Provider.html#___get">__get()</a></code>, 
+			<code><a href="class-Fluxsauce.Switchboard.Provider.html#_authLogout">authLogout()</a></code>, 
+			<code><a href="class-Fluxsauce.Switchboard.Provider.html#_drushCacheBinAuthName">drushCacheBinAuthName()</a></code>, 
+			<code><a href="class-Fluxsauce.Switchboard.Provider.html#_getInstance">getInstance()</a></code>, 
+			<code><a href="class-Fluxsauce.Switchboard.Provider.html#_requestsOptions">requestsOptions()</a></code>, 
+			<code><a href="class-Fluxsauce.Switchboard.Provider.html#_siteDestroy">siteDestroy()</a></code>, 
+			<code><a href="class-Fluxsauce.Switchboard.Provider.html#_siteExists">siteExists()</a></code>, 
+			<code><a href="class-Fluxsauce.Switchboard.Provider.html#_sitesDestroy">sitesDestroy()</a></code>
+		</p>
+
+
+		<h3>Magic methods summary</h3>
+
+
+
+
+
+
+
+
+		<h2>Properties summary</h2>
+		<table class="summary table table-bordered table-striped" id="properties">
+		<tr data-order="name" id="$name">
+			<td class="attributes"><code>
+				protected  
+				string
+			</code></td>
+
+			<td class="name">
+					<a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#14-17" title="Go to source code"><var>$name</var></a>
+			</td>
+			<td class="description"><div>
+				<a href="#$name" class="anchor">#</a>
+
+				<div class="description short">
+					
+<p>Machine name of the Provider.</p>
+
+				</div>
+
+				<div class="description detailed hidden">
+					
+<p>Machine name of the Provider.</p>
+
+
+				</div>
+			</div></td>
+		</tr>
+		<tr data-order="label" id="$label">
+			<td class="attributes"><code>
+				protected  
+				string
+			</code></td>
+
+			<td class="name">
+					<a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#19-22" title="Go to source code"><var>$label</var></a>
+			</td>
+			<td class="description"><div>
+				<a href="#$label" class="anchor">#</a>
+
+				<div class="description short">
+					
+<p>Human readable label for the Provider.</p>
+
+				</div>
+
+				<div class="description detailed hidden">
+					
+<p>Human readable label for the Provider.</p>
+
+
+				</div>
+			</div></td>
+		</tr>
+		<tr data-order="homepage" id="$homepage">
+			<td class="attributes"><code>
+				protected  
+				string
+			</code></td>
+
+			<td class="name">
+					<a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#24-27" title="Go to source code"><var>$homepage</var></a>
+			</td>
+			<td class="description"><div>
+				<a href="#$homepage" class="anchor">#</a>
+
+				<div class="description short">
+					
+<p>Homepage URL for the provider.</p>
+
+				</div>
+
+				<div class="description detailed hidden">
+					
+<p>Homepage URL for the provider.</p>
+
+
+				</div>
+			</div></td>
+		</tr>
+		<tr data-order="endpoint" id="$endpoint">
+			<td class="attributes"><code>
+				protected  
+				string
+			</code></td>
+
+			<td class="name">
+					<a href="source-class-Fluxsauce.Switchboard.ProviderAcquia.html#29-32" title="Go to source code"><var>$endpoint</var></a>
+			</td>
+			<td class="description"><div>
+				<a href="#$endpoint" class="anchor">#</a>
+
+				<div class="description short">
+					
+<p>Endpoint URL for the provider.</p>
+
+				</div>
+
+				<div class="description detailed hidden">
+					
+<p>Endpoint URL for the provider.</p>
+
+
+				</div>
+			</div></td>
+		</tr>
+		</table>
+
+		<h3>Properties inherited from <a href="class-Fluxsauce.Switchboard.Provider.html#properties">Fluxsauce\Switchboard\Provider</a></h3>
+		<p class="elementList">
+			<code><a href="class-Fluxsauce.Switchboard.Provider.html#$sites"><var>$sites</var></a></code>
+		</p>
+
+
+
+
+
+</div>
+	</div>
+
+	<div id="footer">
+		Switchboard API documentation generated by <a href="http://apigen.org">ApiGen 2.8.0</a>
+	</div>
+</div>
+</body>
+</html>
