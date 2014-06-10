@@ -6,6 +6,9 @@
 
 namespace Fluxsauce\Switchboard;
 
+/**
+ * The Switchboard brain.
+ */
 class Sqlite {
   /**
    * Get the location of the Switchboard brain.

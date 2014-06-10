@@ -1,24 +1,68 @@
 <?php
 /**
  * @file
- * Remote Site structure.
+ * Remote Site.
  */
 
 namespace Fluxsauce\Switchboard;
 
+/**
+ * Remote Site.
+ */
 class Site extends Persistent {
+  /**
+   * @var string The machine name of the Provider.
+   */
   protected $provider;
+
+  /**
+   * @var string The UUID of the Site.
+   */
   protected $uuid;
+
+  /**
+   * @var string The realm of the site, like devcloud for Acquia.
+   */
   protected $realm;
+
+  /**
+   * @var string The machine name of the site.
+   */
   protected $title;
+
+  /**
+   * @var string The UNIX-style username used when SSHing to the site.
+   */
   protected $unixUsername;
+
+  /**
+   * @var string The Version Control System URL for the site.
+   */
   protected $vcsUrl;
+
+  /**
+   * @var string The Version Control System type, such as git or svn.
+   */
   protected $vcsType;
+
+  /**
+   * @var string The Version Control System protocol, such as git or ssh.
+   */
   protected $vcsProtocol;
+
+  /**
+   * @var int The target port for SSH.
+   */
   protected $sshPort;
 
+  /**
+   * @var array Contains instances of Fluxsauce\Switchboard\Environment
+   */
   protected $environments;
 
+  /**
+   * @var string Metadata for ORM defining database structure.
+   */
   protected $externalKeyName = 'provider';
 
   /**

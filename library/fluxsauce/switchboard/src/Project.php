@@ -1,25 +1,78 @@
 <?php
 /**
  * @file
- * Local Project structure.
+ * Local Project.
  */
 
 namespace Fluxsauce\Switchboard;
 
+/**
+ * Local Project.
+ */
 class Project extends Persistent {
+  /**
+   * @var string The UUID of the Project.
+   */
   protected $uuid;
+
+  /**
+   * @var int External key to an associated Site.
+   */
   protected $siteId;
+
+  /**
+   * @var string The hostname for the local Project.
+   */
   protected $hostname;
+
+  /**
+   * @var string The UNIX username for the local Project.
+   */
   protected $username;
+
+  /**
+   * @var int The SSH port for the local Project.
+   */
   protected $sshPort;
+
+  /**
+   * @var string The path on disk to the code root.
+   */
   protected $codePath;
+
+  /**
+   * @var string The hostname for the Project database.
+   */
   protected $databaseHost;
+
+  /**
+   * @var string The username for the Project database.
+   */
   protected $databaseUsername;
+
+  /**
+   * @var string The password for the Project database.
+   */
   protected $databasePassword;
+
+  /**
+   * @var string The database name for the Project database.
+   */
   protected $databaseName;
+
+  /**
+   * @var int The port for the Project database.
+   */
   protected $databasePort;
+
+  /**
+   * @var string The path on disk to the files root.
+   */
   protected $filesPath;
 
+  /**
+   * @var string Metadata for ORM defining database structure.
+   */
   protected $externalKeyName = 'name';
 
   /**

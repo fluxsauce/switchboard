@@ -6,12 +6,33 @@
 
 namespace Fluxsauce\Switchboard;
 
+/**
+ * Generic class for hosting / PaaS Providers.
+ */
 abstract class Provider {
+  /**
+   * @var string Machine name of the Provider.
+   */
   protected $name;
+
+  /**
+   * @var string Human readable label for the Provider.
+   */
   protected $label;
+
+  /**
+   * @var string Homepage URL for the provider.
+   */
   protected $homepage;
+
+  /**
+   * @var string Endpoint URL for the provider.
+   */
   protected $endpoint;
 
+  /**
+   * @var array Contains instances of Fluxsauce\Switchboard\Site
+   */
   protected $sites;
 
   /**

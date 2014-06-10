@@ -6,10 +6,28 @@
 
 namespace Fluxsauce\Switchboard;
 
+/**
+ * Acquia specific API interactions.
+ */
 class ProviderAcquia extends Provider {
+  /**
+   * @var string Machine name of the Provider.
+   */
   protected $name = 'acquia';
+
+  /**
+   * @var string Human readable label for the Provider.
+   */
   protected $label = 'Acquia';
+
+  /**
+   * @var string Homepage URL for the provider.
+   */
   protected $homepage = 'http://www.acquia.com/';
+
+  /**
+   * @var string Endpoint URL for the provider.
+   */
   protected $endpoint = 'https://cloudapi.acquia.com/v1';
 
   /**

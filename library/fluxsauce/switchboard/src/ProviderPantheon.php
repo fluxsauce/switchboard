@@ -6,10 +6,28 @@
 
 namespace Fluxsauce\Switchboard;
 
+/**
+ * Pantheon specific API interactions.
+ */
 class ProviderPantheon extends Provider {
+  /**
+   * @var string Machine name of the Provider.
+   */
   protected $name = 'pantheon';
+
+  /**
+   * @var string Human readable label for the Provider.
+   */
   protected $label = 'Pantheon';
+
+  /**
+   * @var string Homepage URL for the provider.
+   */
   protected $homepage = 'https://www.getpantheon.com/';
+
+  /**
+   * @var string Endpoint URL for the provider.
+   */
   protected $endpoint = 'https://terminus.getpantheon.com';
 
   /**

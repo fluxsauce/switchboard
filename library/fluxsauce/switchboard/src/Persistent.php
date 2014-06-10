@@ -8,11 +8,28 @@
 
 namespace Fluxsauce\Switchboard;
 
+/**
+ * Generic class providing database persistence.
+ */
 abstract class Persistent {
+  /**
+   * @var int The Primary Key of the record.
+   */
   protected $id;
+
+  /**
+   * @var string The machine name of the record.
+   */
   protected $name;
+
+  /**
+   * @var int The UNIX timestamp of when the record was last updated.
+   */
   protected $updated;
 
+  /**
+   * @var string Metadata for ORM defining database structure.
+   */
   protected $externalKeyName;
 
   /**
