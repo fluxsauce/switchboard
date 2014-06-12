@@ -209,7 +209,6 @@ function switchboard_message_fail_generate($code, $replacements = array()) {
       throw new \Exception(dt('Invalid code @code, cannot generate failure message.', array(
         '@code' => $code,
       )));
-      break;
   }
   return switchboard_message_fail($code, $message);
 }

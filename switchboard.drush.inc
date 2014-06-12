@@ -55,9 +55,9 @@ function switchboard_drush_command() {
   $items['sw-auth-login'] = array(
     'description' => dt('Authenticate with a provider.'),
     'arguments' => array(
-        'email' => dt('Email address of the account with the provider.'),
-        'password' => dt('Password or API key for the account.'),
-      ) + $default_arguments,
+      'email' => dt('Email address of the account with the provider.'),
+      'password' => dt('Password or API key for the account.'),
+    ) + $default_arguments,
     'options' => $json_option,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
@@ -373,9 +373,9 @@ function switchboard_drush_command() {
   $items['sw-site-env-backup-list'] = array(
     'description' => dt('List the available backups for a site environment.'),
     'arguments' => $default_site_arguments + array(
-        'env_name' => dt('Environment name'),
-        'backup_type' => dt('Backup type.'),
-      ),
+      'env_name' => dt('Environment name'),
+      'backup_type' => dt('Backup type.'),
+    ),
     'options' => $default_options,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );

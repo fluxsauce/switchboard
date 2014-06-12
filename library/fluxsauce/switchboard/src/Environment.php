@@ -66,23 +66,23 @@ class Environment extends Persistent {
   /**
    * Helper to add a backup to an Environment.
    *
-   * @param EnvBackup $envBackup
+   * @param EnvBackup $env_backup
    *   EnvBackup to add.
    */
-  public function environmentAdd(EnvBackup $envBackup) {
+  public function environmentAdd(EnvBackup $env_backup) {
     if (!is_array($this->backups)) {
       $this->backups = array();
     }
-    $this->backups[$envBackup->name] = $envBackup;
+    $this->backups[$env_backup->name] = $env_backup;
   }
 
   /**
    * Helper to remove a backup from an Environment.
    *
-   * @param EnvBackup $envBackup
+   * @param EnvBackup $env_backup
    *   EnvBackup to remove.
    */
-  public function backupRemove(EnvBackup $envBackup) {
-    unset($this->backups[$envBackup->name]);
+  public function backupRemove(EnvBackup $env_backup) {
+    unset($this->backups[$env_backup->name]);
   }
 }
