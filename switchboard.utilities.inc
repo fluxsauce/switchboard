@@ -152,23 +152,64 @@ function switchboard_message_success($message) {
  *   Invalid code.
  */
 function switchboard_message_fail_generate($code, $replacements = array()) {
-  $codes = array(
-    'SWITCHBOARD_PROVIDER_SITE_NAME_INVALID' => dt('"@site_name" is an invalid site name.', $replacements),
-    'SWITCHBOARD_PROVIDER_SITE_INVALID' => dt('Site "@site_name" does not exist locally.', $replacements),
-    'SWITCHBOARD_PROVIDER_INVALID' => dt('Invalid provider name "@provider_name".', $replacements),
-    'SWITCHBOARD_SITE_ENV_INVALID' => dt('"@env_name" is not a valid environment for @site_name.', $replacements),
-    'SWITCHBOARD_NOT_LOGGED_IN' => dt('Not logged-in to @provider_name, cannot continue.', $replacements),
-    'SWITCHBOARD_DESTINATION_UNAVAILABLE' => dt('"@destination_path" does not exist or is not writeable.', $replacements),
-    'SWITCHBOARD_INVALID_UUID' => dt('"@uuid" is an invalid UUID.', $replacements),
-    'SWITCHBOARD_PROJECT_NO_NAME' => dt('Project name missing, aborting.'),
-  );
-  if (isset($codes[$code])) {
-    $message = $codes[$code];
-  }
-  else {
-    throw new \Exception(dt('Invalid code @code, cannot generate failure message.', array(
-      '@code' => $code,
-    )));
+  switch ($code) {
+    case 'SWITCHBOARD_PROVIDER_SITE_NAME_INVALID':
+      if (!$replacements['@site_name']) {
+        $message = dt('No site name was specified.');
+      }
+      else {
+        $message = dt('"@site_name" is an invalid site name.', $replacements);
+      }
+      break;
+
+    case 'SWITCHBOARD_PROVIDER_SITE_INVALID':
+      $message = dt('Site "@site_name" does not exist locally.', $replacements);
+      break;
+
+    case 'SWITCHBOARD_PROVIDER_INVALID':
+      if (!$replacements['@provider_name']) {
+        $message = dt('No provider name was specified.');
+      }
+      else {
+        $message = dt('Invalid provider name "@provider_name".', $replacements);
+      }
+      break;
+
+    case 'SWITCHBOARD_SITE_ENV_INVALID':
+      if (!$replacements['@env_name']) {
+        $message = dt('No valid environment name for @site_name was provided.', $replacements);
+      }
+      else {
+        $message = dt('"@env_name" is not a valid environment for @site_name.', $replacements);
+      }
+      break;
+
+    case 'SWITCHBOARD_NOT_LOGGED_IN':
+      $message = dt('Not logged-in to @provider_name, cannot continue.', $replacements);
+      break;
+
+    case 'SWITCHBOARD_DESTINATION_UNAVAILABLE':
+      if (!$replacements['@destination_path']) {
+        $message = dt('No destination path specified.');
+      }
+      else {
+        $message = dt('"@destination_path" does not exist or cannot be written to.', $replacements);
+      }
+      break;
+
+    case 'SWITCHBOARD_INVALID_UUID':
+      $message = dt('"@uuid" is an invalid UUID.', $replacements);
+      break;
+
+    case 'SWITCHBOARD_PROJECT_NO_NAME':
+      $message = dt('Project name missing, aborting.');
+      break;
+
+    default:
+      throw new \Exception(dt('Invalid code @code, cannot generate failure message.', array(
+        '@code' => $code,
+      )));
+      break;
   }
   return switchboard_message_fail($code, $message);
 }

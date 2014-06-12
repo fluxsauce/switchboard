@@ -34,4 +34,55 @@ class Environment extends Persistent {
    * @var string Metadata for ORM defining database structure.
    */
   protected $externalKeyName = 'siteId';
+
+  /**
+   * @var array Contains instances of Fluxsauce\Switchboard\EnvBackup
+   */
+  protected $backups;
+
+  /**
+   * Read an Environment.
+   */
+  public function read() {
+    parent::read();
+    $pdo = Sqlite::get();
+    // Backups.
+    try {
+      $sql_query = 'SELECT name ';
+      $sql_query .= 'FROM envbackups ';
+      $sql_query .= 'WHERE environmentId = :id ';
+      $stmt = $pdo->prepare($sql_query);
+      $stmt->bindParam(':id', $this->id);
+      $result = $stmt->execute();
+      while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+        $this->backupAdd(new EnvBackup($this->id, $row['name']));
+      }
+    }
+    catch (\PDOException $e) {
+      switchboard_pdo_exception_debug($e);
+    }
+  }
+
+  /**
+   * Helper to add a backup to an Environment.
+   *
+   * @param EnvBackup $envBackup
+   *   EnvBackup to add.
+   */
+  public function environmentAdd(EnvBackup $envBackup) {
+    if (!is_array($this->backups)) {
+      $this->backups = array();
+    }
+    $this->backups[$envBackup->name] = $envBackup;
+  }
+
+  /**
+   * Helper to remove a backup from an Environment.
+   *
+   * @param EnvBackup $envBackup
+   *   EnvBackup to remove.
+   */
+  public function backupRemove(EnvBackup $envBackup) {
+    unset($this->backups[$envBackup->name]);
+  }
 }

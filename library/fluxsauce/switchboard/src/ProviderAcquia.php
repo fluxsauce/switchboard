@@ -245,6 +245,8 @@ class ProviderAcquia extends Provider {
    *   The machine name of the Site.
    * @param string $env_name
    *   The machine name of the Site Environment.
+   * @param string $backup_type
+   *   The type of backup.
    *
    * @return array
    *   An array of Backup arrays keyed by the timestamp. Each Backup
@@ -253,12 +255,14 @@ class ProviderAcquia extends Provider {
    *   - 'url'
    *   - 'timestamp'
    */
-  public function apiGetSiteEnvDbBackups($site_name, $env_name) {
+  public function apiGetSiteEnvBackups($site_name, $env_name, $backup_type) {
     $site = $this->sites[$site_name];
-    $result = switchboard_request($this, array(
-      'method' => 'GET',
-      'resource' => '/sites/' . $site->realm . ':' . $site_name . '/envs/' . $env_name . '/dbs/' . $site_name . '/backups',
-    ));
+    if ($backup_type == 'db') {
+      $result = switchboard_request($this, array(
+        'method' => 'GET',
+        'resource' => '/sites/' . $site->realm . ':' . $site_name . '/envs/' . $env_name . '/dbs/' . $site_name . '/backups',
+      ));
+    }
     $backup_data = json_decode($result->body);
 
     $backups = array();
@@ -281,14 +285,18 @@ class ProviderAcquia extends Provider {
    *   The machine name of the Site in question.
    * @param string $env_name
    *   The machine name of the Site Environment in question.
+   * @param string $backup_type
+   *   The type of backup.
    *
    * @return array
-   *   A backup array as defined in apiGetSiteEnvDbBackups().
+   *   A backup array as defined in apiGetSiteEnvBackups().
    */
-  public function getSiteEnvDbBackupLatest($site_name, $env_name) {
+  public function getSiteEnvBackupLatest($site_name, $env_name, $backup_type) {
     $site = $this->sites[$site_name];
-    $backup = parent::getSiteEnvDbBackupLatest($site_name, $env_name);
-    $backup['url'] = 'https://cloudapi.acquia.com/v1/sites/' . $site->realm . ':' . $site_name . '/envs/' . $env_name . '/dbs/' . $site_name . '/backups/' . $backup['id'] . '/download.json';
+    $backup = parent::getSiteEnvBackupLatest($site_name, $env_name, $backup_type);
+    if ($backup_type == 'db') {
+      $backup['url'] = 'https://cloudapi.acquia.com/v1/sites/' . $site->realm . ':' . $site_name . '/envs/' . $env_name . '/dbs/' . $site_name . '/backups/' . $backup['id'] . '/download.json';
+    }
     unset($backup['id']);
     return $backup;
   }
@@ -297,7 +305,7 @@ class ProviderAcquia extends Provider {
    * Download a backup.
    *
    * @param array $backup
-   *   An array from apiGetSiteEnvDbBackups().
+   *   An array from apiGetSiteEnvBackups().
    * @param string $destination
    *   The path to the destination.
    *

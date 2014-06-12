@@ -52,6 +52,23 @@ function switchboard_drush_command() {
     'refresh' => dt('Refresh all remote data.'),
   ) + $json_option;
 
+  $items['sw-auth-login'] = array(
+    'description' => dt('Authenticate with a provider.'),
+    'arguments' => array(
+        'email' => dt('Email address of the account with the provider.'),
+        'password' => dt('Password or API key for the account.'),
+      ) + $default_arguments,
+    'options' => $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-auth-logout'] = array(
+    'description' => dt('End session with a provider.'),
+    'arguments' => $default_arguments,
+    'options' => $json_option,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
   $items['sw-brain-update'] = array(
     'description' => dt('Set Switchboard brain (SQLite database) file location.'),
     'arguments' => array(
@@ -321,23 +338,6 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['sw-auth-login'] = array(
-    'description' => dt('Authenticate with a provider.'),
-    'arguments' => array(
-      'email' => dt('Email address of the account with the provider.'),
-      'password' => dt('Password or API key for the account.'),
-    ) + $default_arguments,
-    'options' => $json_option,
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
-  );
-
-  $items['sw-auth-logout'] = array(
-    'description' => dt('End session with a provider.'),
-    'arguments' => $default_arguments,
-    'options' => $json_option,
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
-  );
-
   $items['sw-site-list'] = array(
     'description' => dt('List available sites from a provider.'),
     'arguments' => $default_arguments,
@@ -359,13 +359,23 @@ function switchboard_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['sw-site-env-db-backup'] = array(
-    'description' => dt('Download the latest database backup.'),
+  $items['sw-site-env-backup-dl'] = array(
+    'description' => dt('Download the latest backup.'),
     'arguments' => $default_site_arguments + array(
       'env_name' => dt('Environment name'),
-      'db_name' => dt('Database name'),
+      'backup_type' => dt('Backup type.'),
       'destination' => dt('Destination path'),
     ),
+    'options' => $default_options,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
+  $items['sw-site-env-backup-list'] = array(
+    'description' => dt('List the available backups for a site environment.'),
+    'arguments' => $default_site_arguments + array(
+        'env_name' => dt('Environment name'),
+        'backup_type' => dt('Backup type.'),
+      ),
     'options' => $default_options,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
@@ -1813,7 +1823,7 @@ function drush_switchboard_sw_site_destroy($provider_name, $site_name) {
 }
 
 /**
- * Validation callback for drush sw-site-env-db-backup.
+ * Validation callback for drush sw-site-env-backup-list.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1821,13 +1831,13 @@ function drush_switchboard_sw_site_destroy($provider_name, $site_name) {
  *   The name of the remote Site.
  * @param string $env_name
  *   The name of the site environment.
- * @param string $destination
- *   The directory path of the destination file.
+ * @param string $backup_type
+ *   The type of backup.
  *
  * @return bool
  *   FALSE upon failure.
  */
-function drush_switchboard_sw_site_env_db_backup_validate($provider_name = '', $site_name = '', $env_name = '', $destination = '') {
+function drush_switchboard_sw_site_env_backup_list_validate($provider_name = '', $site_name = '', $env_name = '', $backup_type = '') {
   if (!switchboard_validate_provider_name($provider_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
       '@provider_name' => $provider_name,
@@ -1854,6 +1864,92 @@ function drush_switchboard_sw_site_env_db_backup_validate($provider_name = '', $
       '@site_name' => $site_name,
     ));
   }
+  if (!in_array($backup_type, array('db'))) {
+    return switchboard_message_fail('SWITCHBOARD_SITE_ENV_BACKUP_TYPE_INVALID', dt('Invalid backup type specified.'));
+  }
+}
+
+/**
+ * Command callback for drush sw-site-env-backup-list.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ * @param string $site_name
+ *   The name of the remote Site.
+ * @param string $env_name
+ *   The name of the site environment.
+ * @param string $backup_type
+ *   The type of backup.
+ */
+function drush_switchboard_sw_site_env_backup_list($provider_name, $site_name, $env_name, $backup_type) {
+  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
+  $backups = $provider->apiGetSiteEnvBackups($site_name, $env_name, $backup_type);
+  if (!empty($backups)) {
+    $rows = array();
+    foreach ($backups as $backup_data) {
+      $rows[] = array(
+        'filename' => $backup_data['filename'],
+        'timestamp' => $backup_data['timestamp'],
+      );
+    }
+    ksort($rows);
+    if (drush_get_option('json')) {
+      drush_print(json_encode($rows));
+    }
+    else {
+      array_unshift($rows, array(dt('Filename'), dt('Timestamp')));
+      drush_print_table($rows, TRUE);
+    }
+  }
+}
+
+/**
+ * Validation callback for drush sw-site-env-backup-dl.
+ *
+ * @param string $provider_name
+ *   The name of the Provider.
+ * @param string $site_name
+ *   The name of the remote Site.
+ * @param string $env_name
+ *   The name of the site environment.
+ * @param string $backup_type
+ *   The type of backup.
+ * @param string $destination
+ *   The directory path of the destination file.
+ *
+ * @return bool
+ *   FALSE upon failure.
+ */
+function drush_switchboard_sw_site_env_backup_dl_validate($provider_name = '', $site_name = '', $env_name = '', $backup_type = '', $destination = '') {
+  if (!switchboard_validate_provider_name($provider_name)) {
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_INVALID', array(
+      '@provider_name' => $provider_name,
+    ));
+  }
+  if (!switchboard_validate_auth_logged_in($provider_name)) {
+    return switchboard_message_fail_generate('SWITCHBOARD_NOT_LOGGED_IN', array(
+      '@provider_name' => $provider_name,
+    ));
+  }
+  if (!switchboard_validate_site_name($site_name)) {
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_NAME_INVALID', array(
+      '@site_name' => $site_name,
+    ));
+  }
+  if (!switchboard_validate_site($provider_name, $site_name)) {
+    return switchboard_message_fail_generate('SWITCHBOARD_PROVIDER_SITE_INVALID', array(
+      '@site_name' => $site_name,
+    ));
+  }
+  if (!switchboard_validate_site_env($provider_name, $site_name, $env_name)) {
+    return switchboard_message_fail_generate('SWITCHBOARD_SITE_ENV_INVALID', array(
+      '@env_name' => $env_name,
+      '@site_name' => $site_name,
+    ));
+  }
+  if (!in_array($backup_type, array('db'))) {
+    return switchboard_message_fail('SWITCHBOARD_SITE_ENV_BACKUP_TYPE_INVALID', dt('Invalid backup type specified.'));
+  }
   if (!switchboard_validate_destination($destination)) {
     return switchboard_message_fail_generate('SWITCHBOARD_DESTINATION_UNAVAILABLE', array(
       '@destination_path' => $destination,
@@ -1862,7 +1958,7 @@ function drush_switchboard_sw_site_env_db_backup_validate($provider_name = '', $
 }
 
 /**
- * Command callback for drush sw-site-env-db-backup.
+ * Command callback for drush sw-site-env-backup-dl.
  *
  * @param string $provider_name
  *   The name of the Provider.
@@ -1870,12 +1966,14 @@ function drush_switchboard_sw_site_env_db_backup_validate($provider_name = '', $
  *   The name of the remote Site.
  * @param string $env_name
  *   The name of the site environment.
+ * @param string $backup_type
+ *   The type of backup.
  * @param string $destination
  *   The directory path of the destination file.
  */
-function drush_switchboard_sw_site_env_db_backup($provider_name, $site_name, $env_name, $destination) {
+function drush_switchboard_sw_site_env_backup_dl($provider_name, $site_name, $env_name, $backup_type, $destination) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  $backup = $provider->getSiteEnvDbBackupLatest($site_name, $env_name);
+  $backup = $provider->getSiteEnvBackupLatest($site_name, $env_name, $backup_type);
 
   drush_log(dt('Downloading @filename from @date...', array(
     '@filename' => $backup['filename'],

@@ -245,27 +245,10 @@ abstract class Provider {
   abstract public function authLogin($email, $password);
 
   /**
-   * Get a list of database backups for a particular Site Environment.
-   *
-   * @param string $site_name
-   *   The machine name of the Site.
-   * @param string $env_name
-   *   The machine name of the Site Environment.
-   *
-   * @return array
-   *   An array of Backup arrays keyed by the timestamp. Each Backup
-   *   array has the following keys:
-   *   - 'filename'
-   *   - 'url'
-   *   - 'timestamp'
-   */
-  abstract public function apiGetSiteEnvDbBackups($site_name, $env_name);
-
-  /**
    * Download a backup.
    *
    * @param array $backup
-   *   An array from apiGetSiteEnvDbBackups().
+   *   An array from apiGetSiteEnvBackup().
    * @param string $destination
    *   The path to the destination.
    *
@@ -278,15 +261,35 @@ abstract class Provider {
    * Helper function to get the latest database backup.
    *
    * @param string $site_name
-   *   The machine name of the Site in question.
+   *   The name of the remote Site.
    * @param string $env_name
-   *   The machine name of the Site Environment in question.
+   *   The name of the site environment.
+   * @param string $backup_type
+   *   The type of backup.
    *
    * @return array
-   *   A backup array as defined in apiGetSiteEnvDbBackups().
+   *   An array keyed by timestamps containing arrays with the following keys:
+   *     'filename'
+   *     'url'
+   *     'timestamp'
    */
-  public function getSiteEnvDbBackupLatest($site_name, $env_name) {
-    $backups = $this->apiGetSiteEnvDbBackups($site_name, $env_name);
+  abstract public function apiGetSiteEnvBackups($site_name, $env_name, $backup_type);
+
+  /**
+   * Helper function to get the latest database backup.
+   *
+   * @param string $site_name
+   *   The name of the remote Site.
+   * @param string $env_name
+   *   The name of the site environment.
+   * @param string $backup_type
+   *   The type of backup.
+   *
+   * @return array
+   *   A backup array as defined in apiGetSiteEnvBackups().
+   */
+  public function getSiteEnvBackupLatest($site_name, $env_name, $backup_type) {
+    $backups = $this->apiGetSiteEnvBackups($site_name, $env_name, $backup_type);
     return array_pop($backups);
   }
 

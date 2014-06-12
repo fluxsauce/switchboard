@@ -333,6 +333,8 @@ class ProviderPantheon extends Provider {
    *   The machine name of the Site.
    * @param string $env_name
    *   The machine name of the Site Environment.
+   * @param string $backup_type
+   *   The type of backup.
    *
    * @return array
    *   An array of Backup arrays keyed by the timestamp. Each Backup
@@ -341,7 +343,7 @@ class ProviderPantheon extends Provider {
    *   - 'url'
    *   - 'timestamp'
    */
-  public function apiGetSiteEnvDbBackups($site_name, $env_name) {
+  public function apiGetSiteEnvBackups($site_name, $env_name, $backup_type) {
     $site = $this->sites[$site_name];
     $result = switchboard_request($this, array(
       'method' => 'GET',
@@ -353,8 +355,10 @@ class ProviderPantheon extends Provider {
     $backup_data = json_decode($result->body);
     foreach ($backup_data as $id => $backup) {
       $parts = explode('_', $id);
-      if (!isset($backup->filename) || $parts[2] != 'database') {
-        continue;
+      if ($backup_type == 'db') {
+        if (!isset($backup->filename) || $parts[2] != 'database') {
+          continue;
+        }
       }
       $backups[$backup->timestamp] = array(
         'filename' => $backup->filename,
@@ -374,13 +378,17 @@ class ProviderPantheon extends Provider {
    *   The machine name of the Site in question.
    * @param string $env_name
    *   The machine name of the Site Environment in question.
+   * @param string $backup_type
+   *   The type of backup.
    *
    * @return array
-   *   A backup array as defined in apiGetSiteEnvDbBackups().
+   *   A backup array as defined in apiGetSiteEnvBackups().
    */
-  public function getSiteEnvDbBackupLatest($site_name, $env_name) {
-    $backup = parent::getSiteEnvDbBackupLatest($site_name, $env_name);
-    $backup['url'] = $this->apiGetBackupDownloadUrl($site_name, $env_name, $backup['bucket'], 'database');
+  public function getSiteEnvBackupLatest($site_name, $env_name, $backup_type) {
+    $backup = parent::getSiteEnvBackupLatest($site_name, $env_name, $backup_type);
+    if ($backup_type == 'db') {
+      $backup['url'] = $this->apiGetBackupDownloadUrl($site_name, $env_name, $backup['bucket'], 'database');
+    }
     unset($backup['bucket']);
     return $backup;
   }
@@ -417,7 +425,7 @@ class ProviderPantheon extends Provider {
    * Download a backup.
    *
    * @param array $backup
-   *   An array from apiGetSiteEnvDbBackups().
+   *   An array from apiGetSiteEnvBackups().
    * @param string $destination
    *   The path to the destination.
    *
