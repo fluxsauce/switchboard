@@ -91,7 +91,7 @@ drush sw-site-info pantheon nameofsite
 # List remote site environments.
 drush sw-site-env-list pantheon nameofsite
 # Download the latest backup from the dev environment to current directory.
-drush sw-site-env-db-backup pantheon nameofsite dev .
+drush sw-site-env-backup-dl pantheon nameofsite dev db .
 # Create a local project; site_id is shown in sw-site-info.
 drush sw-project-create nameofproject \
   --site_id=1 \
