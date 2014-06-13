@@ -126,7 +126,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Get the [site_id] column value.
-     *
+     * External key to the Site.
      * @return int
      */
     public function getSiteId()
@@ -137,7 +137,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Get the [name] column value.
-     *
+     * Name of the Environment.
      * @return string
      */
     public function getName()
@@ -148,7 +148,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Get the [host] column value.
-     *
+     * The hostname for the Environment.
      * @return string
      */
     public function getHost()
@@ -159,7 +159,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Get the [username] column value.
-     *
+     * The UNIX username for the Environment.
      * @return string
      */
     public function getUsername()
@@ -170,7 +170,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Get the [branch] column value.
-     *
+     * The default VCS branch for the Environment.
      * @return string
      */
     public function getBranch()
@@ -181,7 +181,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Get the [optionally formatted] temporal [createdon] column value.
-     *
+     * The time the record was created.
      *
      * @param string $format The date/time format string (either date()-style or strftime()-style).
      *				 If format is null, then the raw DateTime object will be returned.
@@ -216,7 +216,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Get the [optionally formatted] temporal [updatedon] column value.
-     *
+     * The time the record was updated.
      *
      * @param string $format The date/time format string (either date()-style or strftime()-style).
      *				 If format is null, then the raw DateTime object will be returned.
@@ -272,7 +272,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Set the value of [site_id] column.
-     *
+     * External key to the Site.
      * @param  int $v new value
      * @return Environment The current object (for fluent API support)
      */
@@ -293,7 +293,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Set the value of [name] column.
-     *
+     * Name of the Environment.
      * @param  string $v new value
      * @return Environment The current object (for fluent API support)
      */
@@ -314,7 +314,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Set the value of [host] column.
-     *
+     * The hostname for the Environment.
      * @param  string $v new value
      * @return Environment The current object (for fluent API support)
      */
@@ -335,7 +335,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Set the value of [username] column.
-     *
+     * The UNIX username for the Environment.
      * @param  string $v new value
      * @return Environment The current object (for fluent API support)
      */
@@ -356,7 +356,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Set the value of [branch] column.
-     *
+     * The default VCS branch for the Environment.
      * @param  string $v new value
      * @return Environment The current object (for fluent API support)
      */
@@ -377,7 +377,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Sets the value of [createdon] column to a normalized version of the date/time value specified.
-     *
+     * The time the record was created.
      * @param mixed $v string, integer (timestamp), or DateTime value.
      *               Empty strings are treated as null.
      * @return Environment The current object (for fluent API support)
@@ -400,7 +400,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
     /**
      * Sets the value of [updatedon] column to a normalized version of the date/time value specified.
-     *
+     * The time the record was updated.
      * @param mixed $v string, integer (timestamp), or DateTime value.
      *               Empty strings are treated as null.
      * @return Environment The current object (for fluent API support)

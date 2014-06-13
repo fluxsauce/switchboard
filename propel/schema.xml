@@ -6,12 +6,12 @@
     </behavior>
     <table name="environment" phpName="Environment" namespace="Fluxsauce\Brain">
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
-        <column name="site_id" type="integer"/>
-        <column name="name" type="varchar" size="255" required="true" />
-        <column name="host" type="varchar" size="255" />
-        <column name="username" type="varchar" size="255" />
-        <column name="branch" type="varchar" size="255" />
-        <column name="createdOn" type="timestamp" />
-        <column name="updatedOn" type="timestamp" />
+        <column name="site_id" type="integer" description="External key to the Site."/>
+        <column name="name" type="varchar" size="255" required="true" description="Name of the Environment."/>
+        <column name="host" type="varchar" size="255" description="The hostname for the Environment." />
+        <column name="username" type="varchar" size="255" description="The UNIX username for the Environment." />
+        <column name="branch" type="varchar" size="255" description="The default VCS branch for the Environment."/>
+        <column name="createdOn" type="timestamp" description="The time the record was created."/>
+        <column name="updatedOn" type="timestamp" description="The time the record was updated." />
     </table>
 </database>
