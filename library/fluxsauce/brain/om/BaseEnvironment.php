@@ -52,10 +52,10 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     protected $id;
 
     /**
-     * The value for the siteid field.
+     * The value for the site_id field.
      * @var        int
      */
-    protected $siteid;
+    protected $site_id;
 
     /**
      * The value for the name field.
@@ -82,10 +82,16 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     protected $branch;
 
     /**
-     * The value for the updated field.
+     * The value for the createdon field.
      * @var        string
      */
-    protected $updated;
+    protected $createdon;
+
+    /**
+     * The value for the updatedon field.
+     * @var        string
+     */
+    protected $updatedon;
 
     /**
      * Flag to prevent endless save loop, if this object is referenced
@@ -119,14 +125,14 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     }
 
     /**
-     * Get the [siteid] column value.
+     * Get the [site_id] column value.
      *
      * @return int
      */
-    public function getSiteid()
+    public function getSiteId()
     {
 
-        return $this->siteid;
+        return $this->site_id;
     }
 
     /**
@@ -174,7 +180,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     }
 
     /**
-     * Get the [optionally formatted] temporal [updated] column value.
+     * Get the [optionally formatted] temporal [createdon] column value.
      *
      *
      * @param string $format The date/time format string (either date()-style or strftime()-style).
@@ -182,17 +188,52 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      * @return mixed Formatted date/time value as string or DateTime object (if format is null), null if column is null
      * @throws PropelException - if unable to parse/validate the date/time value.
      */
-    public function getUpdated($format = 'Y-m-d H:i:s')
+    public function getCreatedon($format = 'Y-m-d H:i:s')
     {
-        if ($this->updated === null) {
+        if ($this->createdon === null) {
             return null;
         }
 
 
         try {
-            $dt = new DateTime($this->updated);
+            $dt = new DateTime($this->createdon);
         } catch (Exception $x) {
-            throw new PropelException("Internally stored date/time/timestamp value could not be converted to DateTime: " . var_export($this->updated, true), $x);
+            throw new PropelException("Internally stored date/time/timestamp value could not be converted to DateTime: " . var_export($this->createdon, true), $x);
+        }
+
+        if ($format === null) {
+            // Because propel.useDateTimeClass is true, we return a DateTime object.
+            return $dt;
+        }
+
+        if (strpos($format, '%') !== false) {
+            return strftime($format, $dt->format('U'));
+        }
+
+        return $dt->format($format);
+
+    }
+
+    /**
+     * Get the [optionally formatted] temporal [updatedon] column value.
+     *
+     *
+     * @param string $format The date/time format string (either date()-style or strftime()-style).
+     *				 If format is null, then the raw DateTime object will be returned.
+     * @return mixed Formatted date/time value as string or DateTime object (if format is null), null if column is null
+     * @throws PropelException - if unable to parse/validate the date/time value.
+     */
+    public function getUpdatedon($format = 'Y-m-d H:i:s')
+    {
+        if ($this->updatedon === null) {
+            return null;
+        }
+
+
+        try {
+            $dt = new DateTime($this->updatedon);
+        } catch (Exception $x) {
+            throw new PropelException("Internally stored date/time/timestamp value could not be converted to DateTime: " . var_export($this->updatedon, true), $x);
         }
 
         if ($format === null) {
@@ -230,25 +271,25 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     } // setId()
 
     /**
-     * Set the value of [siteid] column.
+     * Set the value of [site_id] column.
      *
      * @param  int $v new value
      * @return Environment The current object (for fluent API support)
      */
-    public function setSiteid($v)
+    public function setSiteId($v)
     {
         if ($v !== null && is_numeric($v)) {
             $v = (int) $v;
         }
 
-        if ($this->siteid !== $v) {
-            $this->siteid = $v;
-            $this->modifiedColumns[] = EnvironmentPeer::SITEID;
+        if ($this->site_id !== $v) {
+            $this->site_id = $v;
+            $this->modifiedColumns[] = EnvironmentPeer::SITE_ID;
         }
 
 
         return $this;
-    } // setSiteid()
+    } // setSiteId()
 
     /**
      * Set the value of [name] column.
@@ -335,27 +376,50 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     } // setBranch()
 
     /**
-     * Sets the value of [updated] column to a normalized version of the date/time value specified.
+     * Sets the value of [createdon] column to a normalized version of the date/time value specified.
      *
      * @param mixed $v string, integer (timestamp), or DateTime value.
      *               Empty strings are treated as null.
      * @return Environment The current object (for fluent API support)
      */
-    public function setUpdated($v)
+    public function setCreatedon($v)
     {
         $dt = PropelDateTime::newInstance($v, null, 'DateTime');
-        if ($this->updated !== null || $dt !== null) {
-            $currentDateAsString = ($this->updated !== null && $tmpDt = new DateTime($this->updated)) ? $tmpDt->format('Y-m-d H:i:s') : null;
+        if ($this->createdon !== null || $dt !== null) {
+            $currentDateAsString = ($this->createdon !== null && $tmpDt = new DateTime($this->createdon)) ? $tmpDt->format('Y-m-d H:i:s') : null;
             $newDateAsString = $dt ? $dt->format('Y-m-d H:i:s') : null;
             if ($currentDateAsString !== $newDateAsString) {
-                $this->updated = $newDateAsString;
-                $this->modifiedColumns[] = EnvironmentPeer::UPDATED;
+                $this->createdon = $newDateAsString;
+                $this->modifiedColumns[] = EnvironmentPeer::CREATEDON;
             }
         } // if either are not null
 
 
         return $this;
-    } // setUpdated()
+    } // setCreatedon()
+
+    /**
+     * Sets the value of [updatedon] column to a normalized version of the date/time value specified.
+     *
+     * @param mixed $v string, integer (timestamp), or DateTime value.
+     *               Empty strings are treated as null.
+     * @return Environment The current object (for fluent API support)
+     */
+    public function setUpdatedon($v)
+    {
+        $dt = PropelDateTime::newInstance($v, null, 'DateTime');
+        if ($this->updatedon !== null || $dt !== null) {
+            $currentDateAsString = ($this->updatedon !== null && $tmpDt = new DateTime($this->updatedon)) ? $tmpDt->format('Y-m-d H:i:s') : null;
+            $newDateAsString = $dt ? $dt->format('Y-m-d H:i:s') : null;
+            if ($currentDateAsString !== $newDateAsString) {
+                $this->updatedon = $newDateAsString;
+                $this->modifiedColumns[] = EnvironmentPeer::UPDATEDON;
+            }
+        } // if either are not null
+
+
+        return $this;
+    } // setUpdatedon()
 
     /**
      * Indicates whether the columns in this object are only set to default values.
@@ -390,12 +454,13 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
         try {
 
             $this->id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-            $this->siteid = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
+            $this->site_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
             $this->name = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
             $this->host = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
             $this->username = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
             $this->branch = ($row[$startcol + 5] !== null) ? (string) $row[$startcol + 5] : null;
-            $this->updated = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
+            $this->createdon = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
+            $this->updatedon = ($row[$startcol + 7] !== null) ? (string) $row[$startcol + 7] : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -405,7 +470,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
             }
             $this->postHydrate($row, $startcol, $rehydrate);
 
-            return $startcol + 7; // 7 = EnvironmentPeer::NUM_HYDRATE_COLUMNS.
+            return $startcol + 8; // 8 = EnvironmentPeer::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
             throw new PropelException("Error populating Environment object", $e);
@@ -539,8 +604,19 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
             $ret = $this->preSave($con);
             if ($isInsert) {
                 $ret = $ret && $this->preInsert($con);
+                // timestampable behavior
+                if (!$this->isColumnModified(EnvironmentPeer::CREATEDON)) {
+                    $this->setCreatedon(time());
+                }
+                if (!$this->isColumnModified(EnvironmentPeer::UPDATEDON)) {
+                    $this->setUpdatedon(time());
+                }
             } else {
                 $ret = $ret && $this->preUpdate($con);
+                // timestampable behavior
+                if ($this->isModified() && !$this->isColumnModified(EnvironmentPeer::UPDATEDON)) {
+                    $this->setUpdatedon(time());
+                }
             }
             if ($ret) {
                 $affectedRows = $this->doSave($con);
@@ -620,8 +696,8 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
         if ($this->isColumnModified(EnvironmentPeer::ID)) {
             $modifiedColumns[':p' . $index++]  = '[id]';
         }
-        if ($this->isColumnModified(EnvironmentPeer::SITEID)) {
-            $modifiedColumns[':p' . $index++]  = '[siteId]';
+        if ($this->isColumnModified(EnvironmentPeer::SITE_ID)) {
+            $modifiedColumns[':p' . $index++]  = '[site_id]';
         }
         if ($this->isColumnModified(EnvironmentPeer::NAME)) {
             $modifiedColumns[':p' . $index++]  = '[name]';
@@ -635,8 +711,11 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
         if ($this->isColumnModified(EnvironmentPeer::BRANCH)) {
             $modifiedColumns[':p' . $index++]  = '[branch]';
         }
-        if ($this->isColumnModified(EnvironmentPeer::UPDATED)) {
-            $modifiedColumns[':p' . $index++]  = '[updated]';
+        if ($this->isColumnModified(EnvironmentPeer::CREATEDON)) {
+            $modifiedColumns[':p' . $index++]  = '[createdOn]';
+        }
+        if ($this->isColumnModified(EnvironmentPeer::UPDATEDON)) {
+            $modifiedColumns[':p' . $index++]  = '[updatedOn]';
         }
 
         $sql = sprintf(
@@ -652,8 +731,8 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
                     case '[id]':
                         $stmt->bindValue($identifier, $this->id, PDO::PARAM_INT);
                         break;
-                    case '[siteId]':
-                        $stmt->bindValue($identifier, $this->siteid, PDO::PARAM_INT);
+                    case '[site_id]':
+                        $stmt->bindValue($identifier, $this->site_id, PDO::PARAM_INT);
                         break;
                     case '[name]':
                         $stmt->bindValue($identifier, $this->name, PDO::PARAM_STR);
@@ -667,8 +746,11 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
                     case '[branch]':
                         $stmt->bindValue($identifier, $this->branch, PDO::PARAM_STR);
                         break;
-                    case '[updated]':
-                        $stmt->bindValue($identifier, $this->updated, PDO::PARAM_STR);
+                    case '[createdOn]':
+                        $stmt->bindValue($identifier, $this->createdon, PDO::PARAM_STR);
+                        break;
+                    case '[updatedOn]':
+                        $stmt->bindValue($identifier, $this->updatedon, PDO::PARAM_STR);
                         break;
                 }
             }
@@ -808,7 +890,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
                 return $this->getId();
                 break;
             case 1:
-                return $this->getSiteid();
+                return $this->getSiteId();
                 break;
             case 2:
                 return $this->getName();
@@ -823,7 +905,10 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
                 return $this->getBranch();
                 break;
             case 6:
-                return $this->getUpdated();
+                return $this->getCreatedon();
+                break;
+            case 7:
+                return $this->getUpdatedon();
                 break;
             default:
                 return null;
@@ -854,12 +939,13 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
         $keys = EnvironmentPeer::getFieldNames($keyType);
         $result = array(
             $keys[0] => $this->getId(),
-            $keys[1] => $this->getSiteid(),
+            $keys[1] => $this->getSiteId(),
             $keys[2] => $this->getName(),
             $keys[3] => $this->getHost(),
             $keys[4] => $this->getUsername(),
             $keys[5] => $this->getBranch(),
-            $keys[6] => $this->getUpdated(),
+            $keys[6] => $this->getCreatedon(),
+            $keys[7] => $this->getUpdatedon(),
         );
         $virtualColumns = $this->virtualColumns;
         foreach ($virtualColumns as $key => $virtualColumn) {
@@ -903,7 +989,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
                 $this->setId($value);
                 break;
             case 1:
-                $this->setSiteid($value);
+                $this->setSiteId($value);
                 break;
             case 2:
                 $this->setName($value);
@@ -918,7 +1004,10 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
                 $this->setBranch($value);
                 break;
             case 6:
-                $this->setUpdated($value);
+                $this->setCreatedon($value);
+                break;
+            case 7:
+                $this->setUpdatedon($value);
                 break;
         } // switch()
     }
@@ -945,12 +1034,13 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
         $keys = EnvironmentPeer::getFieldNames($keyType);
 
         if (array_key_exists($keys[0], $arr)) $this->setId($arr[$keys[0]]);
-        if (array_key_exists($keys[1], $arr)) $this->setSiteid($arr[$keys[1]]);
+        if (array_key_exists($keys[1], $arr)) $this->setSiteId($arr[$keys[1]]);
         if (array_key_exists($keys[2], $arr)) $this->setName($arr[$keys[2]]);
         if (array_key_exists($keys[3], $arr)) $this->setHost($arr[$keys[3]]);
         if (array_key_exists($keys[4], $arr)) $this->setUsername($arr[$keys[4]]);
         if (array_key_exists($keys[5], $arr)) $this->setBranch($arr[$keys[5]]);
-        if (array_key_exists($keys[6], $arr)) $this->setUpdated($arr[$keys[6]]);
+        if (array_key_exists($keys[6], $arr)) $this->setCreatedon($arr[$keys[6]]);
+        if (array_key_exists($keys[7], $arr)) $this->setUpdatedon($arr[$keys[7]]);
     }
 
     /**
@@ -963,12 +1053,13 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
         $criteria = new Criteria(EnvironmentPeer::DATABASE_NAME);
 
         if ($this->isColumnModified(EnvironmentPeer::ID)) $criteria->add(EnvironmentPeer::ID, $this->id);
-        if ($this->isColumnModified(EnvironmentPeer::SITEID)) $criteria->add(EnvironmentPeer::SITEID, $this->siteid);
+        if ($this->isColumnModified(EnvironmentPeer::SITE_ID)) $criteria->add(EnvironmentPeer::SITE_ID, $this->site_id);
         if ($this->isColumnModified(EnvironmentPeer::NAME)) $criteria->add(EnvironmentPeer::NAME, $this->name);
         if ($this->isColumnModified(EnvironmentPeer::HOST)) $criteria->add(EnvironmentPeer::HOST, $this->host);
         if ($this->isColumnModified(EnvironmentPeer::USERNAME)) $criteria->add(EnvironmentPeer::USERNAME, $this->username);
         if ($this->isColumnModified(EnvironmentPeer::BRANCH)) $criteria->add(EnvironmentPeer::BRANCH, $this->branch);
-        if ($this->isColumnModified(EnvironmentPeer::UPDATED)) $criteria->add(EnvironmentPeer::UPDATED, $this->updated);
+        if ($this->isColumnModified(EnvironmentPeer::CREATEDON)) $criteria->add(EnvironmentPeer::CREATEDON, $this->createdon);
+        if ($this->isColumnModified(EnvironmentPeer::UPDATEDON)) $criteria->add(EnvironmentPeer::UPDATEDON, $this->updatedon);
 
         return $criteria;
     }
@@ -1032,12 +1123,13 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      */
     public function copyInto($copyObj, $deepCopy = false, $makeNew = true)
     {
-        $copyObj->setSiteid($this->getSiteid());
+        $copyObj->setSiteId($this->getSiteId());
         $copyObj->setName($this->getName());
         $copyObj->setHost($this->getHost());
         $copyObj->setUsername($this->getUsername());
         $copyObj->setBranch($this->getBranch());
-        $copyObj->setUpdated($this->getUpdated());
+        $copyObj->setCreatedon($this->getCreatedon());
+        $copyObj->setUpdatedon($this->getUpdatedon());
         if ($makeNew) {
             $copyObj->setNew(true);
             $copyObj->setId(NULL); // this is a auto-increment column, so set to default value
@@ -1090,12 +1182,13 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     public function clear()
     {
         $this->id = null;
-        $this->siteid = null;
+        $this->site_id = null;
         $this->name = null;
         $this->host = null;
         $this->username = null;
         $this->branch = null;
-        $this->updated = null;
+        $this->createdon = null;
+        $this->updatedon = null;
         $this->alreadyInSave = false;
         $this->alreadyInValidation = false;
         $this->alreadyInClearAllReferencesDeep = false;
@@ -1142,6 +1235,20 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     public function isAlreadyInSave()
     {
         return $this->alreadyInSave;
+    }
+
+    // timestampable behavior
+
+    /**
+     * Mark the current object so that the update date doesn't get updated during next save
+     *
+     * @return     Environment The current object (for fluent API support)
+     */
+    public function keepUpdateDateUnchanged()
+    {
+        $this->modifiedColumns[] = EnvironmentPeer::UPDATEDON;
+
+        return $this;
     }
 
 }

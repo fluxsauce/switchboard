@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <database name="brain" defaultIdMethod="native">
+    <behavior name="timestampable">
+        <parameter name="create_column" value="createdOn" />
+        <parameter name="update_column" value="updatedOn" />
+    </behavior>
     <table name="environment" phpName="Environment" namespace="Fluxsauce\Brain">
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
-        <column name="siteId" type="integer"/>
+        <column name="site_id" type="integer"/>
         <column name="name" type="varchar" size="255" required="true" />
         <column name="host" type="varchar" size="255" />
         <column name="username" type="varchar" size="255" />
         <column name="branch" type="varchar" size="255" />
-        <column name="updated" type="timestamp" />
+        <column name="createdOn" type="timestamp" />
+        <column name="updatedOn" type="timestamp" />
     </table>
 </database>

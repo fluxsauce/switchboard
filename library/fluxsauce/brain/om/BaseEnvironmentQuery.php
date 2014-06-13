@@ -20,20 +20,22 @@ use Fluxsauce\Brain\EnvironmentQuery;
  *
  *
  * @method EnvironmentQuery orderById($order = Criteria::ASC) Order by the id column
- * @method EnvironmentQuery orderBySiteid($order = Criteria::ASC) Order by the siteId column
+ * @method EnvironmentQuery orderBySiteId($order = Criteria::ASC) Order by the site_id column
  * @method EnvironmentQuery orderByName($order = Criteria::ASC) Order by the name column
  * @method EnvironmentQuery orderByHost($order = Criteria::ASC) Order by the host column
  * @method EnvironmentQuery orderByUsername($order = Criteria::ASC) Order by the username column
  * @method EnvironmentQuery orderByBranch($order = Criteria::ASC) Order by the branch column
- * @method EnvironmentQuery orderByUpdated($order = Criteria::ASC) Order by the updated column
+ * @method EnvironmentQuery orderByCreatedon($order = Criteria::ASC) Order by the createdOn column
+ * @method EnvironmentQuery orderByUpdatedon($order = Criteria::ASC) Order by the updatedOn column
  *
  * @method EnvironmentQuery groupById() Group by the id column
- * @method EnvironmentQuery groupBySiteid() Group by the siteId column
+ * @method EnvironmentQuery groupBySiteId() Group by the site_id column
  * @method EnvironmentQuery groupByName() Group by the name column
  * @method EnvironmentQuery groupByHost() Group by the host column
  * @method EnvironmentQuery groupByUsername() Group by the username column
  * @method EnvironmentQuery groupByBranch() Group by the branch column
- * @method EnvironmentQuery groupByUpdated() Group by the updated column
+ * @method EnvironmentQuery groupByCreatedon() Group by the createdOn column
+ * @method EnvironmentQuery groupByUpdatedon() Group by the updatedOn column
  *
  * @method EnvironmentQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
  * @method EnvironmentQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
@@ -42,20 +44,22 @@ use Fluxsauce\Brain\EnvironmentQuery;
  * @method Environment findOne(PropelPDO $con = null) Return the first Environment matching the query
  * @method Environment findOneOrCreate(PropelPDO $con = null) Return the first Environment matching the query, or a new Environment object populated from the query conditions when no match is found
  *
- * @method Environment findOneBySiteid(int $siteId) Return the first Environment filtered by the siteId column
+ * @method Environment findOneBySiteId(int $site_id) Return the first Environment filtered by the site_id column
  * @method Environment findOneByName(string $name) Return the first Environment filtered by the name column
  * @method Environment findOneByHost(string $host) Return the first Environment filtered by the host column
  * @method Environment findOneByUsername(string $username) Return the first Environment filtered by the username column
  * @method Environment findOneByBranch(string $branch) Return the first Environment filtered by the branch column
- * @method Environment findOneByUpdated(string $updated) Return the first Environment filtered by the updated column
+ * @method Environment findOneByCreatedon(string $createdOn) Return the first Environment filtered by the createdOn column
+ * @method Environment findOneByUpdatedon(string $updatedOn) Return the first Environment filtered by the updatedOn column
  *
  * @method array findById(int $id) Return Environment objects filtered by the id column
- * @method array findBySiteid(int $siteId) Return Environment objects filtered by the siteId column
+ * @method array findBySiteId(int $site_id) Return Environment objects filtered by the site_id column
  * @method array findByName(string $name) Return Environment objects filtered by the name column
  * @method array findByHost(string $host) Return Environment objects filtered by the host column
  * @method array findByUsername(string $username) Return Environment objects filtered by the username column
  * @method array findByBranch(string $branch) Return Environment objects filtered by the branch column
- * @method array findByUpdated(string $updated) Return Environment objects filtered by the updated column
+ * @method array findByCreatedon(string $createdOn) Return Environment objects filtered by the createdOn column
+ * @method array findByUpdatedon(string $updatedOn) Return Environment objects filtered by the updatedOn column
  *
  * @package    propel.generator.brain.om
  */
@@ -163,7 +167,7 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      */
     protected function findPkSimple($key, $con)
     {
-        $sql = 'SELECT [id], [siteId], [name], [host], [username], [branch], [updated] FROM [environment] WHERE [id] = :p0';
+        $sql = 'SELECT [id], [site_id], [name], [host], [username], [branch], [createdOn], [updatedOn] FROM [environment] WHERE [id] = :p0';
         try {
             $stmt = $con->prepare($sql);
             $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
@@ -295,17 +299,17 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
     }
 
     /**
-     * Filter the query on the siteId column
+     * Filter the query on the site_id column
      *
      * Example usage:
      * <code>
-     * $query->filterBySiteid(1234); // WHERE siteId = 1234
-     * $query->filterBySiteid(array(12, 34)); // WHERE siteId IN (12, 34)
-     * $query->filterBySiteid(array('min' => 12)); // WHERE siteId >= 12
-     * $query->filterBySiteid(array('max' => 12)); // WHERE siteId <= 12
+     * $query->filterBySiteId(1234); // WHERE site_id = 1234
+     * $query->filterBySiteId(array(12, 34)); // WHERE site_id IN (12, 34)
+     * $query->filterBySiteId(array('min' => 12)); // WHERE site_id >= 12
+     * $query->filterBySiteId(array('max' => 12)); // WHERE site_id <= 12
      * </code>
      *
-     * @param     mixed $siteid The value to use as filter.
+     * @param     mixed $siteId The value to use as filter.
      *              Use scalar values for equality.
      *              Use array values for in_array() equivalent.
      *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
@@ -313,16 +317,16 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      *
      * @return EnvironmentQuery The current query, for fluid interface
      */
-    public function filterBySiteid($siteid = null, $comparison = null)
+    public function filterBySiteId($siteId = null, $comparison = null)
     {
-        if (is_array($siteid)) {
+        if (is_array($siteId)) {
             $useMinMax = false;
-            if (isset($siteid['min'])) {
-                $this->addUsingAlias(EnvironmentPeer::SITEID, $siteid['min'], Criteria::GREATER_EQUAL);
+            if (isset($siteId['min'])) {
+                $this->addUsingAlias(EnvironmentPeer::SITE_ID, $siteId['min'], Criteria::GREATER_EQUAL);
                 $useMinMax = true;
             }
-            if (isset($siteid['max'])) {
-                $this->addUsingAlias(EnvironmentPeer::SITEID, $siteid['max'], Criteria::LESS_EQUAL);
+            if (isset($siteId['max'])) {
+                $this->addUsingAlias(EnvironmentPeer::SITE_ID, $siteId['max'], Criteria::LESS_EQUAL);
                 $useMinMax = true;
             }
             if ($useMinMax) {
@@ -333,7 +337,7 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
             }
         }
 
-        return $this->addUsingAlias(EnvironmentPeer::SITEID, $siteid, $comparison);
+        return $this->addUsingAlias(EnvironmentPeer::SITE_ID, $siteId, $comparison);
     }
 
     /**
@@ -453,16 +457,16 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
     }
 
     /**
-     * Filter the query on the updated column
+     * Filter the query on the createdOn column
      *
      * Example usage:
      * <code>
-     * $query->filterByUpdated('2011-03-14'); // WHERE updated = '2011-03-14'
-     * $query->filterByUpdated('now'); // WHERE updated = '2011-03-14'
-     * $query->filterByUpdated(array('max' => 'yesterday')); // WHERE updated < '2011-03-13'
+     * $query->filterByCreatedon('2011-03-14'); // WHERE createdOn = '2011-03-14'
+     * $query->filterByCreatedon('now'); // WHERE createdOn = '2011-03-14'
+     * $query->filterByCreatedon(array('max' => 'yesterday')); // WHERE createdOn < '2011-03-13'
      * </code>
      *
-     * @param     mixed $updated The value to use as filter.
+     * @param     mixed $createdon The value to use as filter.
      *              Values can be integers (unix timestamps), DateTime objects, or strings.
      *              Empty strings are treated as NULL.
      *              Use scalar values for equality.
@@ -472,16 +476,16 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      *
      * @return EnvironmentQuery The current query, for fluid interface
      */
-    public function filterByUpdated($updated = null, $comparison = null)
+    public function filterByCreatedon($createdon = null, $comparison = null)
     {
-        if (is_array($updated)) {
+        if (is_array($createdon)) {
             $useMinMax = false;
-            if (isset($updated['min'])) {
-                $this->addUsingAlias(EnvironmentPeer::UPDATED, $updated['min'], Criteria::GREATER_EQUAL);
+            if (isset($createdon['min'])) {
+                $this->addUsingAlias(EnvironmentPeer::CREATEDON, $createdon['min'], Criteria::GREATER_EQUAL);
                 $useMinMax = true;
             }
-            if (isset($updated['max'])) {
-                $this->addUsingAlias(EnvironmentPeer::UPDATED, $updated['max'], Criteria::LESS_EQUAL);
+            if (isset($createdon['max'])) {
+                $this->addUsingAlias(EnvironmentPeer::CREATEDON, $createdon['max'], Criteria::LESS_EQUAL);
                 $useMinMax = true;
             }
             if ($useMinMax) {
@@ -492,7 +496,50 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
             }
         }
 
-        return $this->addUsingAlias(EnvironmentPeer::UPDATED, $updated, $comparison);
+        return $this->addUsingAlias(EnvironmentPeer::CREATEDON, $createdon, $comparison);
+    }
+
+    /**
+     * Filter the query on the updatedOn column
+     *
+     * Example usage:
+     * <code>
+     * $query->filterByUpdatedon('2011-03-14'); // WHERE updatedOn = '2011-03-14'
+     * $query->filterByUpdatedon('now'); // WHERE updatedOn = '2011-03-14'
+     * $query->filterByUpdatedon(array('max' => 'yesterday')); // WHERE updatedOn < '2011-03-13'
+     * </code>
+     *
+     * @param     mixed $updatedon The value to use as filter.
+     *              Values can be integers (unix timestamps), DateTime objects, or strings.
+     *              Empty strings are treated as NULL.
+     *              Use scalar values for equality.
+     *              Use array values for in_array() equivalent.
+     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return EnvironmentQuery The current query, for fluid interface
+     */
+    public function filterByUpdatedon($updatedon = null, $comparison = null)
+    {
+        if (is_array($updatedon)) {
+            $useMinMax = false;
+            if (isset($updatedon['min'])) {
+                $this->addUsingAlias(EnvironmentPeer::UPDATEDON, $updatedon['min'], Criteria::GREATER_EQUAL);
+                $useMinMax = true;
+            }
+            if (isset($updatedon['max'])) {
+                $this->addUsingAlias(EnvironmentPeer::UPDATEDON, $updatedon['max'], Criteria::LESS_EQUAL);
+                $useMinMax = true;
+            }
+            if ($useMinMax) {
+                return $this;
+            }
+            if (null === $comparison) {
+                $comparison = Criteria::IN;
+            }
+        }
+
+        return $this->addUsingAlias(EnvironmentPeer::UPDATEDON, $updatedon, $comparison);
     }
 
     /**
@@ -511,4 +558,69 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
         return $this;
     }
 
+    // timestampable behavior
+
+    /**
+     * Filter by the latest updated
+     *
+     * @param      int $nbDays Maximum age of the latest update in days
+     *
+     * @return     EnvironmentQuery The current query, for fluid interface
+     */
+    public function recentlyUpdated($nbDays = 7)
+    {
+        return $this->addUsingAlias(EnvironmentPeer::UPDATEDON, time() - $nbDays * 24 * 60 * 60, Criteria::GREATER_EQUAL);
+    }
+
+    /**
+     * Order by update date desc
+     *
+     * @return     EnvironmentQuery The current query, for fluid interface
+     */
+    public function lastUpdatedFirst()
+    {
+        return $this->addDescendingOrderByColumn(EnvironmentPeer::UPDATEDON);
+    }
+
+    /**
+     * Order by update date asc
+     *
+     * @return     EnvironmentQuery The current query, for fluid interface
+     */
+    public function firstUpdatedFirst()
+    {
+        return $this->addAscendingOrderByColumn(EnvironmentPeer::UPDATEDON);
+    }
+
+    /**
+     * Filter by the latest created
+     *
+     * @param      int $nbDays Maximum age of in days
+     *
+     * @return     EnvironmentQuery The current query, for fluid interface
+     */
+    public function recentlyCreated($nbDays = 7)
+    {
+        return $this->addUsingAlias(EnvironmentPeer::CREATEDON, time() - $nbDays * 24 * 60 * 60, Criteria::GREATER_EQUAL);
+    }
+
+    /**
+     * Order by create date desc
+     *
+     * @return     EnvironmentQuery The current query, for fluid interface
+     */
+    public function lastCreatedFirst()
+    {
+        return $this->addDescendingOrderByColumn(EnvironmentPeer::CREATEDON);
+    }
+
+    /**
+     * Order by create date asc
+     *
+     * @return     EnvironmentQuery The current query, for fluid interface
+     */
+    public function firstCreatedFirst()
+    {
+        return $this->addAscendingOrderByColumn(EnvironmentPeer::CREATEDON);
+    }
 }

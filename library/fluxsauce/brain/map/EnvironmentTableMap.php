@@ -43,12 +43,13 @@ class EnvironmentTableMap extends TableMap
         $this->setUseIdGenerator(true);
         // columns
         $this->addPrimaryKey('id', 'Id', 'INTEGER', true, null, null);
-        $this->addColumn('siteId', 'Siteid', 'INTEGER', false, null, null);
+        $this->addColumn('site_id', 'SiteId', 'INTEGER', false, null, null);
         $this->addColumn('name', 'Name', 'VARCHAR', true, 255, null);
         $this->addColumn('host', 'Host', 'VARCHAR', false, 255, null);
         $this->addColumn('username', 'Username', 'VARCHAR', false, 255, null);
         $this->addColumn('branch', 'Branch', 'VARCHAR', false, 255, null);
-        $this->addColumn('updated', 'Updated', 'TIMESTAMP', false, null, null);
+        $this->addColumn('createdOn', 'Createdon', 'TIMESTAMP', false, null, null);
+        $this->addColumn('updatedOn', 'Updatedon', 'TIMESTAMP', false, null, null);
         // validators
     } // initialize()
 
@@ -58,5 +59,22 @@ class EnvironmentTableMap extends TableMap
     public function buildRelations()
     {
     } // buildRelations()
+
+    /**
+     *
+     * Gets the list of behaviors registered for this table
+     *
+     * @return array Associative array (name => parameters) of behaviors
+     */
+    public function getBehaviors()
+    {
+        return array(
+            'timestampable' =>  array (
+  'create_column' => 'createdOn',
+  'update_column' => 'updatedOn',
+  'disable_updated_at' => 'false',
+),
+        );
+    } // getBehaviors()
 
 } // EnvironmentTableMap

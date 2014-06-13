@@ -20,15 +20,4 @@ use Fluxsauce\Brain\om\BaseEnvironment;
  *
  * @package    propel.generator.brain
  */
-class Environment extends BaseEnvironment {
-  /**
-   * Set the time updated when saving.
-   *
-   * @return bool
-   *   Always TRUE.
-   */
-  public function preSave() {
-    $this->setUpdated(time());
-    return TRUE;
-  }
-}
+class Environment extends BaseEnvironment {}

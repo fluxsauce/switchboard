@@ -36,19 +36,19 @@ abstract class BaseEnvironmentPeer
     const TM_CLASS = 'Fluxsauce\\Brain\\map\\EnvironmentTableMap';
 
     /** The total number of columns. */
-    const NUM_COLUMNS = 7;
+    const NUM_COLUMNS = 8;
 
     /** The number of lazy-loaded columns. */
     const NUM_LAZY_LOAD_COLUMNS = 0;
 
     /** The number of columns to hydrate (NUM_COLUMNS - NUM_LAZY_LOAD_COLUMNS) */
-    const NUM_HYDRATE_COLUMNS = 7;
+    const NUM_HYDRATE_COLUMNS = 8;
 
     /** the column name for the id field */
     const ID = 'environment.id';
 
-    /** the column name for the siteId field */
-    const SITEID = 'environment.siteId';
+    /** the column name for the site_id field */
+    const SITE_ID = 'environment.site_id';
 
     /** the column name for the name field */
     const NAME = 'environment.name';
@@ -62,8 +62,11 @@ abstract class BaseEnvironmentPeer
     /** the column name for the branch field */
     const BRANCH = 'environment.branch';
 
-    /** the column name for the updated field */
-    const UPDATED = 'environment.updated';
+    /** the column name for the createdOn field */
+    const CREATEDON = 'environment.createdOn';
+
+    /** the column name for the updatedOn field */
+    const UPDATEDON = 'environment.updatedOn';
 
     /** The default string format for model objects of the related table **/
     const DEFAULT_STRING_FORMAT = 'YAML';
@@ -84,12 +87,12 @@ abstract class BaseEnvironmentPeer
      * e.g. EnvironmentPeer::$fieldNames[EnvironmentPeer::TYPE_PHPNAME][0] = 'Id'
      */
     protected static $fieldNames = array (
-        BasePeer::TYPE_PHPNAME => array ('Id', 'Siteid', 'Name', 'Host', 'Username', 'Branch', 'Updated', ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'siteid', 'name', 'host', 'username', 'branch', 'updated', ),
-        BasePeer::TYPE_COLNAME => array (EnvironmentPeer::ID, EnvironmentPeer::SITEID, EnvironmentPeer::NAME, EnvironmentPeer::HOST, EnvironmentPeer::USERNAME, EnvironmentPeer::BRANCH, EnvironmentPeer::UPDATED, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'SITEID', 'NAME', 'HOST', 'USERNAME', 'BRANCH', 'UPDATED', ),
-        BasePeer::TYPE_FIELDNAME => array ('id', 'siteId', 'name', 'host', 'username', 'branch', 'updated', ),
-        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, )
+        BasePeer::TYPE_PHPNAME => array ('Id', 'SiteId', 'Name', 'Host', 'Username', 'Branch', 'Createdon', 'Updatedon', ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'siteId', 'name', 'host', 'username', 'branch', 'createdon', 'updatedon', ),
+        BasePeer::TYPE_COLNAME => array (EnvironmentPeer::ID, EnvironmentPeer::SITE_ID, EnvironmentPeer::NAME, EnvironmentPeer::HOST, EnvironmentPeer::USERNAME, EnvironmentPeer::BRANCH, EnvironmentPeer::CREATEDON, EnvironmentPeer::UPDATEDON, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'SITE_ID', 'NAME', 'HOST', 'USERNAME', 'BRANCH', 'CREATEDON', 'UPDATEDON', ),
+        BasePeer::TYPE_FIELDNAME => array ('id', 'site_id', 'name', 'host', 'username', 'branch', 'createdOn', 'updatedOn', ),
+        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, )
     );
 
     /**
@@ -99,12 +102,12 @@ abstract class BaseEnvironmentPeer
      * e.g. EnvironmentPeer::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
      */
     protected static $fieldKeys = array (
-        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'Siteid' => 1, 'Name' => 2, 'Host' => 3, 'Username' => 4, 'Branch' => 5, 'Updated' => 6, ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'siteid' => 1, 'name' => 2, 'host' => 3, 'username' => 4, 'branch' => 5, 'updated' => 6, ),
-        BasePeer::TYPE_COLNAME => array (EnvironmentPeer::ID => 0, EnvironmentPeer::SITEID => 1, EnvironmentPeer::NAME => 2, EnvironmentPeer::HOST => 3, EnvironmentPeer::USERNAME => 4, EnvironmentPeer::BRANCH => 5, EnvironmentPeer::UPDATED => 6, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'SITEID' => 1, 'NAME' => 2, 'HOST' => 3, 'USERNAME' => 4, 'BRANCH' => 5, 'UPDATED' => 6, ),
-        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'siteId' => 1, 'name' => 2, 'host' => 3, 'username' => 4, 'branch' => 5, 'updated' => 6, ),
-        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, )
+        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'SiteId' => 1, 'Name' => 2, 'Host' => 3, 'Username' => 4, 'Branch' => 5, 'Createdon' => 6, 'Updatedon' => 7, ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'siteId' => 1, 'name' => 2, 'host' => 3, 'username' => 4, 'branch' => 5, 'createdon' => 6, 'updatedon' => 7, ),
+        BasePeer::TYPE_COLNAME => array (EnvironmentPeer::ID => 0, EnvironmentPeer::SITE_ID => 1, EnvironmentPeer::NAME => 2, EnvironmentPeer::HOST => 3, EnvironmentPeer::USERNAME => 4, EnvironmentPeer::BRANCH => 5, EnvironmentPeer::CREATEDON => 6, EnvironmentPeer::UPDATEDON => 7, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'SITE_ID' => 1, 'NAME' => 2, 'HOST' => 3, 'USERNAME' => 4, 'BRANCH' => 5, 'CREATEDON' => 6, 'UPDATEDON' => 7, ),
+        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'site_id' => 1, 'name' => 2, 'host' => 3, 'username' => 4, 'branch' => 5, 'createdOn' => 6, 'updatedOn' => 7, ),
+        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, )
     );
 
     /**
@@ -179,20 +182,22 @@ abstract class BaseEnvironmentPeer
     {
         if (null === $alias) {
             $criteria->addSelectColumn(EnvironmentPeer::ID);
-            $criteria->addSelectColumn(EnvironmentPeer::SITEID);
+            $criteria->addSelectColumn(EnvironmentPeer::SITE_ID);
             $criteria->addSelectColumn(EnvironmentPeer::NAME);
             $criteria->addSelectColumn(EnvironmentPeer::HOST);
             $criteria->addSelectColumn(EnvironmentPeer::USERNAME);
             $criteria->addSelectColumn(EnvironmentPeer::BRANCH);
-            $criteria->addSelectColumn(EnvironmentPeer::UPDATED);
+            $criteria->addSelectColumn(EnvironmentPeer::CREATEDON);
+            $criteria->addSelectColumn(EnvironmentPeer::UPDATEDON);
         } else {
             $criteria->addSelectColumn($alias . '.id');
-            $criteria->addSelectColumn($alias . '.siteId');
+            $criteria->addSelectColumn($alias . '.site_id');
             $criteria->addSelectColumn($alias . '.name');
             $criteria->addSelectColumn($alias . '.host');
             $criteria->addSelectColumn($alias . '.username');
             $criteria->addSelectColumn($alias . '.branch');
-            $criteria->addSelectColumn($alias . '.updated');
+            $criteria->addSelectColumn($alias . '.createdOn');
+            $criteria->addSelectColumn($alias . '.updatedOn');
         }
     }
 
