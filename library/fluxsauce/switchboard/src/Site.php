@@ -5,6 +5,8 @@
  */
 
 namespace Fluxsauce\Switchboard;
+use Fluxsauce\Brain\Environment;
+use Fluxsauce\Brain\EnvironmentQuery;
 
 /**
  * Remote Site.
@@ -103,7 +105,7 @@ class Site extends Persistent {
     if (!is_array($this->environments)) {
       $this->environments = array();
     }
-    $this->environments[$environment->name] = $environment;
+    $this->environments[$environment->getName()] = $environment;
   }
 
   /**
@@ -113,7 +115,7 @@ class Site extends Persistent {
    *   Environment to remove.
    */
   public function environmentRemove(Environment $environment) {
-    unset($this->environments[$environment->name]);
+    unset($this->environments[$environment->getName()]);
   }
 
   /**
@@ -124,14 +126,13 @@ class Site extends Persistent {
     $pdo = Sqlite::get();
     // Environments.
     try {
-      $sql_query = 'SELECT name ';
-      $sql_query .= 'FROM environments ';
-      $sql_query .= 'WHERE siteId = :id ';
-      $stmt = $pdo->prepare($sql_query);
-      $stmt->bindParam(':id', $this->id);
-      $result = $stmt->execute();
-      while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-        $this->environmentAdd(new Environment($this->id, $row['name']));
+      $environments = EnvironmentQuery::create()
+        ->filterBySiteid($this->id)
+        ->find();
+      if (!empty($environments)) {
+        foreach ($environments as $environment) {
+          $this->environmentAdd($environment);
+        }
       }
     }
     catch (\PDOException $e) {

@@ -33,6 +33,12 @@ require_once SWITCHBOARD_BASE_PATH . '/vendor/autoload.php';
 require_once SWITCHBOARD_BASE_PATH . '/switchboard.validators.inc';
 require_once SWITCHBOARD_BASE_PATH . '/switchboard.utilities.inc';
 
+// Initialize Propel.
+Propel::init(SWITCHBOARD_BASE_PATH . "/propel/conf/brain-conf.php");
+$configuration = Propel::getConfiguration();
+$configuration['datasources']['brain']['connection']['dsn'] = 'sqlite:' . SWITCHBOARD_BASE_PATH . '/brain/switchboard.sqlite';
+Propel::setConfiguration($configuration);
+
 /**
  * Implements hook_drush_command().
  */
@@ -67,15 +73,6 @@ function switchboard_drush_command() {
     'arguments' => $default_arguments,
     'options' => $json_option,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
-  );
-
-  $items['sw-brain-update'] = array(
-    'description' => dt('Set Switchboard brain (SQLite database) file location.'),
-    'arguments' => array(
-      'path' => dt('Full path, including filename, of brain.'),
-    ),
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
-    'options' => $json_option,
   );
 
   $items['sw-brain-read'] = array(
@@ -1433,43 +1430,6 @@ function drush_switchboard_sw_brain_read() {
   else {
     drush_print($brain_path);
   }
-}
-
-/**
- * Validation callback for drush sw-brain-update.
- *
- * @param string $path
- *   The absolute path to the brain location.
- *
- * @return bool
- *   FALSE upon failure.
- */
-function drush_switchboard_sw_brain_update_validate($path = '') {
-  if (!$path) {
-    return switchboard_message_fail('SWITCHBOARD_BRAIN_PATH_MISSING', dt('Path missing, cannot set to nothing.'));
-  }
-  if (!drush_is_absolute_path($path)) {
-    return switchboard_message_fail('SWITCHBOARD_BRAIN_PATH_ABSOLUTE', dt('You must specify the absolute path to the file.'));
-  }
-  if (is_dir($path)) {
-    return switchboard_message_fail('SWITCHBOARD_BRAIN_PATH_DIR', dt('You need to specify the name of the file, not just the directory.'));
-  }
-  if (!(substr($path, -strlen('.sqlite')) === '.sqlite')) {
-    return switchboard_message_fail('SWITCHBOARD_BRAIN_PATH_EXT', dt('You need to specify the file extension .sqlite for the brain.'));
-  }
-}
-
-/**
- * Command callback for drush sw-brain-update.
- *
- * @param string $path
- *   The absolute path to the brain location.
- */
-function drush_switchboard_sw_brain_update($path) {
-  \Fluxsauce\Switchboard\Sqlite::setLocation($path);
-  switchboard_message_success(dt('Switchboard brain location set to @path.', array(
-    '@path' => $path,
-  )));
 }
 
 /**

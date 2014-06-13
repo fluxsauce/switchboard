@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database name="brain" defaultIdMethod="native">
+    <table name="environment" phpName="Environment" namespace="Fluxsauce\Brain">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="siteId" type="integer"/>
+        <column name="name" type="varchar" size="255" required="true" />
+        <column name="host" type="varchar" size="255" />
+        <column name="username" type="varchar" size="255" />
+        <column name="branch" type="varchar" size="255" />
+        <column name="updated" type="timestamp" />
+    </table>
+</database>

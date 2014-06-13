@@ -19,7 +19,8 @@
   }],
   "require": {
     "php": ">=5.3.3",
-    "rmccue/requests": ">=1.0"
+    "rmccue/requests": ">=1.0",
+    "propel/propel1": "1.7.1"
   },
   "require-dev": {
     "coder/coder": "2.2"
@@ -29,7 +30,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Fluxsauce\\Switchboard\\": "library/fluxsauce/switchboard/src"
+      "Fluxsauce\\Switchboard\\": "library/fluxsauce/switchboard/src",
+      "Fluxsauce\\Brain\\": "library/fluxsauce/brain"
     }
   }
 }

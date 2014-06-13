@@ -17,26 +17,7 @@ class Sqlite {
    *   The full path to the location of the brain.
    */
   public static function getLocation() {
-    $brain_path = drush_cache_get('brain_path', 'switchboard');
-    if (isset($brain_path->data)) {
-      return $brain_path->data;
-    }
-    $default_location = drush_directory_cache('switchboard') . '/switchboard.sqlite';
-    Sqlite::setLocation($default_location);
-    return $default_location;
-  }
-
-  /**
-   * Set the location of the switchboard brain.
-   *
-   * @param string $brain_path
-   *   The full path to the new location of the brain.
-   *
-   * @return bool
-   *   TRUE if successful.
-   */
-  public static function setLocation($brain_path) {
-    drush_cache_set('brain_path', $brain_path, 'switchboard');
+    return SWITCHBOARD_BASE_PATH . '/brain/switchboard.sqlite';
   }
 
   /**
@@ -123,22 +104,6 @@ class Sqlite {
         $sql_query .= ', host TEXT ';
         $sql_query .= ', username TEXT ';
         $sql_query .= ', branch TEXT ';
-        $sql_query .= ', updated INTEGER ';
-        $sql_query .= ') ';
-
-        $pdo->exec($sql_query);
-      }
-      catch (\PDOException $e) {
-        switchboard_pdo_exception_debug($e);
-      }
-
-      try {
-        $sql_query = 'CREATE TABLE IF NOT EXISTS envbackups ( ';
-        $sql_query .= 'id INTEGER PRIMARY KEY ';
-        $sql_query .= ', environmentId INTEGER ';
-        $sql_query .= ', name TEXT ';
-        $sql_query .= ', type TEXT ';
-        $sql_query .= ', created INT ';
         $sql_query .= ', updated INTEGER ';
         $sql_query .= ') ';
 

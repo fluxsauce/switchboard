@@ -5,6 +5,7 @@
  */
 
 namespace Fluxsauce\Switchboard;
+use Fluxsauce\Brain\Environment;
 
 /**
  * Acquia specific API interactions.
@@ -206,11 +207,13 @@ class ProviderAcquia extends Provider {
     ));
     $environment_data = json_decode($result->body);
     foreach ($environment_data as $environment) {
-      $new_environment = new Environment($site->id, $environment->name);
-      $new_environment->branch = $environment->vcs_path;
-      $new_environment->host = $environment->ssh_host;
-      $new_environment->username = "$site_name.$environment->name";
-      $new_environment->update();
+      $new_environment = new Environment();
+      $new_environment->setSiteid($site->id);
+      $new_environment->setName($environment->name);
+      $new_environment->setBranch($environment->vcs_path);
+      $new_environment->setHost($environment->ssh_host);
+      $new_environment->setUsername("$site_name.$environment->name");
+      $new_environment->save();
       $site->environmentAdd($new_environment);
     }
   }

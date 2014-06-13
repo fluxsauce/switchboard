@@ -28,6 +28,7 @@ Travis CI status: [<img src="https://travis-ci.org/fluxsauce/switchboard.svg?bra
 * PHP 5.3.3 or higher
 * [Composer](http://getcomposer.org) - a PHP dependency manager.
     * [Requests](https://github.com/rmccue/Requests) (installed using Composer)
+    * [Propel](https://github.com/propelorm/Propel) (installed using Composer)
 
 ## Installation
 
@@ -51,6 +52,9 @@ git clone https://github.com/fluxsauce/switchboard.git $HOME/.drush/switchboard
 # Download dependencies.
 cd $HOME/.drush/switchboard
 composer update --no-dev
+# Set up database.
+vendor/propel/propel1/generator/bin/propel-gen
+vendor/propel/propel1/generator/bin/propel-gen insert-sql
 # Clear Drush's cache.
 drush cc drush
 ````
@@ -91,7 +95,7 @@ drush sw-site-info pantheon nameofsite
 # List remote site environments.
 drush sw-site-env-list pantheon nameofsite
 # Download the latest backup from the dev environment to current directory.
-drush sw-site-env-db-backup pantheon nameofsite dev .
+drush sw-site-env-backup-dl pantheon nameofsite dev db .
 # Create a local project; site_id is shown in sw-site-info.
 drush sw-project-create nameofproject \
   --site_id=1 \

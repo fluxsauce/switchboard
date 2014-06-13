@@ -5,6 +5,7 @@
  */
 
 namespace Fluxsauce\Switchboard;
+use Fluxsauce\Brain\Environment;
 
 /**
  * Pantheon specific API interactions.
@@ -301,11 +302,13 @@ class ProviderPantheon extends Provider {
     ));
     $environment_data = json_decode($result->body);
     foreach ($environment_data as $environment_name => $environment) {
-      $new_environment = new Environment($site->id, $environment_name);
-      $new_environment->branch = 'master';
-      $new_environment->host = "appserver.$environment_name.{$site->uuid}.drush.in";
-      $new_environment->username = "$environment_name.$site_name";
-      $new_environment->update();
+      $new_environment = new Environment();
+      $new_environment->setSiteid($site->id);
+      $new_environment->setName($environment->name);
+      $new_environment->setBranch('master');
+      $new_environment->setHost("appserver.$environment_name.{$site->uuid}.drush.in");
+      $new_environment->setUsername("$environment_name.$site_name");
+      $new_environment->save();
       $site->environmentAdd($new_environment);
     }
   }
