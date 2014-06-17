@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Remote Site subclass.
+ */
 
 namespace Fluxsauce\Brain;
 

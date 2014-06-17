@@ -9,7 +9,8 @@ namespace Fluxsauce\Brain;
 use Fluxsauce\Brain\om\BaseProjectPeer;
 
 /**
- * Skeleton subclass for performing query and update operations on the 'project' table.
+ * Skeleton subclass for performing query and update operations on the 'project'
+ * table.
  *
  * @package    propel.generator.brain
  */
