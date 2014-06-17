@@ -292,3 +292,42 @@ function switchboard_to_camel_case($string) {
   }, $string);
   return $ret_val;
 }
+
+/**
+ * Render an Object to the Standard Output.
+ *
+ * @param mixed $object
+ *   A Propel object.
+ */
+function switchboard_render_object($object) {
+  if (drush_get_option('json')) {
+    switchboard_render_object_json($object);
+  }
+  else {
+    switchboard_render_object_drush_table($object);
+  }
+}
+
+/**
+ * Render as a Drush table.
+ *
+ * @param mixed $object
+ *   A Propel object.
+ */
+function switchboard_render_object_drush_table($object) {
+  $fields = $object->toArray();
+  $rows = array();
+  $rows[] = array_keys($fields);
+  $rows[] = array_values($fields);
+  drush_print_table($rows, TRUE);
+}
+
+/**
+ * Render as a JSON array.
+ *
+ * @param mixed $object
+ *   A Propel object.
+ */
+function switchboard_render_object_json($object) {
+  drush_print($object->toJSON(FALSE));
+}

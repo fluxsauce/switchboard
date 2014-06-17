@@ -155,34 +155,4 @@ class Site extends BaseSite {
     $url .= $this->getVcsUrl();
     return $url;
   }
-
-  /**
-   * Render to standard output.
-   */
-  public function render() {
-    if (drush_get_option('json')) {
-      $this->renderJson();
-    }
-    else {
-      $this->renderDrushTable();
-    }
-  }
-
-  /**
-   * Render as a Drush table.
-   */
-  public function renderDrushTable() {
-    $fields = $this->toArray();
-    $rows = array();
-    $rows[] = array_keys($fields);
-    $rows[] = array_values($fields);
-    drush_print_table($rows, TRUE);
-  }
-
-  /**
-   * Render as a JSON array.
-   */
-  public function renderJson() {
-    drush_print($this->toJSON(FALSE));
-  }
 }

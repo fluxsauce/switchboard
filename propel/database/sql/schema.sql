@@ -35,6 +35,32 @@ CREATE TABLE [environment]
 );
 
 -----------------------------------------------------------------------
+-- project
+-----------------------------------------------------------------------
+
+DROP TABLE IF EXISTS [project];
+
+CREATE TABLE [project]
+(
+    [id] INTEGER NOT NULL PRIMARY KEY,
+    [name] VARCHAR(255) NOT NULL,
+    [uuid] VARCHAR(255),
+    [siteId] INTEGER,
+    [hostname] VARCHAR(255),
+    [username] VARCHAR(255),
+    [sshPort] INTEGER,
+    [codePath] VARCHAR(255),
+    [filesPath] VARCHAR(255),
+    [databaseHost] VARCHAR(255),
+    [databaseUsername] VARCHAR(255),
+    [databasePassword] VARCHAR(255),
+    [databaseName] VARCHAR(255),
+    [databasePort] INTEGER,
+    [createdOn] TIMESTAMP,
+    [updatedOn] TIMESTAMP
+);
+
+-----------------------------------------------------------------------
 -- site
 -----------------------------------------------------------------------
 

@@ -23,6 +23,24 @@
         <column name="createdOn" type="timestamp" description="The time the record was created."/>
         <column name="updatedOn" type="timestamp" description="The time the record was updated." />
     </table>
+    <table name="project" phpName="Project" namespace="Fluxsauce\Brain">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="name" type="varchar" size="255" required="true" description="Name of the Project."/>
+        <column name="uuid" type="varchar" size="255" description="The UUID of the Project."/>
+        <column name="siteId" type="integer" description="External key to an associated Site."/>
+        <column name="hostname" type="varchar" size="255" description="The hostname for the local Project." />
+        <column name="username" type="varchar" size="255" description="The UNIX username for the local Project." />
+        <column name="sshPort" type="integer" description="The SSH port for the local Project."/>
+        <column name="codePath" type="varchar" size="255" description="The path on disk to the code root."/>
+        <column name="filesPath" type="varchar" size="255" description="The path on disk to the files root."/>
+        <column name="databaseHost" type="varchar" size="255" description="The hostname for the Project database."/>
+        <column name="databaseUsername" type="varchar" size="255" description="The username for the Project database."/>
+        <column name="databasePassword" type="varchar" size="255" description="The password for the Project database."/>
+        <column name="databaseName" type="varchar" size="255" description="The name for the Project database."/>
+        <column name="databasePort" type="integer" description="The port for the Project database."/>
+        <column name="createdOn" type="timestamp" description="The time the record was created."/>
+        <column name="updatedOn" type="timestamp" description="The time the record was updated." />
+    </table>
     <table name="site" phpName="Site" namespace="Fluxsauce\Brain">
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
         <column name="provider" type="varchar" size="255" description="The machine name of the Provider."/>

@@ -447,8 +447,10 @@ function drush_switchboard_sw_project_alias_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
@@ -522,8 +524,10 @@ function drush_switchboard_sw_project_create_validate($project_name = '') {
       ));
     }
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if ($project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if ($project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_ALREADY_EXISTS', dt('A local project named @project_name already exists.', array(
       '@project_name' => $project_name,
     )));
@@ -540,19 +544,21 @@ function drush_switchboard_sw_project_create_validate($project_name = '') {
  *   FALSE upon failure.
  */
 function drush_switchboard_sw_project_create($project_name) {
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  $project = new \Fluxsauce\Brain\Project();
+  $project->setName($project_name);
   foreach (array_keys(switchboard_get_drush_options('sw-project-create')) as $option) {
     $option_value = drush_get_option($option);
     if ($option_value && !is_bool($option_value)) {
-      $project->$option = $option_value;
+      $method = 'set' . ucfirst(str_replace('_', '', $option));
+      $project->$method($option_value);
     }
   }
   // Generate a UUID if none was provided.
-  if (!$project->uuid) {
-    $project->uuid = switchboard_generate_uuid();
+  if (!switchboard_validate_uuid($project->getUuid())) {
+    $project->setUuid(switchboard_generate_uuid());
   }
-  $project->update();
-  return switchboard_message_success($project->uuid);
+  $project->save();
+  return switchboard_message_success($project->getUuid());
 }
 
 /**
@@ -571,8 +577,10 @@ function drush_switchboard_sw_project_destroy_validate($project_name = '') {
   if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
@@ -583,6 +591,7 @@ function drush_switchboard_sw_project_destroy_validate($project_name = '') {
   if (!$confirm) {
     return drush_user_abort();
   }
+  drush_set_option('project', $project);
 }
 
 /**
@@ -592,8 +601,8 @@ function drush_switchboard_sw_project_destroy_validate($project_name = '') {
  *   Name of the local project in question.
  */
 function drush_switchboard_sw_project_destroy($project_name) {
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  $project->destroy();
+  $project = drush_get_option('project');
+  $project->delete();
   switchboard_message_success(dt('Local project @project_name deleted.', array(
     '@project_name' => $project_name,
   )));
@@ -612,8 +621,10 @@ function drush_switchboard_sw_project_db_get_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
@@ -683,8 +694,10 @@ function drush_switchboard_sw_project_db_import_validate($project_name = '', $pa
   if (!$project_name) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
@@ -753,15 +766,17 @@ function drush_switchboard_sw_project_files_rsync_validate($project_name = '', $
   if (!$project_name) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
   }
-  if (!switchboard_validate_destination($project->filesPath)) {
+  if (!switchboard_validate_destination($project->getFilespath())) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_PATH_UNWRITEABLE', dt('Files path @files_path is not writeable.', array(
-      '@files_path' => $project->filesPath,
+      '@files_path' => $project->getFilespath(),
     )));
   }
   drush_set_option('project', $project);
@@ -769,20 +784,21 @@ function drush_switchboard_sw_project_files_rsync_validate($project_name = '', $
     return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_RSYNC_DIR', dt('Invalid rsync direction (up or down).'));
   }
 
-  $site = new \Fluxsauce\Switchboard\Site();
-  $site->id = $project->siteId;
-  $site->read();
-  if (!$site->id) {
+  $site = \Fluxsauce\Brain\SiteQuery::create()
+    ->filterById($project->getSiteid())
+    ->findOne();
+
+  if (!$site) {
     return switchboard_message_fail('SWITCHBOARD_SITE_NOT_FOUND', dt('Cannot find site_id #@site_id.', array(
-      '@site_id' => $project->siteId,
+      '@site_id' => $project->getSiteid(),
     )));
   }
   drush_set_option('site', $site);
 
-  if (!switchboard_validate_site_env($site->provider, $site->name, $env_name)) {
+  if (!switchboard_validate_site_env($site->getProvider(), $site->getName(), $env_name)) {
     return switchboard_message_fail_generate('SWITCHBOARD_SITE_ENV_INVALID', array(
       '@env_name' => $env_name,
-      '@site_name' => $site->name,
+      '@site_name' => $site->getName(),
     ));
   }
 }
@@ -801,11 +817,10 @@ function drush_switchboard_sw_project_files_rsync($project_name, $env_name, $dir
   $project = drush_get_option('project');
   $site = drush_get_option('site');
   $provider = \Fluxsauce\Switchboard\Provider::getInstance($site->provider);
-  $site = drush_get_option('site');
   $command = "rsync -rlvz --size-only --ipv4 --progress -e 'ssh -p {$site->sshPort}' ";
   $environment = $site->environments[$env_name];
   $remote = "{$environment->username}@{$environment->host}:{$provider->getFilesPath($site->name, $env_name)}";
-  $local = $project->filesPath;
+  $local = $project->getFilespath();
   if ($direction == 'up') {
     $command .= "$local/ $remote";
   }
@@ -835,21 +850,23 @@ function drush_switchboard_sw_project_files_wipe_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
   }
-  if (!switchboard_validate_destination($project->filesPath)) {
+  if (!switchboard_validate_destination($project->getFilespath())) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_PATH_UNWRITEABLE', dt('Files path @files_path is not writeable.', array(
-      '@files_path' => $project->filesPath,
+      '@files_path' => $project->getFilespath(),
     )));
   }
   drush_set_option('project', $project);
 
   $confirm = drush_confirm(dt('Are you sure you want to wipe @files_path for @project_name?', array(
-    '@files_path' => $project->filesPath,
+    '@files_path' => $project->getFilespath(),
     '@project_name' => $project_name,
   )));
   if (!$confirm) {
@@ -865,14 +882,14 @@ function drush_switchboard_sw_project_files_wipe_validate($project_name = '') {
  */
 function drush_switchboard_sw_project_files_wipe($project_name) {
   $project = drush_get_option('project');
-  if (drush_delete_dir_contents($project->filesPath)) {
+  if (drush_delete_dir_contents($project->getFilespath())) {
     switchboard_message_success(dt('@files_path wiped.', array(
-      '@files_path' => $project->filesPath,
+      '@files_path' => $project->getFilespath(),
     )));
   }
   else {
     switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_WIPE_FAIL', dt('Unable to wipe @files_path.', array(
-      '@files_path' => $project->filesPath,
+      '@files_path' => $project->getFilespath(),
     )));
   }
 }
@@ -893,13 +910,15 @@ function drush_switchboard_sw_project_get_host_validate($project_name = '') {
   if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
   }
-  if (!$project->hostname) {
+  if (!$project->getHostname()) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_HOSTNAME_MISSING', dt('@project_name is missing a hostname.', array(
       '@project_name' => $project_name,
     )));
@@ -915,7 +934,7 @@ function drush_switchboard_sw_project_get_host_validate($project_name = '') {
  */
 function drush_switchboard_sw_project_get_host($project_name) {
   $project = drush_get_option('project');
-  $ret_val = $project->hostname;
+  $ret_val = $project->getHostname();
   if (drush_get_option('format') == 'url') {
     $ret_val = "http://$ret_val";
   }
@@ -947,13 +966,16 @@ function drush_switchboard_sw_project_get_path_validate($project_name = '', $com
   if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
   }
-  if (!$project->$property_name) {
+  $method_name = 'get' . ucfirst($property_name);
+  if (!$project->$method_name()) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_PATH_MISSING', dt('@project_name is missing a value for @property_name.', array(
       '@project_name' => $project_name,
       '@property_name' => $property_name,
@@ -974,7 +996,8 @@ function drush_switchboard_sw_project_get_path_validate($project_name = '', $com
 function drush_switchboard_sw_project_get_path($project_name, $component_name) {
   $property_name = drush_get_option('property_name');
   $project = drush_get_option('project');
-  switchboard_message_success($project->$property_name);
+  $method_name = 'get' . ucfirst($property_name);
+  switchboard_message_success($project->$method_name());
 }
 
 /**
@@ -991,22 +1014,17 @@ function drush_switchboard_sw_project_list() {
     'uuid',
   );
 
-  try {
-    $sql_query = 'SELECT name ';
-    $sql_query .= 'FROM projects ';
-    $stmt = $pdo->prepare($sql_query);
-    $stmt->execute();
-    while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-      $project = new \Fluxsauce\Switchboard\Project($row['name'], $row['name']);
+  $projects = \Fluxsauce\Brain\ProjectQuery::create()->find();
+
+  if (!empty($projects)) {
+    foreach ($projects as $project) {
       $project_row = array();
       foreach ($keys_to_show as $key) {
-        $project_row[$key] = $project->$key;
+        $method = 'get' . ucfirst($key);
+        $project_row[$key] = $project->$method();
       }
-      $rows[$row['name']] = $project_row;
+      $rows[$project->getName()] = $project_row;
     }
-  }
-  catch (\PDOException $e) {
-    switchboard_pdo_exception_debug($e);
   }
 
   if (empty($rows)) {
@@ -1041,12 +1059,15 @@ function drush_switchboard_sw_project_info_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail_generate('SWITCHBOARD_PROJECT_NO_NAME');
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
   }
+  drush_set_option('project', $project);
 }
 
 /**
@@ -1056,8 +1077,8 @@ function drush_switchboard_sw_project_info_validate($project_name = '') {
  *   Name of the local project in question.
  */
 function drush_switchboard_sw_project_info($project_name) {
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  $project->render();
+  $project = drush_get_option('project');
+  switchboard_render_object($project);
 }
 
 /**
@@ -1076,12 +1097,15 @@ function drush_switchboard_sw_project_update_validate($project_name = '') {
   if (!switchboard_validate_drush_option_required_values('sw-project-create')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_OPTION_VALUE', dt('You must provide a value for every option specified.'));
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
   }
+  drush_set_option('project', $project);
 }
 
 /**
@@ -1091,14 +1115,15 @@ function drush_switchboard_sw_project_update_validate($project_name = '') {
  *   Name of the local project in question.
  */
 function drush_switchboard_sw_project_update($project_name) {
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
+  $project = drush_get_option('project');
   foreach (array_keys(switchboard_get_drush_options('sw-project-update')) as $option) {
     $option_value = drush_get_option($option);
     if ($option_value && !is_bool($option_value)) {
-      $project->$option = $option_value;
+      $method = 'set' . ucfirst($option);
+      $project->$method($option_value);
     }
   }
-  $project->update();
+  $project->save();
   switchboard_message_success(dt('Local project @project_name updated.', array(
     '@project_name' => $project_name,
   )));
@@ -1118,37 +1143,40 @@ function drush_switchboard_sw_project_vcs_clone_validate($project_name = '') {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot update.'));
   }
 
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
   }
 
-  if (!$project->siteId) {
+  if (!$project->getSiteid()) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_SITE', dt('Project does not have a site associated with it.'));
   }
 
-  $site = new \Fluxsauce\Switchboard\Site();
-  $site->id = $project->siteId;
-  $site->read();
-  if (!$site->id) {
+  $site = \Fluxsauce\Brain\SiteQuery::create()
+    ->filterById($project->getSiteid())
+    ->findOne();
+
+  if (!$site) {
     return switchboard_message_fail('SWITCHBOARD_SITE_NOT_FOUND', dt('Cannot find site_id #@site_id.', array(
-      '@site_id' => $project->siteId,
+      '@site_id' => $project->getSiteid(),
     )));
   }
 
-  if (!$project->codePath) {
+  if (!$project->getCodepath()) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_PATH_MISSING', dt('Project does not have a code path.'));
   }
 
-  if (!switchboard_validate_destination($project->codePath)) {
+  if (!switchboard_validate_destination($project->getCodepath())) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_PATH_UNWRITEABLE', dt('Code path @code_path is not writeable.', array(
-      '@code_path' => $project->codePath,
+      '@code_path' => $project->getCodepath(),
     )));
   }
 
-  drush_set_option('code_path', $project->codePath);
+  drush_set_option('code_path', $project->getCodepath());
 
   $url = $site->getVcsConnection();
 
@@ -1189,13 +1217,15 @@ function drush_switchboard_sw_project_vcs_commit_validate($project_name = '', $m
   if (!$project_name) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot commit.'));
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
   }
-  if (!file_exists($project->codePath . '/.git')) {
+  if (!file_exists($project->getCodepath() . '/.git')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_GIT_MISSING', dt('Project code path not initialized with git.'));
   }
   drush_set_option('project', $project);
@@ -1206,6 +1236,8 @@ function drush_switchboard_sw_project_vcs_commit_validate($project_name = '', $m
  *
  * @param string $project_name
  *   Name of the local project in question.
+ * @param string $message
+ *   The contents of the commit message.
  */
 function drush_switchboard_sw_project_vcs_commit($project_name, $message) {
   $project = drush_get_option('project');
@@ -1230,13 +1262,15 @@ function drush_switchboard_sw_project_vcs_pull_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot pull.'));
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
   }
-  if (!file_exists($project->codePath . '/.git')) {
+  if (!file_exists($project->getCodepath() . '/.git')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_GIT_MISSING', dt('Project code path not initialized with git.'));
   }
   drush_set_option('project', $project);
@@ -1271,13 +1305,15 @@ function drush_switchboard_sw_project_vcs_push_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot push.'));
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
   }
-  if (!file_exists($project->codePath . '/.git')) {
+  if (!file_exists($project->getCodepath() . '/.git')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_GIT_MISSING', dt('Project code path not initialized with git.'));
   }
   drush_set_option('project', $project);
@@ -1312,13 +1348,15 @@ function drush_switchboard_sw_project_vcs_reset_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot update.'));
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
   }
-  if (!file_exists($project->codePath . '/.git')) {
+  if (!file_exists($project->getCodepath() . '/.git')) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_CODE_GIT_MISSING', dt('Project code path not initialized with git.'));
   }
   drush_set_option('project', $project);
@@ -1353,8 +1391,10 @@ function drush_switchboard_sw_project_db_wipe_validate($project_name = '') {
   if (!$project_name) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_NO_NAME', dt('Project name missing, cannot update.'));
   }
-  $project = new \Fluxsauce\Switchboard\Project($project_name, $project_name);
-  if (!$project->id) {
+  $project = \Fluxsauce\Brain\ProjectQuery::create()
+    ->filterByName($project_name)
+    ->findOne();
+  if (!$project) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_MISSING', dt('Cannot find local project with name @project_name.', array(
       '@project_name' => $project_name,
     )));
@@ -1738,7 +1778,7 @@ function drush_switchboard_sw_site_info($provider_name, $site_name) {
     ->filterByProvider($provider_name)
     ->filterByName($site_name)
     ->findOne();
-  echo $site->render();
+  switchboard_render_object($site);
 }
 
 /**

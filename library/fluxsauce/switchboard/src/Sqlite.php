@@ -87,31 +87,6 @@ class Sqlite {
       catch (\PDOException $e) {
         switchboard_pdo_exception_debug($e);
       }
-
-      try {
-        $sql_query = 'CREATE TABLE IF NOT EXISTS projects ( ';
-        $sql_query .= 'id INTEGER PRIMARY KEY ';
-        $sql_query .= ', name TEXT ';
-        $sql_query .= ', uuid TEXT ';
-        $sql_query .= ', siteId INTEGER ';
-        $sql_query .= ', hostname TEXT ';
-        $sql_query .= ', username TEXT ';
-        $sql_query .= ', sshPort INTEGER ';
-        $sql_query .= ', codePath TEXT ';
-        $sql_query .= ', filesPath TEXT ';
-        $sql_query .= ', databaseHost TEXT ';
-        $sql_query .= ', databaseUsername TEXT ';
-        $sql_query .= ', databasePassword TEXT ';
-        $sql_query .= ', databaseName TEXT ';
-        $sql_query .= ', databasePort INTEGER ';
-        $sql_query .= ', updated INTEGER ';
-        $sql_query .= ') ';
-
-        $pdo->exec($sql_query);
-      }
-      catch (\PDOException $e) {
-        switchboard_pdo_exception_debug($e);
-      }
     }
     return $pdo;
   }
