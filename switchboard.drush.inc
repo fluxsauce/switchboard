@@ -1150,7 +1150,7 @@ function drush_switchboard_sw_project_vcs_clone_validate($project_name = '') {
 
   drush_set_option('code_path', $project->codePath);
 
-  $url = $site->getVcsUrl();
+  $url = $site->getVcsConnection();
 
   if (!$url) {
     return switchboard_message_fail('SWITCHBOARD_SITE_NO_VCS', dt('Site does not contain VCS info.'));
@@ -1602,10 +1602,17 @@ function drush_switchboard_sw_site_list_validate($provider_name = '') {
 function drush_switchboard_sw_site_list($provider_name) {
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
 
-  if (count($provider->sites) == 0) {
+  $sites = \Fluxsauce\Brain\SiteQuery::create()
+    ->filterByProvider($provider_name)
+    ->find();
+
+  if (count($sites) == 0) {
     $provider->apiGetSites();
+    $sites = \Fluxsauce\Brain\SiteQuery::create()
+      ->filterByProvider($provider_name)
+      ->find();
   }
-  if (count($provider->sites) == 0) {
+  if (count($sites) == 0) {
     if (drush_get_option('json')) {
       return drush_print(json_encode(array()));
     }
@@ -1613,10 +1620,10 @@ function drush_switchboard_sw_site_list($provider_name) {
   }
 
   $rows = array();
-  foreach ($provider->sites as $site) {
-    $rows[$site->name] = array(
-      'name' => $site->name,
-      'uuid' => $site->uuid,
+  foreach ($sites as $site) {
+    $rows[$site->getName()] = array(
+      'name' => $site->getName(),
+      'uuid' => $site->getUuid(),
     );
   }
   ksort($rows);
@@ -1727,8 +1734,11 @@ function drush_switchboard_sw_site_info_validate($provider_name = '', $site_name
  *   The name of the remote Site.
  */
 function drush_switchboard_sw_site_info($provider_name, $site_name) {
-  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  $provider->sites[$site_name]->render();
+  $site = \Fluxsauce\Brain\SiteQuery::create()
+    ->filterByProvider($provider_name)
+    ->filterByName($site_name)
+    ->findOne();
+  echo $site->render();
 }
 
 /**

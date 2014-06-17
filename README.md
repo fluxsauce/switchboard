@@ -65,6 +65,8 @@ drush cc drush
 cd $HOME/.drush/switchboard
 git pull
 composer update --no-dev
+vendor/propel/propel1/generator/bin/propel-gen
+vendor/propel/propel1/generator/bin/propel-gen insert-sql
 drush cc drush
 ````
 

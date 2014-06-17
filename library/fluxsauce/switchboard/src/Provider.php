@@ -5,6 +5,7 @@
  */
 
 namespace Fluxsauce\Switchboard;
+use Fluxsauce\Brain\SiteQuery;
 
 /**
  * Generic class for hosting / PaaS Providers.
@@ -71,29 +72,16 @@ abstract class Provider {
       throw new \Exception('Missing valid endpoint from ' . __CLASS__);
     }
 
-    $pdo = Sqlite::get();
-    $this->sites = array();
-
-    try {
-      $sql_query = 'SELECT name ';
-      $sql_query .= 'FROM sites ';
-      $sql_query .= 'WHERE provider = :provider ';
-      $stmt = $pdo->prepare($sql_query);
-      $stmt->bindParam(':provider', $this->name);
-      $stmt->execute();
-      while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-        $site = new Site($this->name, $row['name']);
-        $this->sites[$row['name']] = $site;
-      }
-    }
-    catch (\PDOException $e) {
-      switchboard_pdo_exception_debug($e);
-    }
-
     if (drush_get_option('refresh')) {
       $this->apiGetSites();
-      foreach ($this->sites as $site) {
-        $site->update();
+    }
+
+    $sites = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->find();
+    if (!empty($sites)) {
+      foreach ($sites as $site) {
+        $this->sites[$site->getName()] = $site;
       }
     }
   }

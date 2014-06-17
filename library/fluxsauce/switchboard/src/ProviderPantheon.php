@@ -6,6 +6,8 @@
 
 namespace Fluxsauce\Switchboard;
 use Fluxsauce\Brain\Environment;
+use Fluxsauce\Brain\Site;
+use Fluxsauce\Brain\SiteQuery;
 
 /**
  * Pantheon specific API interactions.
@@ -58,7 +60,6 @@ class ProviderPantheon extends Provider {
         $this->apiGetSite($site_name);
         break;
 
-      case 'unixUsername':
       case 'realm':
       case 'uuid':
         $this->apiGetSites();
@@ -73,7 +74,6 @@ class ProviderPantheon extends Provider {
       default:
         throw new \Exception('Unknown field ' . $field . ' in ' . __CLASS__);
     }
-    return $this->sites[$site_name]->$field;
   }
 
   /**
@@ -83,19 +83,22 @@ class ProviderPantheon extends Provider {
    *   The name of the site in question.
    */
   public function apiGetSite($site_name) {
-    $site = new Site('pantheon', $site_name);
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
 
-    $repository = 'codeserver.dev.' . $site->uuid;
-    $repository .= '@codeserver.dev.' . $site->uuid;
+    $repository = 'codeserver.dev.' . $site->getUuid();
+    $repository .= '@codeserver.dev.' . $site->getUuid();
     $repository .= '.drush.in:2222/~/repository.git';
 
-    $site->update(array(
-      'vcsUrl' => $repository,
-      'vcsType' => 'git',
-      'vcsProtocol' => 'ssh',
-      'sshPort' => 2222,
-    ));
-    $this->sites[$site_name] = $site;
+    $site->setVcsurl($repository);
+    $site->setVcstype('git');
+    $site->setVcsprotocol('ssh');
+    $site->setSshport(2222);
+
+    $site->save();
+    $this->sites[$site->getName()] = $site;
   }
 
   /**
@@ -114,12 +117,21 @@ class ProviderPantheon extends Provider {
     $sites = array();
 
     foreach ($site_metadata as $uuid => $data) {
-      $site = new Site($this->name, $data->information->name);
-      $site->uuid = $uuid;
-      $site->realm = $data->information->preferred_zone;
-      $site->unixUsername = '';
-      $site->update();
-      $this->sites[$site->name] = $site;
+      $site = SiteQuery::create()
+        ->filterByProvider($this->name)
+        ->filterByName($data->information->name)
+        ->findOne();
+      if (!$site) {
+        $site = new Site();
+        $site->setProvider($this->name);
+        $site->setName($data->information->name);
+      }
+
+      $site->setUuid($uuid);
+      $site->setRealm($data->information->preferred_zone);
+
+      $site->save();
+      $this->sites[$site->getName()] = $site;
     }
   }
 
@@ -130,17 +142,24 @@ class ProviderPantheon extends Provider {
    *   The machine name of a site.
    */
   public function apiGetSiteName($site_name) {
-    $site =& $this->sites[$site_name];
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
+
     $result = switchboard_request($this, array(
       'method' => 'GET',
       'realm' => 'attributes',
       'resource' => 'site',
-      'uuid' => $site->uuid,
+      'uuid' => $site->getUuid(),
     ));
+
     $site_attributes = json_decode($result->body);
-    $site->title = $site_attributes->label;
-    $site->update();
-    $this->sites[$site->name] = $site;
+
+    $site->setTitle($site_attributes->label);
+
+    $site->save();
+    $this->sites[$site->getName()] = $site;
   }
 
   /**
@@ -293,23 +312,26 @@ class ProviderPantheon extends Provider {
    *   The machine name of the site in question.
    */
   public function apiGetSiteEnvironments($site_name) {
-    $site =& $this->sites[$site_name];
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
+
     $result = switchboard_request($this, array(
       'method' => 'GET',
       'realm' => 'environments',
       'resource' => 'site',
-      'uuid' => $site->uuid,
+      'uuid' => $site->getUuid(),
     ));
     $environment_data = json_decode($result->body);
     foreach ($environment_data as $environment_name => $environment) {
       $new_environment = new Environment();
-      $new_environment->setSiteid($site->id);
-      $new_environment->setName($environment->name);
+      $new_environment->setSiteid($site->getId());
+      $new_environment->setName($environment_name);
       $new_environment->setBranch('master');
-      $new_environment->setHost("appserver.$environment_name.{$site->uuid}.drush.in");
+      $new_environment->setHost("appserver.$environment_name.{$site->getUuid()}.drush.in");
       $new_environment->setUsername("$environment_name.$site_name");
       $new_environment->save();
-      $site->environmentAdd($new_environment);
     }
   }
 

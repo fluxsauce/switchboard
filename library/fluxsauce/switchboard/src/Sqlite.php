@@ -75,45 +75,6 @@ class Sqlite {
       }
 
       try {
-        $sql_query = 'CREATE TABLE IF NOT EXISTS sites ( ';
-        $sql_query .= 'id INTEGER PRIMARY KEY ';
-        $sql_query .= ', provider TEXT ';
-        $sql_query .= ', uuid TEXT ';
-        $sql_query .= ', realm TEXT ';
-        $sql_query .= ', name TEXT ';
-        $sql_query .= ', title TEXT ';
-        $sql_query .= ', unixUsername TEXT ';
-        $sql_query .= ', vcsUrl TEXT ';
-        $sql_query .= ', vcsType TEXT ';
-        $sql_query .= ', vcsProtocol TEXT ';
-        $sql_query .= ', sshPort INTEGER ';
-        $sql_query .= ', updated INTEGER ';
-        $sql_query .= ') ';
-
-        $pdo->exec($sql_query);
-      }
-      catch (\PDOException $e) {
-        switchboard_pdo_exception_debug($e);
-      }
-
-      try {
-        $sql_query = 'CREATE TABLE IF NOT EXISTS environments ( ';
-        $sql_query .= 'id INTEGER PRIMARY KEY ';
-        $sql_query .= ', siteId INTEGER ';
-        $sql_query .= ', name TEXT ';
-        $sql_query .= ', host TEXT ';
-        $sql_query .= ', username TEXT ';
-        $sql_query .= ', branch TEXT ';
-        $sql_query .= ', updated INTEGER ';
-        $sql_query .= ') ';
-
-        $pdo->exec($sql_query);
-      }
-      catch (\PDOException $e) {
-        switchboard_pdo_exception_debug($e);
-      }
-
-      try {
         $sql_query = 'CREATE TABLE IF NOT EXISTS envdbs ( ';
         $sql_query .= 'id INTEGER PRIMARY KEY ';
         $sql_query .= ', environmentId INTEGER ';

@@ -13,29 +13,29 @@ use \Propel;
 use \PropelDateTime;
 use \PropelException;
 use \PropelPDO;
-use Fluxsauce\Brain\Environment;
-use Fluxsauce\Brain\EnvironmentPeer;
-use Fluxsauce\Brain\EnvironmentQuery;
+use Fluxsauce\Brain\Backup;
+use Fluxsauce\Brain\BackupPeer;
+use Fluxsauce\Brain\BackupQuery;
 
 /**
- * Base class that represents a row from the 'environment' table.
+ * Base class that represents a row from the 'backup' table.
  *
  *
  *
  * @package    propel.generator.brain.om
  */
-abstract class BaseEnvironment extends BaseObject implements Persistent
+abstract class BaseBackup extends BaseObject implements Persistent
 {
     /**
      * Peer class name
      */
-    const PEER = 'Fluxsauce\\Brain\\EnvironmentPeer';
+    const PEER = 'Fluxsauce\\Brain\\BackupPeer';
 
     /**
      * The Peer class.
      * Instance provides a convenient way of calling static methods on a class
      * that calling code may not be able to identify.
-     * @var        EnvironmentPeer
+     * @var        BackupPeer
      */
     protected static $peer;
 
@@ -58,28 +58,22 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     protected $siteid;
 
     /**
-     * The value for the name field.
-     * @var        string
+     * The value for the projectid field.
+     * @var        int
      */
-    protected $name;
+    protected $projectid;
 
     /**
-     * The value for the host field.
+     * The value for the component field.
      * @var        string
      */
-    protected $host;
+    protected $component;
 
     /**
-     * The value for the username field.
+     * The value for the path field.
      * @var        string
      */
-    protected $username;
-
-    /**
-     * The value for the branch field.
-     * @var        string
-     */
-    protected $branch;
+    protected $path;
 
     /**
      * The value for the createdon field.
@@ -136,47 +130,36 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     }
 
     /**
-     * Get the [name] column value.
-     * Name of the Environment.
-     * @return string
+     * Get the [projectid] column value.
+     * External key to the Project.
+     * @return int
      */
-    public function getName()
+    public function getProjectid()
     {
 
-        return $this->name;
+        return $this->projectid;
     }
 
     /**
-     * Get the [host] column value.
-     * The hostname for the Environment.
+     * Get the [component] column value.
+     * Name of the Component.
      * @return string
      */
-    public function getHost()
+    public function getComponent()
     {
 
-        return $this->host;
+        return $this->component;
     }
 
     /**
-     * Get the [username] column value.
-     * The UNIX username for the Environment.
+     * Get the [path] column value.
+     * Path to the Backup.
      * @return string
      */
-    public function getUsername()
+    public function getPath()
     {
 
-        return $this->username;
-    }
-
-    /**
-     * Get the [branch] column value.
-     * The default VCS branch for the Environment.
-     * @return string
-     */
-    public function getBranch()
-    {
-
-        return $this->branch;
+        return $this->path;
     }
 
     /**
@@ -253,7 +236,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      * Set the value of [id] column.
      *
      * @param  int $v new value
-     * @return Environment The current object (for fluent API support)
+     * @return Backup The current object (for fluent API support)
      */
     public function setId($v)
     {
@@ -263,7 +246,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
         if ($this->id !== $v) {
             $this->id = $v;
-            $this->modifiedColumns[] = EnvironmentPeer::ID;
+            $this->modifiedColumns[] = BackupPeer::ID;
         }
 
 
@@ -274,7 +257,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      * Set the value of [siteid] column.
      * External key to the Site.
      * @param  int $v new value
-     * @return Environment The current object (for fluent API support)
+     * @return Backup The current object (for fluent API support)
      */
     public function setSiteid($v)
     {
@@ -284,7 +267,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
         if ($this->siteid !== $v) {
             $this->siteid = $v;
-            $this->modifiedColumns[] = EnvironmentPeer::SITEID;
+            $this->modifiedColumns[] = BackupPeer::SITEID;
         }
 
 
@@ -292,95 +275,74 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     } // setSiteid()
 
     /**
-     * Set the value of [name] column.
-     * Name of the Environment.
-     * @param  string $v new value
-     * @return Environment The current object (for fluent API support)
+     * Set the value of [projectid] column.
+     * External key to the Project.
+     * @param  int $v new value
+     * @return Backup The current object (for fluent API support)
      */
-    public function setName($v)
+    public function setProjectid($v)
     {
-        if ($v !== null) {
-            $v = (string) $v;
+        if ($v !== null && is_numeric($v)) {
+            $v = (int) $v;
         }
 
-        if ($this->name !== $v) {
-            $this->name = $v;
-            $this->modifiedColumns[] = EnvironmentPeer::NAME;
+        if ($this->projectid !== $v) {
+            $this->projectid = $v;
+            $this->modifiedColumns[] = BackupPeer::PROJECTID;
         }
 
 
         return $this;
-    } // setName()
+    } // setProjectid()
 
     /**
-     * Set the value of [host] column.
-     * The hostname for the Environment.
+     * Set the value of [component] column.
+     * Name of the Component.
      * @param  string $v new value
-     * @return Environment The current object (for fluent API support)
+     * @return Backup The current object (for fluent API support)
      */
-    public function setHost($v)
+    public function setComponent($v)
     {
         if ($v !== null) {
             $v = (string) $v;
         }
 
-        if ($this->host !== $v) {
-            $this->host = $v;
-            $this->modifiedColumns[] = EnvironmentPeer::HOST;
+        if ($this->component !== $v) {
+            $this->component = $v;
+            $this->modifiedColumns[] = BackupPeer::COMPONENT;
         }
 
 
         return $this;
-    } // setHost()
+    } // setComponent()
 
     /**
-     * Set the value of [username] column.
-     * The UNIX username for the Environment.
+     * Set the value of [path] column.
+     * Path to the Backup.
      * @param  string $v new value
-     * @return Environment The current object (for fluent API support)
+     * @return Backup The current object (for fluent API support)
      */
-    public function setUsername($v)
+    public function setPath($v)
     {
         if ($v !== null) {
             $v = (string) $v;
         }
 
-        if ($this->username !== $v) {
-            $this->username = $v;
-            $this->modifiedColumns[] = EnvironmentPeer::USERNAME;
+        if ($this->path !== $v) {
+            $this->path = $v;
+            $this->modifiedColumns[] = BackupPeer::PATH;
         }
 
 
         return $this;
-    } // setUsername()
-
-    /**
-     * Set the value of [branch] column.
-     * The default VCS branch for the Environment.
-     * @param  string $v new value
-     * @return Environment The current object (for fluent API support)
-     */
-    public function setBranch($v)
-    {
-        if ($v !== null) {
-            $v = (string) $v;
-        }
-
-        if ($this->branch !== $v) {
-            $this->branch = $v;
-            $this->modifiedColumns[] = EnvironmentPeer::BRANCH;
-        }
-
-
-        return $this;
-    } // setBranch()
+    } // setPath()
 
     /**
      * Sets the value of [createdon] column to a normalized version of the date/time value specified.
      * The time the record was created.
      * @param mixed $v string, integer (timestamp), or DateTime value.
      *               Empty strings are treated as null.
-     * @return Environment The current object (for fluent API support)
+     * @return Backup The current object (for fluent API support)
      */
     public function setCreatedon($v)
     {
@@ -390,7 +352,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
             $newDateAsString = $dt ? $dt->format('Y-m-d H:i:s') : null;
             if ($currentDateAsString !== $newDateAsString) {
                 $this->createdon = $newDateAsString;
-                $this->modifiedColumns[] = EnvironmentPeer::CREATEDON;
+                $this->modifiedColumns[] = BackupPeer::CREATEDON;
             }
         } // if either are not null
 
@@ -403,7 +365,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      * The time the record was updated.
      * @param mixed $v string, integer (timestamp), or DateTime value.
      *               Empty strings are treated as null.
-     * @return Environment The current object (for fluent API support)
+     * @return Backup The current object (for fluent API support)
      */
     public function setUpdatedon($v)
     {
@@ -413,7 +375,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
             $newDateAsString = $dt ? $dt->format('Y-m-d H:i:s') : null;
             if ($currentDateAsString !== $newDateAsString) {
                 $this->updatedon = $newDateAsString;
-                $this->modifiedColumns[] = EnvironmentPeer::UPDATEDON;
+                $this->modifiedColumns[] = BackupPeer::UPDATEDON;
             }
         } // if either are not null
 
@@ -455,12 +417,11 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
 
             $this->id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
             $this->siteid = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-            $this->name = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
-            $this->host = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-            $this->username = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
-            $this->branch = ($row[$startcol + 5] !== null) ? (string) $row[$startcol + 5] : null;
-            $this->createdon = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
-            $this->updatedon = ($row[$startcol + 7] !== null) ? (string) $row[$startcol + 7] : null;
+            $this->projectid = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
+            $this->component = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
+            $this->path = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
+            $this->createdon = ($row[$startcol + 5] !== null) ? (string) $row[$startcol + 5] : null;
+            $this->updatedon = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -470,10 +431,10 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
             }
             $this->postHydrate($row, $startcol, $rehydrate);
 
-            return $startcol + 8; // 8 = EnvironmentPeer::NUM_HYDRATE_COLUMNS.
+            return $startcol + 7; // 7 = BackupPeer::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
-            throw new PropelException("Error populating Environment object", $e);
+            throw new PropelException("Error populating Backup object", $e);
         }
     }
 
@@ -516,13 +477,13 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
         }
 
         if ($con === null) {
-            $con = Propel::getConnection(EnvironmentPeer::DATABASE_NAME, Propel::CONNECTION_READ);
+            $con = Propel::getConnection(BackupPeer::DATABASE_NAME, Propel::CONNECTION_READ);
         }
 
         // We don't need to alter the object instance pool; we're just modifying this instance
         // already in the pool.
 
-        $stmt = EnvironmentPeer::doSelectStmt($this->buildPkeyCriteria(), $con);
+        $stmt = BackupPeer::doSelectStmt($this->buildPkeyCriteria(), $con);
         $row = $stmt->fetch(PDO::FETCH_NUM);
         $stmt->closeCursor();
         if (!$row) {
@@ -552,12 +513,12 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
         }
 
         if ($con === null) {
-            $con = Propel::getConnection(EnvironmentPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
+            $con = Propel::getConnection(BackupPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
         }
 
         $con->beginTransaction();
         try {
-            $deleteQuery = EnvironmentQuery::create()
+            $deleteQuery = BackupQuery::create()
                 ->filterByPrimaryKey($this->getPrimaryKey());
             $ret = $this->preDelete($con);
             if ($ret) {
@@ -595,7 +556,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
         }
 
         if ($con === null) {
-            $con = Propel::getConnection(EnvironmentPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
+            $con = Propel::getConnection(BackupPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
         }
 
         $con->beginTransaction();
@@ -605,16 +566,16 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
             if ($isInsert) {
                 $ret = $ret && $this->preInsert($con);
                 // timestampable behavior
-                if (!$this->isColumnModified(EnvironmentPeer::CREATEDON)) {
+                if (!$this->isColumnModified(BackupPeer::CREATEDON)) {
                     $this->setCreatedon(time());
                 }
-                if (!$this->isColumnModified(EnvironmentPeer::UPDATEDON)) {
+                if (!$this->isColumnModified(BackupPeer::UPDATEDON)) {
                     $this->setUpdatedon(time());
                 }
             } else {
                 $ret = $ret && $this->preUpdate($con);
                 // timestampable behavior
-                if ($this->isModified() && !$this->isColumnModified(EnvironmentPeer::UPDATEDON)) {
+                if ($this->isModified() && !$this->isColumnModified(BackupPeer::UPDATEDON)) {
                     $this->setUpdatedon(time());
                 }
             }
@@ -626,7 +587,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
                     $this->postUpdate($con);
                 }
                 $this->postSave($con);
-                EnvironmentPeer::addInstanceToPool($this);
+                BackupPeer::addInstanceToPool($this);
             } else {
                 $affectedRows = 0;
             }
@@ -687,39 +648,36 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
         $modifiedColumns = array();
         $index = 0;
 
-        $this->modifiedColumns[] = EnvironmentPeer::ID;
+        $this->modifiedColumns[] = BackupPeer::ID;
         if (null !== $this->id) {
-            throw new PropelException('Cannot insert a value for auto-increment primary key (' . EnvironmentPeer::ID . ')');
+            throw new PropelException('Cannot insert a value for auto-increment primary key (' . BackupPeer::ID . ')');
         }
 
          // check the columns in natural order for more readable SQL queries
-        if ($this->isColumnModified(EnvironmentPeer::ID)) {
+        if ($this->isColumnModified(BackupPeer::ID)) {
             $modifiedColumns[':p' . $index++]  = '[id]';
         }
-        if ($this->isColumnModified(EnvironmentPeer::SITEID)) {
+        if ($this->isColumnModified(BackupPeer::SITEID)) {
             $modifiedColumns[':p' . $index++]  = '[siteId]';
         }
-        if ($this->isColumnModified(EnvironmentPeer::NAME)) {
-            $modifiedColumns[':p' . $index++]  = '[name]';
+        if ($this->isColumnModified(BackupPeer::PROJECTID)) {
+            $modifiedColumns[':p' . $index++]  = '[projectId]';
         }
-        if ($this->isColumnModified(EnvironmentPeer::HOST)) {
-            $modifiedColumns[':p' . $index++]  = '[host]';
+        if ($this->isColumnModified(BackupPeer::COMPONENT)) {
+            $modifiedColumns[':p' . $index++]  = '[component]';
         }
-        if ($this->isColumnModified(EnvironmentPeer::USERNAME)) {
-            $modifiedColumns[':p' . $index++]  = '[username]';
+        if ($this->isColumnModified(BackupPeer::PATH)) {
+            $modifiedColumns[':p' . $index++]  = '[path]';
         }
-        if ($this->isColumnModified(EnvironmentPeer::BRANCH)) {
-            $modifiedColumns[':p' . $index++]  = '[branch]';
-        }
-        if ($this->isColumnModified(EnvironmentPeer::CREATEDON)) {
+        if ($this->isColumnModified(BackupPeer::CREATEDON)) {
             $modifiedColumns[':p' . $index++]  = '[createdOn]';
         }
-        if ($this->isColumnModified(EnvironmentPeer::UPDATEDON)) {
+        if ($this->isColumnModified(BackupPeer::UPDATEDON)) {
             $modifiedColumns[':p' . $index++]  = '[updatedOn]';
         }
 
         $sql = sprintf(
-            'INSERT INTO [environment] (%s) VALUES (%s)',
+            'INSERT INTO [backup] (%s) VALUES (%s)',
             implode(', ', $modifiedColumns),
             implode(', ', array_keys($modifiedColumns))
         );
@@ -734,17 +692,14 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
                     case '[siteId]':
                         $stmt->bindValue($identifier, $this->siteid, PDO::PARAM_INT);
                         break;
-                    case '[name]':
-                        $stmt->bindValue($identifier, $this->name, PDO::PARAM_STR);
+                    case '[projectId]':
+                        $stmt->bindValue($identifier, $this->projectid, PDO::PARAM_INT);
                         break;
-                    case '[host]':
-                        $stmt->bindValue($identifier, $this->host, PDO::PARAM_STR);
+                    case '[component]':
+                        $stmt->bindValue($identifier, $this->component, PDO::PARAM_STR);
                         break;
-                    case '[username]':
-                        $stmt->bindValue($identifier, $this->username, PDO::PARAM_STR);
-                        break;
-                    case '[branch]':
-                        $stmt->bindValue($identifier, $this->branch, PDO::PARAM_STR);
+                    case '[path]':
+                        $stmt->bindValue($identifier, $this->path, PDO::PARAM_STR);
                         break;
                     case '[createdOn]':
                         $stmt->bindValue($identifier, $this->createdon, PDO::PARAM_STR);
@@ -846,7 +801,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
             $failureMap = array();
 
 
-            if (($retval = EnvironmentPeer::doValidate($this, $columns)) !== true) {
+            if (($retval = BackupPeer::doValidate($this, $columns)) !== true) {
                 $failureMap = array_merge($failureMap, $retval);
             }
 
@@ -870,7 +825,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      */
     public function getByName($name, $type = BasePeer::TYPE_PHPNAME)
     {
-        $pos = EnvironmentPeer::translateFieldName($name, $type, BasePeer::TYPE_NUM);
+        $pos = BackupPeer::translateFieldName($name, $type, BasePeer::TYPE_NUM);
         $field = $this->getByPosition($pos);
 
         return $field;
@@ -893,21 +848,18 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
                 return $this->getSiteid();
                 break;
             case 2:
-                return $this->getName();
+                return $this->getProjectid();
                 break;
             case 3:
-                return $this->getHost();
+                return $this->getComponent();
                 break;
             case 4:
-                return $this->getUsername();
+                return $this->getPath();
                 break;
             case 5:
-                return $this->getBranch();
-                break;
-            case 6:
                 return $this->getCreatedon();
                 break;
-            case 7:
+            case 6:
                 return $this->getUpdatedon();
                 break;
             default:
@@ -932,20 +884,19 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      */
     public function toArray($keyType = BasePeer::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array())
     {
-        if (isset($alreadyDumpedObjects['Environment'][$this->getPrimaryKey()])) {
+        if (isset($alreadyDumpedObjects['Backup'][$this->getPrimaryKey()])) {
             return '*RECURSION*';
         }
-        $alreadyDumpedObjects['Environment'][$this->getPrimaryKey()] = true;
-        $keys = EnvironmentPeer::getFieldNames($keyType);
+        $alreadyDumpedObjects['Backup'][$this->getPrimaryKey()] = true;
+        $keys = BackupPeer::getFieldNames($keyType);
         $result = array(
             $keys[0] => $this->getId(),
             $keys[1] => $this->getSiteid(),
-            $keys[2] => $this->getName(),
-            $keys[3] => $this->getHost(),
-            $keys[4] => $this->getUsername(),
-            $keys[5] => $this->getBranch(),
-            $keys[6] => $this->getCreatedon(),
-            $keys[7] => $this->getUpdatedon(),
+            $keys[2] => $this->getProjectid(),
+            $keys[3] => $this->getComponent(),
+            $keys[4] => $this->getPath(),
+            $keys[5] => $this->getCreatedon(),
+            $keys[6] => $this->getUpdatedon(),
         );
         $virtualColumns = $this->virtualColumns;
         foreach ($virtualColumns as $key => $virtualColumn) {
@@ -969,7 +920,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      */
     public function setByName($name, $value, $type = BasePeer::TYPE_PHPNAME)
     {
-        $pos = EnvironmentPeer::translateFieldName($name, $type, BasePeer::TYPE_NUM);
+        $pos = BackupPeer::translateFieldName($name, $type, BasePeer::TYPE_NUM);
 
         $this->setByPosition($pos, $value);
     }
@@ -992,21 +943,18 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
                 $this->setSiteid($value);
                 break;
             case 2:
-                $this->setName($value);
+                $this->setProjectid($value);
                 break;
             case 3:
-                $this->setHost($value);
+                $this->setComponent($value);
                 break;
             case 4:
-                $this->setUsername($value);
+                $this->setPath($value);
                 break;
             case 5:
-                $this->setBranch($value);
-                break;
-            case 6:
                 $this->setCreatedon($value);
                 break;
-            case 7:
+            case 6:
                 $this->setUpdatedon($value);
                 break;
         } // switch()
@@ -1031,16 +979,15 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      */
     public function fromArray($arr, $keyType = BasePeer::TYPE_PHPNAME)
     {
-        $keys = EnvironmentPeer::getFieldNames($keyType);
+        $keys = BackupPeer::getFieldNames($keyType);
 
         if (array_key_exists($keys[0], $arr)) $this->setId($arr[$keys[0]]);
         if (array_key_exists($keys[1], $arr)) $this->setSiteid($arr[$keys[1]]);
-        if (array_key_exists($keys[2], $arr)) $this->setName($arr[$keys[2]]);
-        if (array_key_exists($keys[3], $arr)) $this->setHost($arr[$keys[3]]);
-        if (array_key_exists($keys[4], $arr)) $this->setUsername($arr[$keys[4]]);
-        if (array_key_exists($keys[5], $arr)) $this->setBranch($arr[$keys[5]]);
-        if (array_key_exists($keys[6], $arr)) $this->setCreatedon($arr[$keys[6]]);
-        if (array_key_exists($keys[7], $arr)) $this->setUpdatedon($arr[$keys[7]]);
+        if (array_key_exists($keys[2], $arr)) $this->setProjectid($arr[$keys[2]]);
+        if (array_key_exists($keys[3], $arr)) $this->setComponent($arr[$keys[3]]);
+        if (array_key_exists($keys[4], $arr)) $this->setPath($arr[$keys[4]]);
+        if (array_key_exists($keys[5], $arr)) $this->setCreatedon($arr[$keys[5]]);
+        if (array_key_exists($keys[6], $arr)) $this->setUpdatedon($arr[$keys[6]]);
     }
 
     /**
@@ -1050,16 +997,15 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      */
     public function buildCriteria()
     {
-        $criteria = new Criteria(EnvironmentPeer::DATABASE_NAME);
+        $criteria = new Criteria(BackupPeer::DATABASE_NAME);
 
-        if ($this->isColumnModified(EnvironmentPeer::ID)) $criteria->add(EnvironmentPeer::ID, $this->id);
-        if ($this->isColumnModified(EnvironmentPeer::SITEID)) $criteria->add(EnvironmentPeer::SITEID, $this->siteid);
-        if ($this->isColumnModified(EnvironmentPeer::NAME)) $criteria->add(EnvironmentPeer::NAME, $this->name);
-        if ($this->isColumnModified(EnvironmentPeer::HOST)) $criteria->add(EnvironmentPeer::HOST, $this->host);
-        if ($this->isColumnModified(EnvironmentPeer::USERNAME)) $criteria->add(EnvironmentPeer::USERNAME, $this->username);
-        if ($this->isColumnModified(EnvironmentPeer::BRANCH)) $criteria->add(EnvironmentPeer::BRANCH, $this->branch);
-        if ($this->isColumnModified(EnvironmentPeer::CREATEDON)) $criteria->add(EnvironmentPeer::CREATEDON, $this->createdon);
-        if ($this->isColumnModified(EnvironmentPeer::UPDATEDON)) $criteria->add(EnvironmentPeer::UPDATEDON, $this->updatedon);
+        if ($this->isColumnModified(BackupPeer::ID)) $criteria->add(BackupPeer::ID, $this->id);
+        if ($this->isColumnModified(BackupPeer::SITEID)) $criteria->add(BackupPeer::SITEID, $this->siteid);
+        if ($this->isColumnModified(BackupPeer::PROJECTID)) $criteria->add(BackupPeer::PROJECTID, $this->projectid);
+        if ($this->isColumnModified(BackupPeer::COMPONENT)) $criteria->add(BackupPeer::COMPONENT, $this->component);
+        if ($this->isColumnModified(BackupPeer::PATH)) $criteria->add(BackupPeer::PATH, $this->path);
+        if ($this->isColumnModified(BackupPeer::CREATEDON)) $criteria->add(BackupPeer::CREATEDON, $this->createdon);
+        if ($this->isColumnModified(BackupPeer::UPDATEDON)) $criteria->add(BackupPeer::UPDATEDON, $this->updatedon);
 
         return $criteria;
     }
@@ -1074,8 +1020,8 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      */
     public function buildPkeyCriteria()
     {
-        $criteria = new Criteria(EnvironmentPeer::DATABASE_NAME);
-        $criteria->add(EnvironmentPeer::ID, $this->id);
+        $criteria = new Criteria(BackupPeer::DATABASE_NAME);
+        $criteria->add(BackupPeer::ID, $this->id);
 
         return $criteria;
     }
@@ -1116,7 +1062,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      * If desired, this method can also make copies of all associated (fkey referrers)
      * objects.
      *
-     * @param object $copyObj An object of Environment (or compatible) type.
+     * @param object $copyObj An object of Backup (or compatible) type.
      * @param boolean $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
      * @param boolean $makeNew Whether to reset autoincrement PKs and make the object new.
      * @throws PropelException
@@ -1124,10 +1070,9 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     public function copyInto($copyObj, $deepCopy = false, $makeNew = true)
     {
         $copyObj->setSiteid($this->getSiteid());
-        $copyObj->setName($this->getName());
-        $copyObj->setHost($this->getHost());
-        $copyObj->setUsername($this->getUsername());
-        $copyObj->setBranch($this->getBranch());
+        $copyObj->setProjectid($this->getProjectid());
+        $copyObj->setComponent($this->getComponent());
+        $copyObj->setPath($this->getPath());
         $copyObj->setCreatedon($this->getCreatedon());
         $copyObj->setUpdatedon($this->getUpdatedon());
         if ($makeNew) {
@@ -1145,7 +1090,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      * objects.
      *
      * @param boolean $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
-     * @return Environment Clone of current object.
+     * @return Backup Clone of current object.
      * @throws PropelException
      */
     public function copy($deepCopy = false)
@@ -1165,12 +1110,12 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      * same instance for all member of this class. The method could therefore
      * be static, but this would prevent one from overriding the behavior.
      *
-     * @return EnvironmentPeer
+     * @return BackupPeer
      */
     public function getPeer()
     {
         if (self::$peer === null) {
-            self::$peer = new EnvironmentPeer();
+            self::$peer = new BackupPeer();
         }
 
         return self::$peer;
@@ -1183,10 +1128,9 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     {
         $this->id = null;
         $this->siteid = null;
-        $this->name = null;
-        $this->host = null;
-        $this->username = null;
-        $this->branch = null;
+        $this->projectid = null;
+        $this->component = null;
+        $this->path = null;
         $this->createdon = null;
         $this->updatedon = null;
         $this->alreadyInSave = false;
@@ -1224,7 +1168,7 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
      */
     public function __toString()
     {
-        return (string) $this->exportTo(EnvironmentPeer::DEFAULT_STRING_FORMAT);
+        return (string) $this->exportTo(BackupPeer::DEFAULT_STRING_FORMAT);
     }
 
     /**
@@ -1242,11 +1186,11 @@ abstract class BaseEnvironment extends BaseObject implements Persistent
     /**
      * Mark the current object so that the update date doesn't get updated during next save
      *
-     * @return     Environment The current object (for fluent API support)
+     * @return     Backup The current object (for fluent API support)
      */
     public function keepUpdateDateUnchanged()
     {
-        $this->modifiedColumns[] = EnvironmentPeer::UPDATEDON;
+        $this->modifiedColumns[] = BackupPeer::UPDATEDON;
 
         return $this;
     }

@@ -9,73 +9,85 @@ use \PDOStatement;
 use \Propel;
 use \PropelException;
 use \PropelPDO;
-use Fluxsauce\Brain\Environment;
-use Fluxsauce\Brain\EnvironmentPeer;
-use Fluxsauce\Brain\map\EnvironmentTableMap;
+use Fluxsauce\Brain\Site;
+use Fluxsauce\Brain\SitePeer;
+use Fluxsauce\Brain\map\SiteTableMap;
 
 /**
- * Base static class for performing query and update operations on the 'environment' table.
+ * Base static class for performing query and update operations on the 'site' table.
  *
  *
  *
  * @package propel.generator.brain.om
  */
-abstract class BaseEnvironmentPeer
+abstract class BaseSitePeer
 {
 
     /** the default database name for this class */
     const DATABASE_NAME = 'brain';
 
     /** the table name for this class */
-    const TABLE_NAME = 'environment';
+    const TABLE_NAME = 'site';
 
     /** the related Propel class for this table */
-    const OM_CLASS = 'Fluxsauce\\Brain\\Environment';
+    const OM_CLASS = 'Fluxsauce\\Brain\\Site';
 
     /** the related TableMap class for this table */
-    const TM_CLASS = 'Fluxsauce\\Brain\\map\\EnvironmentTableMap';
+    const TM_CLASS = 'Fluxsauce\\Brain\\map\\SiteTableMap';
 
     /** The total number of columns. */
-    const NUM_COLUMNS = 8;
+    const NUM_COLUMNS = 12;
 
     /** The number of lazy-loaded columns. */
     const NUM_LAZY_LOAD_COLUMNS = 0;
 
     /** The number of columns to hydrate (NUM_COLUMNS - NUM_LAZY_LOAD_COLUMNS) */
-    const NUM_HYDRATE_COLUMNS = 8;
+    const NUM_HYDRATE_COLUMNS = 12;
 
     /** the column name for the id field */
-    const ID = 'environment.id';
+    const ID = 'site.id';
 
-    /** the column name for the siteId field */
-    const SITEID = 'environment.siteId';
+    /** the column name for the provider field */
+    const PROVIDER = 'site.provider';
+
+    /** the column name for the uuid field */
+    const UUID = 'site.uuid';
+
+    /** the column name for the realm field */
+    const REALM = 'site.realm';
 
     /** the column name for the name field */
-    const NAME = 'environment.name';
+    const NAME = 'site.name';
 
-    /** the column name for the host field */
-    const HOST = 'environment.host';
+    /** the column name for the title field */
+    const TITLE = 'site.title';
 
-    /** the column name for the username field */
-    const USERNAME = 'environment.username';
+    /** the column name for the vcsUrl field */
+    const VCSURL = 'site.vcsUrl';
 
-    /** the column name for the branch field */
-    const BRANCH = 'environment.branch';
+    /** the column name for the vcsType field */
+    const VCSTYPE = 'site.vcsType';
+
+    /** the column name for the vcsProtocol field */
+    const VCSPROTOCOL = 'site.vcsProtocol';
+
+    /** the column name for the sshPort field */
+    const SSHPORT = 'site.sshPort';
 
     /** the column name for the createdOn field */
-    const CREATEDON = 'environment.createdOn';
+    const CREATEDON = 'site.createdOn';
 
     /** the column name for the updatedOn field */
-    const UPDATEDON = 'environment.updatedOn';
+    const UPDATEDON = 'site.updatedOn';
 
     /** The default string format for model objects of the related table **/
     const DEFAULT_STRING_FORMAT = 'YAML';
 
     /**
-     * An identity map to hold any loaded instances of Environment objects.
+     * An identity map to hold any loaded instances of Site objects.
      * This must be public so that other peer classes can access this when hydrating from JOIN
      * queries.
-     * @var        array Environment[]
+     * @var        array Site[]
      */
     public static $instances = array();
 
@@ -84,30 +96,30 @@ abstract class BaseEnvironmentPeer
      * holds an array of fieldnames
      *
      * first dimension keys are the type constants
-     * e.g. EnvironmentPeer::$fieldNames[EnvironmentPeer::TYPE_PHPNAME][0] = 'Id'
+     * e.g. SitePeer::$fieldNames[SitePeer::TYPE_PHPNAME][0] = 'Id'
      */
     protected static $fieldNames = array (
-        BasePeer::TYPE_PHPNAME => array ('Id', 'Siteid', 'Name', 'Host', 'Username', 'Branch', 'Createdon', 'Updatedon', ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'siteid', 'name', 'host', 'username', 'branch', 'createdon', 'updatedon', ),
-        BasePeer::TYPE_COLNAME => array (EnvironmentPeer::ID, EnvironmentPeer::SITEID, EnvironmentPeer::NAME, EnvironmentPeer::HOST, EnvironmentPeer::USERNAME, EnvironmentPeer::BRANCH, EnvironmentPeer::CREATEDON, EnvironmentPeer::UPDATEDON, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'SITEID', 'NAME', 'HOST', 'USERNAME', 'BRANCH', 'CREATEDON', 'UPDATEDON', ),
-        BasePeer::TYPE_FIELDNAME => array ('id', 'siteId', 'name', 'host', 'username', 'branch', 'createdOn', 'updatedOn', ),
-        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, )
+        BasePeer::TYPE_PHPNAME => array ('Id', 'Provider', 'Uuid', 'Realm', 'Name', 'Title', 'Vcsurl', 'Vcstype', 'Vcsprotocol', 'Sshport', 'Createdon', 'Updatedon', ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'provider', 'uuid', 'realm', 'name', 'title', 'vcsurl', 'vcstype', 'vcsprotocol', 'sshport', 'createdon', 'updatedon', ),
+        BasePeer::TYPE_COLNAME => array (SitePeer::ID, SitePeer::PROVIDER, SitePeer::UUID, SitePeer::REALM, SitePeer::NAME, SitePeer::TITLE, SitePeer::VCSURL, SitePeer::VCSTYPE, SitePeer::VCSPROTOCOL, SitePeer::SSHPORT, SitePeer::CREATEDON, SitePeer::UPDATEDON, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'PROVIDER', 'UUID', 'REALM', 'NAME', 'TITLE', 'VCSURL', 'VCSTYPE', 'VCSPROTOCOL', 'SSHPORT', 'CREATEDON', 'UPDATEDON', ),
+        BasePeer::TYPE_FIELDNAME => array ('id', 'provider', 'uuid', 'realm', 'name', 'title', 'vcsUrl', 'vcsType', 'vcsProtocol', 'sshPort', 'createdOn', 'updatedOn', ),
+        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, )
     );
 
     /**
      * holds an array of keys for quick access to the fieldnames array
      *
      * first dimension keys are the type constants
-     * e.g. EnvironmentPeer::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
+     * e.g. SitePeer::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
      */
     protected static $fieldKeys = array (
-        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'Siteid' => 1, 'Name' => 2, 'Host' => 3, 'Username' => 4, 'Branch' => 5, 'Createdon' => 6, 'Updatedon' => 7, ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'siteid' => 1, 'name' => 2, 'host' => 3, 'username' => 4, 'branch' => 5, 'createdon' => 6, 'updatedon' => 7, ),
-        BasePeer::TYPE_COLNAME => array (EnvironmentPeer::ID => 0, EnvironmentPeer::SITEID => 1, EnvironmentPeer::NAME => 2, EnvironmentPeer::HOST => 3, EnvironmentPeer::USERNAME => 4, EnvironmentPeer::BRANCH => 5, EnvironmentPeer::CREATEDON => 6, EnvironmentPeer::UPDATEDON => 7, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'SITEID' => 1, 'NAME' => 2, 'HOST' => 3, 'USERNAME' => 4, 'BRANCH' => 5, 'CREATEDON' => 6, 'UPDATEDON' => 7, ),
-        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'siteId' => 1, 'name' => 2, 'host' => 3, 'username' => 4, 'branch' => 5, 'createdOn' => 6, 'updatedOn' => 7, ),
-        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, )
+        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'Provider' => 1, 'Uuid' => 2, 'Realm' => 3, 'Name' => 4, 'Title' => 5, 'Vcsurl' => 6, 'Vcstype' => 7, 'Vcsprotocol' => 8, 'Sshport' => 9, 'Createdon' => 10, 'Updatedon' => 11, ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'provider' => 1, 'uuid' => 2, 'realm' => 3, 'name' => 4, 'title' => 5, 'vcsurl' => 6, 'vcstype' => 7, 'vcsprotocol' => 8, 'sshport' => 9, 'createdon' => 10, 'updatedon' => 11, ),
+        BasePeer::TYPE_COLNAME => array (SitePeer::ID => 0, SitePeer::PROVIDER => 1, SitePeer::UUID => 2, SitePeer::REALM => 3, SitePeer::NAME => 4, SitePeer::TITLE => 5, SitePeer::VCSURL => 6, SitePeer::VCSTYPE => 7, SitePeer::VCSPROTOCOL => 8, SitePeer::SSHPORT => 9, SitePeer::CREATEDON => 10, SitePeer::UPDATEDON => 11, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'PROVIDER' => 1, 'UUID' => 2, 'REALM' => 3, 'NAME' => 4, 'TITLE' => 5, 'VCSURL' => 6, 'VCSTYPE' => 7, 'VCSPROTOCOL' => 8, 'SSHPORT' => 9, 'CREATEDON' => 10, 'UPDATEDON' => 11, ),
+        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'provider' => 1, 'uuid' => 2, 'realm' => 3, 'name' => 4, 'title' => 5, 'vcsUrl' => 6, 'vcsType' => 7, 'vcsProtocol' => 8, 'sshPort' => 9, 'createdOn' => 10, 'updatedOn' => 11, ),
+        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, )
     );
 
     /**
@@ -122,10 +134,10 @@ abstract class BaseEnvironmentPeer
      */
     public static function translateFieldName($name, $fromType, $toType)
     {
-        $toNames = EnvironmentPeer::getFieldNames($toType);
-        $key = isset(EnvironmentPeer::$fieldKeys[$fromType][$name]) ? EnvironmentPeer::$fieldKeys[$fromType][$name] : null;
+        $toNames = SitePeer::getFieldNames($toType);
+        $key = isset(SitePeer::$fieldKeys[$fromType][$name]) ? SitePeer::$fieldKeys[$fromType][$name] : null;
         if ($key === null) {
-            throw new PropelException("'$name' could not be found in the field names of type '$fromType'. These are: " . print_r(EnvironmentPeer::$fieldKeys[$fromType], true));
+            throw new PropelException("'$name' could not be found in the field names of type '$fromType'. These are: " . print_r(SitePeer::$fieldKeys[$fromType], true));
         }
 
         return $toNames[$key];
@@ -142,11 +154,11 @@ abstract class BaseEnvironmentPeer
      */
     public static function getFieldNames($type = BasePeer::TYPE_PHPNAME)
     {
-        if (!array_key_exists($type, EnvironmentPeer::$fieldNames)) {
+        if (!array_key_exists($type, SitePeer::$fieldNames)) {
             throw new PropelException('Method getFieldNames() expects the parameter $type to be one of the class constants BasePeer::TYPE_PHPNAME, BasePeer::TYPE_STUDLYPHPNAME, BasePeer::TYPE_COLNAME, BasePeer::TYPE_FIELDNAME, BasePeer::TYPE_NUM. ' . $type . ' was given.');
         }
 
-        return EnvironmentPeer::$fieldNames[$type];
+        return SitePeer::$fieldNames[$type];
     }
 
     /**
@@ -158,12 +170,12 @@ abstract class BaseEnvironmentPeer
      *		$c->addJoin(TablePeer::alias("alias1", TablePeer::PRIMARY_KEY_COLUMN), TablePeer::PRIMARY_KEY_COLUMN);
      * </code>
      * @param      string $alias The alias for the current table.
-     * @param      string $column The column name for current table. (i.e. EnvironmentPeer::COLUMN_NAME).
+     * @param      string $column The column name for current table. (i.e. SitePeer::COLUMN_NAME).
      * @return string
      */
     public static function alias($alias, $column)
     {
-        return str_replace(EnvironmentPeer::TABLE_NAME.'.', $alias.'.', $column);
+        return str_replace(SitePeer::TABLE_NAME.'.', $alias.'.', $column);
     }
 
     /**
@@ -181,21 +193,29 @@ abstract class BaseEnvironmentPeer
     public static function addSelectColumns(Criteria $criteria, $alias = null)
     {
         if (null === $alias) {
-            $criteria->addSelectColumn(EnvironmentPeer::ID);
-            $criteria->addSelectColumn(EnvironmentPeer::SITEID);
-            $criteria->addSelectColumn(EnvironmentPeer::NAME);
-            $criteria->addSelectColumn(EnvironmentPeer::HOST);
-            $criteria->addSelectColumn(EnvironmentPeer::USERNAME);
-            $criteria->addSelectColumn(EnvironmentPeer::BRANCH);
-            $criteria->addSelectColumn(EnvironmentPeer::CREATEDON);
-            $criteria->addSelectColumn(EnvironmentPeer::UPDATEDON);
+            $criteria->addSelectColumn(SitePeer::ID);
+            $criteria->addSelectColumn(SitePeer::PROVIDER);
+            $criteria->addSelectColumn(SitePeer::UUID);
+            $criteria->addSelectColumn(SitePeer::REALM);
+            $criteria->addSelectColumn(SitePeer::NAME);
+            $criteria->addSelectColumn(SitePeer::TITLE);
+            $criteria->addSelectColumn(SitePeer::VCSURL);
+            $criteria->addSelectColumn(SitePeer::VCSTYPE);
+            $criteria->addSelectColumn(SitePeer::VCSPROTOCOL);
+            $criteria->addSelectColumn(SitePeer::SSHPORT);
+            $criteria->addSelectColumn(SitePeer::CREATEDON);
+            $criteria->addSelectColumn(SitePeer::UPDATEDON);
         } else {
             $criteria->addSelectColumn($alias . '.id');
-            $criteria->addSelectColumn($alias . '.siteId');
+            $criteria->addSelectColumn($alias . '.provider');
+            $criteria->addSelectColumn($alias . '.uuid');
+            $criteria->addSelectColumn($alias . '.realm');
             $criteria->addSelectColumn($alias . '.name');
-            $criteria->addSelectColumn($alias . '.host');
-            $criteria->addSelectColumn($alias . '.username');
-            $criteria->addSelectColumn($alias . '.branch');
+            $criteria->addSelectColumn($alias . '.title');
+            $criteria->addSelectColumn($alias . '.vcsUrl');
+            $criteria->addSelectColumn($alias . '.vcsType');
+            $criteria->addSelectColumn($alias . '.vcsProtocol');
+            $criteria->addSelectColumn($alias . '.sshPort');
             $criteria->addSelectColumn($alias . '.createdOn');
             $criteria->addSelectColumn($alias . '.updatedOn');
         }
@@ -217,21 +237,21 @@ abstract class BaseEnvironmentPeer
         // We need to set the primary table name, since in the case that there are no WHERE columns
         // it will be impossible for the BasePeer::createSelectSql() method to determine which
         // tables go into the FROM clause.
-        $criteria->setPrimaryTableName(EnvironmentPeer::TABLE_NAME);
+        $criteria->setPrimaryTableName(SitePeer::TABLE_NAME);
 
         if ($distinct && !in_array(Criteria::DISTINCT, $criteria->getSelectModifiers())) {
             $criteria->setDistinct();
         }
 
         if (!$criteria->hasSelectClause()) {
-            EnvironmentPeer::addSelectColumns($criteria);
+            SitePeer::addSelectColumns($criteria);
         }
 
         $criteria->clearOrderByColumns(); // ORDER BY won't ever affect the count
-        $criteria->setDbName(EnvironmentPeer::DATABASE_NAME); // Set the correct dbName
+        $criteria->setDbName(SitePeer::DATABASE_NAME); // Set the correct dbName
 
         if ($con === null) {
-            $con = Propel::getConnection(EnvironmentPeer::DATABASE_NAME, Propel::CONNECTION_READ);
+            $con = Propel::getConnection(SitePeer::DATABASE_NAME, Propel::CONNECTION_READ);
         }
         // BasePeer returns a PDOStatement
         $stmt = BasePeer::doCount($criteria, $con);
@@ -250,7 +270,7 @@ abstract class BaseEnvironmentPeer
      *
      * @param      Criteria $criteria object used to create the SELECT statement.
      * @param      PropelPDO $con
-     * @return Environment
+     * @return Site
      * @throws PropelException Any exceptions caught during processing will be
      *		 rethrown wrapped into a PropelException.
      */
@@ -258,7 +278,7 @@ abstract class BaseEnvironmentPeer
     {
         $critcopy = clone $criteria;
         $critcopy->setLimit(1);
-        $objects = EnvironmentPeer::doSelect($critcopy, $con);
+        $objects = SitePeer::doSelect($critcopy, $con);
         if ($objects) {
             return $objects[0];
         }
@@ -276,7 +296,7 @@ abstract class BaseEnvironmentPeer
      */
     public static function doSelect(Criteria $criteria, PropelPDO $con = null)
     {
-        return EnvironmentPeer::populateObjects(EnvironmentPeer::doSelectStmt($criteria, $con));
+        return SitePeer::populateObjects(SitePeer::doSelectStmt($criteria, $con));
     }
     /**
      * Prepares the Criteria object and uses the parent doSelect() method to execute a PDOStatement.
@@ -294,16 +314,16 @@ abstract class BaseEnvironmentPeer
     public static function doSelectStmt(Criteria $criteria, PropelPDO $con = null)
     {
         if ($con === null) {
-            $con = Propel::getConnection(EnvironmentPeer::DATABASE_NAME, Propel::CONNECTION_READ);
+            $con = Propel::getConnection(SitePeer::DATABASE_NAME, Propel::CONNECTION_READ);
         }
 
         if (!$criteria->hasSelectClause()) {
             $criteria = clone $criteria;
-            EnvironmentPeer::addSelectColumns($criteria);
+            SitePeer::addSelectColumns($criteria);
         }
 
         // Set the correct dbName
-        $criteria->setDbName(EnvironmentPeer::DATABASE_NAME);
+        $criteria->setDbName(SitePeer::DATABASE_NAME);
 
         // BasePeer returns a PDOStatement
         return BasePeer::doSelect($criteria, $con);
@@ -317,7 +337,7 @@ abstract class BaseEnvironmentPeer
      * to the cache in order to ensure that the same objects are always returned by doSelect*()
      * and retrieveByPK*() calls.
      *
-     * @param Environment $obj A Environment object.
+     * @param Site $obj A Site object.
      * @param      string $key (optional) key to use for instance map (for performance boost if key was already calculated externally).
      */
     public static function addInstanceToPool($obj, $key = null)
@@ -326,7 +346,7 @@ abstract class BaseEnvironmentPeer
             if ($key === null) {
                 $key = (string) $obj->getId();
             } // if key === null
-            EnvironmentPeer::$instances[$key] = $obj;
+            SitePeer::$instances[$key] = $obj;
         }
     }
 
@@ -338,7 +358,7 @@ abstract class BaseEnvironmentPeer
      * methods in your stub classes -- you may need to explicitly remove objects
      * from the cache in order to prevent returning objects that no longer exist.
      *
-     * @param      mixed $value A Environment object or a primary key value.
+     * @param      mixed $value A Site object or a primary key value.
      *
      * @return void
      * @throws PropelException - if the value is invalid.
@@ -346,17 +366,17 @@ abstract class BaseEnvironmentPeer
     public static function removeInstanceFromPool($value)
     {
         if (Propel::isInstancePoolingEnabled() && $value !== null) {
-            if (is_object($value) && $value instanceof Environment) {
+            if (is_object($value) && $value instanceof Site) {
                 $key = (string) $value->getId();
             } elseif (is_scalar($value)) {
                 // assume we've been passed a primary key
                 $key = (string) $value;
             } else {
-                $e = new PropelException("Invalid value passed to removeInstanceFromPool().  Expected primary key or Environment object; got " . (is_object($value) ? get_class($value) . ' object.' : var_export($value,true)));
+                $e = new PropelException("Invalid value passed to removeInstanceFromPool().  Expected primary key or Site object; got " . (is_object($value) ? get_class($value) . ' object.' : var_export($value,true)));
                 throw $e;
             }
 
-            unset(EnvironmentPeer::$instances[$key]);
+            unset(SitePeer::$instances[$key]);
         }
     } // removeInstanceFromPool()
 
@@ -367,14 +387,14 @@ abstract class BaseEnvironmentPeer
      * a multi-column primary key, a serialize()d version of the primary key will be returned.
      *
      * @param      string $key The key (@see getPrimaryKeyHash()) for this instance.
-     * @return Environment Found object or null if 1) no instance exists for specified key or 2) instance pooling has been disabled.
+     * @return Site Found object or null if 1) no instance exists for specified key or 2) instance pooling has been disabled.
      * @see        getPrimaryKeyHash()
      */
     public static function getInstanceFromPool($key)
     {
         if (Propel::isInstancePoolingEnabled()) {
-            if (isset(EnvironmentPeer::$instances[$key])) {
-                return EnvironmentPeer::$instances[$key];
+            if (isset(SitePeer::$instances[$key])) {
+                return SitePeer::$instances[$key];
             }
         }
 
@@ -389,15 +409,15 @@ abstract class BaseEnvironmentPeer
     public static function clearInstancePool($and_clear_all_references = false)
     {
       if ($and_clear_all_references) {
-        foreach (EnvironmentPeer::$instances as $instance) {
+        foreach (SitePeer::$instances as $instance) {
           $instance->clearAllReferences(true);
         }
       }
-        EnvironmentPeer::$instances = array();
+        SitePeer::$instances = array();
     }
 
     /**
-     * Method to invalidate the instance pool of all tables related to environment
+     * Method to invalidate the instance pool of all tables related to site
      * by a foreign key with ON DELETE CASCADE
      */
     public static function clearRelatedInstancePool()
@@ -451,11 +471,11 @@ abstract class BaseEnvironmentPeer
         $results = array();
 
         // set the class once to avoid overhead in the loop
-        $cls = EnvironmentPeer::getOMClass();
+        $cls = SitePeer::getOMClass();
         // populate the object(s)
         while ($row = $stmt->fetch(PDO::FETCH_NUM)) {
-            $key = EnvironmentPeer::getPrimaryKeyHashFromRow($row, 0);
-            if (null !== ($obj = EnvironmentPeer::getInstanceFromPool($key))) {
+            $key = SitePeer::getPrimaryKeyHashFromRow($row, 0);
+            if (null !== ($obj = SitePeer::getInstanceFromPool($key))) {
                 // We no longer rehydrate the object, since this can cause data loss.
                 // See http://www.propelorm.org/ticket/509
                 // $obj->hydrate($row, 0, true); // rehydrate
@@ -464,7 +484,7 @@ abstract class BaseEnvironmentPeer
                 $obj = new $cls();
                 $obj->hydrate($row);
                 $results[] = $obj;
-                EnvironmentPeer::addInstanceToPool($obj, $key);
+                SitePeer::addInstanceToPool($obj, $key);
             } // if key exists
         }
         $stmt->closeCursor();
@@ -478,21 +498,21 @@ abstract class BaseEnvironmentPeer
      * @param      int $startcol The 0-based offset for reading from the resultset row.
      * @throws PropelException Any exceptions caught during processing will be
      *		 rethrown wrapped into a PropelException.
-     * @return array (Environment object, last column rank)
+     * @return array (Site object, last column rank)
      */
     public static function populateObject($row, $startcol = 0)
     {
-        $key = EnvironmentPeer::getPrimaryKeyHashFromRow($row, $startcol);
-        if (null !== ($obj = EnvironmentPeer::getInstanceFromPool($key))) {
+        $key = SitePeer::getPrimaryKeyHashFromRow($row, $startcol);
+        if (null !== ($obj = SitePeer::getInstanceFromPool($key))) {
             // We no longer rehydrate the object, since this can cause data loss.
             // See http://www.propelorm.org/ticket/509
             // $obj->hydrate($row, $startcol, true); // rehydrate
-            $col = $startcol + EnvironmentPeer::NUM_HYDRATE_COLUMNS;
+            $col = $startcol + SitePeer::NUM_HYDRATE_COLUMNS;
         } else {
-            $cls = EnvironmentPeer::OM_CLASS;
+            $cls = SitePeer::OM_CLASS;
             $obj = new $cls();
             $col = $obj->hydrate($row, $startcol);
-            EnvironmentPeer::addInstanceToPool($obj, $key);
+            SitePeer::addInstanceToPool($obj, $key);
         }
 
         return array($obj, $col);
@@ -507,7 +527,7 @@ abstract class BaseEnvironmentPeer
      */
     public static function getTableMap()
     {
-        return Propel::getDatabaseMap(EnvironmentPeer::DATABASE_NAME)->getTable(EnvironmentPeer::TABLE_NAME);
+        return Propel::getDatabaseMap(SitePeer::DATABASE_NAME)->getTable(SitePeer::TABLE_NAME);
     }
 
     /**
@@ -515,9 +535,9 @@ abstract class BaseEnvironmentPeer
      */
     public static function buildTableMap()
     {
-      $dbMap = Propel::getDatabaseMap(BaseEnvironmentPeer::DATABASE_NAME);
-      if (!$dbMap->hasTable(BaseEnvironmentPeer::TABLE_NAME)) {
-        $dbMap->addTableObject(new \Fluxsauce\Brain\map\EnvironmentTableMap());
+      $dbMap = Propel::getDatabaseMap(BaseSitePeer::DATABASE_NAME);
+      if (!$dbMap->hasTable(BaseSitePeer::TABLE_NAME)) {
+        $dbMap->addTableObject(new \Fluxsauce\Brain\map\SiteTableMap());
       }
     }
 
@@ -529,13 +549,13 @@ abstract class BaseEnvironmentPeer
      */
     public static function getOMClass($row = 0, $colnum = 0)
     {
-        return EnvironmentPeer::OM_CLASS;
+        return SitePeer::OM_CLASS;
     }
 
     /**
-     * Performs an INSERT on the database, given a Environment or Criteria object.
+     * Performs an INSERT on the database, given a Site or Criteria object.
      *
-     * @param      mixed $values Criteria or Environment object containing data that is used to create the INSERT statement.
+     * @param      mixed $values Criteria or Site object containing data that is used to create the INSERT statement.
      * @param      PropelPDO $con the PropelPDO connection to use
      * @return mixed           The new primary key.
      * @throws PropelException Any exceptions caught during processing will be
@@ -544,22 +564,22 @@ abstract class BaseEnvironmentPeer
     public static function doInsert($values, PropelPDO $con = null)
     {
         if ($con === null) {
-            $con = Propel::getConnection(EnvironmentPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
+            $con = Propel::getConnection(SitePeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
         }
 
         if ($values instanceof Criteria) {
             $criteria = clone $values; // rename for clarity
         } else {
-            $criteria = $values->buildCriteria(); // build Criteria from Environment object
+            $criteria = $values->buildCriteria(); // build Criteria from Site object
         }
 
-        if ($criteria->containsKey(EnvironmentPeer::ID) && $criteria->keyContainsValue(EnvironmentPeer::ID) ) {
-            throw new PropelException('Cannot insert a value for auto-increment primary key ('.EnvironmentPeer::ID.')');
+        if ($criteria->containsKey(SitePeer::ID) && $criteria->keyContainsValue(SitePeer::ID) ) {
+            throw new PropelException('Cannot insert a value for auto-increment primary key ('.SitePeer::ID.')');
         }
 
 
         // Set the correct dbName
-        $criteria->setDbName(EnvironmentPeer::DATABASE_NAME);
+        $criteria->setDbName(SitePeer::DATABASE_NAME);
 
         try {
             // use transaction because $criteria could contain info
@@ -576,9 +596,9 @@ abstract class BaseEnvironmentPeer
     }
 
     /**
-     * Performs an UPDATE on the database, given a Environment or Criteria object.
+     * Performs an UPDATE on the database, given a Site or Criteria object.
      *
-     * @param      mixed $values Criteria or Environment object containing data that is used to create the UPDATE statement.
+     * @param      mixed $values Criteria or Site object containing data that is used to create the UPDATE statement.
      * @param      PropelPDO $con The connection to use (specify PropelPDO connection object to exert more control over transactions).
      * @return int             The number of affected rows (if supported by underlying database driver).
      * @throws PropelException Any exceptions caught during processing will be
@@ -587,35 +607,35 @@ abstract class BaseEnvironmentPeer
     public static function doUpdate($values, PropelPDO $con = null)
     {
         if ($con === null) {
-            $con = Propel::getConnection(EnvironmentPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
+            $con = Propel::getConnection(SitePeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
         }
 
-        $selectCriteria = new Criteria(EnvironmentPeer::DATABASE_NAME);
+        $selectCriteria = new Criteria(SitePeer::DATABASE_NAME);
 
         if ($values instanceof Criteria) {
             $criteria = clone $values; // rename for clarity
 
-            $comparison = $criteria->getComparison(EnvironmentPeer::ID);
-            $value = $criteria->remove(EnvironmentPeer::ID);
+            $comparison = $criteria->getComparison(SitePeer::ID);
+            $value = $criteria->remove(SitePeer::ID);
             if ($value) {
-                $selectCriteria->add(EnvironmentPeer::ID, $value, $comparison);
+                $selectCriteria->add(SitePeer::ID, $value, $comparison);
             } else {
-                $selectCriteria->setPrimaryTableName(EnvironmentPeer::TABLE_NAME);
+                $selectCriteria->setPrimaryTableName(SitePeer::TABLE_NAME);
             }
 
-        } else { // $values is Environment object
+        } else { // $values is Site object
             $criteria = $values->buildCriteria(); // gets full criteria
             $selectCriteria = $values->buildPkeyCriteria(); // gets criteria w/ primary key(s)
         }
 
         // set the correct dbName
-        $criteria->setDbName(EnvironmentPeer::DATABASE_NAME);
+        $criteria->setDbName(SitePeer::DATABASE_NAME);
 
         return BasePeer::doUpdate($selectCriteria, $criteria, $con);
     }
 
     /**
-     * Deletes all rows from the environment table.
+     * Deletes all rows from the site table.
      *
      * @param      PropelPDO $con the connection to use
      * @return int             The number of affected rows (if supported by underlying database driver).
@@ -624,19 +644,19 @@ abstract class BaseEnvironmentPeer
     public static function doDeleteAll(PropelPDO $con = null)
     {
         if ($con === null) {
-            $con = Propel::getConnection(EnvironmentPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
+            $con = Propel::getConnection(SitePeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
         }
         $affectedRows = 0; // initialize var to track total num of affected rows
         try {
             // use transaction because $criteria could contain info
             // for more than one table or we could emulating ON DELETE CASCADE, etc.
             $con->beginTransaction();
-            $affectedRows += BasePeer::doDeleteAll(EnvironmentPeer::TABLE_NAME, $con, EnvironmentPeer::DATABASE_NAME);
+            $affectedRows += BasePeer::doDeleteAll(SitePeer::TABLE_NAME, $con, SitePeer::DATABASE_NAME);
             // Because this db requires some delete cascade/set null emulation, we have to
             // clear the cached instance *after* the emulation has happened (since
             // instances get re-added by the select statement contained therein).
-            EnvironmentPeer::clearInstancePool();
-            EnvironmentPeer::clearRelatedInstancePool();
+            SitePeer::clearInstancePool();
+            SitePeer::clearRelatedInstancePool();
             $con->commit();
 
             return $affectedRows;
@@ -647,9 +667,9 @@ abstract class BaseEnvironmentPeer
     }
 
     /**
-     * Performs a DELETE on the database, given a Environment or Criteria object OR a primary key value.
+     * Performs a DELETE on the database, given a Site or Criteria object OR a primary key value.
      *
-     * @param      mixed $values Criteria or Environment object or primary key or array of primary keys
+     * @param      mixed $values Criteria or Site object or primary key or array of primary keys
      *              which is used to create the DELETE statement
      * @param      PropelPDO $con the connection to use
      * @return int The number of affected rows (if supported by underlying database driver).  This includes CASCADE-related rows
@@ -660,32 +680,32 @@ abstract class BaseEnvironmentPeer
      public static function doDelete($values, PropelPDO $con = null)
      {
         if ($con === null) {
-            $con = Propel::getConnection(EnvironmentPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
+            $con = Propel::getConnection(SitePeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
         }
 
         if ($values instanceof Criteria) {
             // invalidate the cache for all objects of this type, since we have no
             // way of knowing (without running a query) what objects should be invalidated
             // from the cache based on this Criteria.
-            EnvironmentPeer::clearInstancePool();
+            SitePeer::clearInstancePool();
             // rename for clarity
             $criteria = clone $values;
-        } elseif ($values instanceof Environment) { // it's a model object
+        } elseif ($values instanceof Site) { // it's a model object
             // invalidate the cache for this single object
-            EnvironmentPeer::removeInstanceFromPool($values);
+            SitePeer::removeInstanceFromPool($values);
             // create criteria based on pk values
             $criteria = $values->buildPkeyCriteria();
         } else { // it's a primary key, or an array of pks
-            $criteria = new Criteria(EnvironmentPeer::DATABASE_NAME);
-            $criteria->add(EnvironmentPeer::ID, (array) $values, Criteria::IN);
+            $criteria = new Criteria(SitePeer::DATABASE_NAME);
+            $criteria->add(SitePeer::ID, (array) $values, Criteria::IN);
             // invalidate the cache for this object(s)
             foreach ((array) $values as $singleval) {
-                EnvironmentPeer::removeInstanceFromPool($singleval);
+                SitePeer::removeInstanceFromPool($singleval);
             }
         }
 
         // Set the correct dbName
-        $criteria->setDbName(EnvironmentPeer::DATABASE_NAME);
+        $criteria->setDbName(SitePeer::DATABASE_NAME);
 
         $affectedRows = 0; // initialize var to track total num of affected rows
 
@@ -695,7 +715,7 @@ abstract class BaseEnvironmentPeer
             $con->beginTransaction();
 
             $affectedRows += BasePeer::doDelete($criteria, $con);
-            EnvironmentPeer::clearRelatedInstancePool();
+            SitePeer::clearRelatedInstancePool();
             $con->commit();
 
             return $affectedRows;
@@ -706,13 +726,13 @@ abstract class BaseEnvironmentPeer
     }
 
     /**
-     * Validates all modified columns of given Environment object.
+     * Validates all modified columns of given Site object.
      * If parameter $columns is either a single column name or an array of column names
      * than only those columns are validated.
      *
      * NOTICE: This does not apply to primary or foreign keys for now.
      *
-     * @param Environment $obj The object to validate.
+     * @param Site $obj The object to validate.
      * @param      mixed $cols Column name or array of column names.
      *
      * @return mixed TRUE if all columns are valid or the error message of the first invalid column.
@@ -722,8 +742,8 @@ abstract class BaseEnvironmentPeer
         $columns = array();
 
         if ($cols) {
-            $dbMap = Propel::getDatabaseMap(EnvironmentPeer::DATABASE_NAME);
-            $tableMap = $dbMap->getTable(EnvironmentPeer::TABLE_NAME);
+            $dbMap = Propel::getDatabaseMap(SitePeer::DATABASE_NAME);
+            $tableMap = $dbMap->getTable(SitePeer::TABLE_NAME);
 
             if (! is_array($cols)) {
                 $cols = array($cols);
@@ -739,7 +759,7 @@ abstract class BaseEnvironmentPeer
 
         }
 
-        return BasePeer::doValidate(EnvironmentPeer::DATABASE_NAME, EnvironmentPeer::TABLE_NAME, $columns);
+        return BasePeer::doValidate(SitePeer::DATABASE_NAME, SitePeer::TABLE_NAME, $columns);
     }
 
     /**
@@ -747,23 +767,23 @@ abstract class BaseEnvironmentPeer
      *
      * @param int $pk the primary key.
      * @param      PropelPDO $con the connection to use
-     * @return Environment
+     * @return Site
      */
     public static function retrieveByPK($pk, PropelPDO $con = null)
     {
 
-        if (null !== ($obj = EnvironmentPeer::getInstanceFromPool((string) $pk))) {
+        if (null !== ($obj = SitePeer::getInstanceFromPool((string) $pk))) {
             return $obj;
         }
 
         if ($con === null) {
-            $con = Propel::getConnection(EnvironmentPeer::DATABASE_NAME, Propel::CONNECTION_READ);
+            $con = Propel::getConnection(SitePeer::DATABASE_NAME, Propel::CONNECTION_READ);
         }
 
-        $criteria = new Criteria(EnvironmentPeer::DATABASE_NAME);
-        $criteria->add(EnvironmentPeer::ID, $pk);
+        $criteria = new Criteria(SitePeer::DATABASE_NAME);
+        $criteria->add(SitePeer::ID, $pk);
 
-        $v = EnvironmentPeer::doSelect($criteria, $con);
+        $v = SitePeer::doSelect($criteria, $con);
 
         return !empty($v) > 0 ? $v[0] : null;
     }
@@ -773,31 +793,31 @@ abstract class BaseEnvironmentPeer
      *
      * @param      array $pks List of primary keys
      * @param      PropelPDO $con the connection to use
-     * @return Environment[]
+     * @return Site[]
      * @throws PropelException Any exceptions caught during processing will be
      *		 rethrown wrapped into a PropelException.
      */
     public static function retrieveByPKs($pks, PropelPDO $con = null)
     {
         if ($con === null) {
-            $con = Propel::getConnection(EnvironmentPeer::DATABASE_NAME, Propel::CONNECTION_READ);
+            $con = Propel::getConnection(SitePeer::DATABASE_NAME, Propel::CONNECTION_READ);
         }
 
         $objs = null;
         if (empty($pks)) {
             $objs = array();
         } else {
-            $criteria = new Criteria(EnvironmentPeer::DATABASE_NAME);
-            $criteria->add(EnvironmentPeer::ID, $pks, Criteria::IN);
-            $objs = EnvironmentPeer::doSelect($criteria, $con);
+            $criteria = new Criteria(SitePeer::DATABASE_NAME);
+            $criteria->add(SitePeer::ID, $pks, Criteria::IN);
+            $objs = SitePeer::doSelect($criteria, $con);
         }
 
         return $objs;
     }
 
-} // BaseEnvironmentPeer
+} // BaseSitePeer
 
 // This is the static code needed to register the TableMap for this table with the main Propel class.
 //
-BaseEnvironmentPeer::buildTableMap();
+BaseSitePeer::buildTableMap();
 

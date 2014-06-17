@@ -10,63 +10,59 @@ use \Propel;
 use \PropelException;
 use \PropelObjectCollection;
 use \PropelPDO;
-use Fluxsauce\Brain\Environment;
-use Fluxsauce\Brain\EnvironmentPeer;
-use Fluxsauce\Brain\EnvironmentQuery;
+use Fluxsauce\Brain\Backup;
+use Fluxsauce\Brain\BackupPeer;
+use Fluxsauce\Brain\BackupQuery;
 
 /**
- * Base class that represents a query for the 'environment' table.
+ * Base class that represents a query for the 'backup' table.
  *
  *
  *
- * @method EnvironmentQuery orderById($order = Criteria::ASC) Order by the id column
- * @method EnvironmentQuery orderBySiteid($order = Criteria::ASC) Order by the siteId column
- * @method EnvironmentQuery orderByName($order = Criteria::ASC) Order by the name column
- * @method EnvironmentQuery orderByHost($order = Criteria::ASC) Order by the host column
- * @method EnvironmentQuery orderByUsername($order = Criteria::ASC) Order by the username column
- * @method EnvironmentQuery orderByBranch($order = Criteria::ASC) Order by the branch column
- * @method EnvironmentQuery orderByCreatedon($order = Criteria::ASC) Order by the createdOn column
- * @method EnvironmentQuery orderByUpdatedon($order = Criteria::ASC) Order by the updatedOn column
+ * @method BackupQuery orderById($order = Criteria::ASC) Order by the id column
+ * @method BackupQuery orderBySiteid($order = Criteria::ASC) Order by the siteId column
+ * @method BackupQuery orderByProjectid($order = Criteria::ASC) Order by the projectId column
+ * @method BackupQuery orderByComponent($order = Criteria::ASC) Order by the component column
+ * @method BackupQuery orderByPath($order = Criteria::ASC) Order by the path column
+ * @method BackupQuery orderByCreatedon($order = Criteria::ASC) Order by the createdOn column
+ * @method BackupQuery orderByUpdatedon($order = Criteria::ASC) Order by the updatedOn column
  *
- * @method EnvironmentQuery groupById() Group by the id column
- * @method EnvironmentQuery groupBySiteid() Group by the siteId column
- * @method EnvironmentQuery groupByName() Group by the name column
- * @method EnvironmentQuery groupByHost() Group by the host column
- * @method EnvironmentQuery groupByUsername() Group by the username column
- * @method EnvironmentQuery groupByBranch() Group by the branch column
- * @method EnvironmentQuery groupByCreatedon() Group by the createdOn column
- * @method EnvironmentQuery groupByUpdatedon() Group by the updatedOn column
+ * @method BackupQuery groupById() Group by the id column
+ * @method BackupQuery groupBySiteid() Group by the siteId column
+ * @method BackupQuery groupByProjectid() Group by the projectId column
+ * @method BackupQuery groupByComponent() Group by the component column
+ * @method BackupQuery groupByPath() Group by the path column
+ * @method BackupQuery groupByCreatedon() Group by the createdOn column
+ * @method BackupQuery groupByUpdatedon() Group by the updatedOn column
  *
- * @method EnvironmentQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
- * @method EnvironmentQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
- * @method EnvironmentQuery innerJoin($relation) Adds a INNER JOIN clause to the query
+ * @method BackupQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
+ * @method BackupQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
+ * @method BackupQuery innerJoin($relation) Adds a INNER JOIN clause to the query
  *
- * @method Environment findOne(PropelPDO $con = null) Return the first Environment matching the query
- * @method Environment findOneOrCreate(PropelPDO $con = null) Return the first Environment matching the query, or a new Environment object populated from the query conditions when no match is found
+ * @method Backup findOne(PropelPDO $con = null) Return the first Backup matching the query
+ * @method Backup findOneOrCreate(PropelPDO $con = null) Return the first Backup matching the query, or a new Backup object populated from the query conditions when no match is found
  *
- * @method Environment findOneBySiteid(int $siteId) Return the first Environment filtered by the siteId column
- * @method Environment findOneByName(string $name) Return the first Environment filtered by the name column
- * @method Environment findOneByHost(string $host) Return the first Environment filtered by the host column
- * @method Environment findOneByUsername(string $username) Return the first Environment filtered by the username column
- * @method Environment findOneByBranch(string $branch) Return the first Environment filtered by the branch column
- * @method Environment findOneByCreatedon(string $createdOn) Return the first Environment filtered by the createdOn column
- * @method Environment findOneByUpdatedon(string $updatedOn) Return the first Environment filtered by the updatedOn column
+ * @method Backup findOneBySiteid(int $siteId) Return the first Backup filtered by the siteId column
+ * @method Backup findOneByProjectid(int $projectId) Return the first Backup filtered by the projectId column
+ * @method Backup findOneByComponent(string $component) Return the first Backup filtered by the component column
+ * @method Backup findOneByPath(string $path) Return the first Backup filtered by the path column
+ * @method Backup findOneByCreatedon(string $createdOn) Return the first Backup filtered by the createdOn column
+ * @method Backup findOneByUpdatedon(string $updatedOn) Return the first Backup filtered by the updatedOn column
  *
- * @method array findById(int $id) Return Environment objects filtered by the id column
- * @method array findBySiteid(int $siteId) Return Environment objects filtered by the siteId column
- * @method array findByName(string $name) Return Environment objects filtered by the name column
- * @method array findByHost(string $host) Return Environment objects filtered by the host column
- * @method array findByUsername(string $username) Return Environment objects filtered by the username column
- * @method array findByBranch(string $branch) Return Environment objects filtered by the branch column
- * @method array findByCreatedon(string $createdOn) Return Environment objects filtered by the createdOn column
- * @method array findByUpdatedon(string $updatedOn) Return Environment objects filtered by the updatedOn column
+ * @method array findById(int $id) Return Backup objects filtered by the id column
+ * @method array findBySiteid(int $siteId) Return Backup objects filtered by the siteId column
+ * @method array findByProjectid(int $projectId) Return Backup objects filtered by the projectId column
+ * @method array findByComponent(string $component) Return Backup objects filtered by the component column
+ * @method array findByPath(string $path) Return Backup objects filtered by the path column
+ * @method array findByCreatedon(string $createdOn) Return Backup objects filtered by the createdOn column
+ * @method array findByUpdatedon(string $updatedOn) Return Backup objects filtered by the updatedOn column
  *
  * @package    propel.generator.brain.om
  */
-abstract class BaseEnvironmentQuery extends ModelCriteria
+abstract class BaseBackupQuery extends ModelCriteria
 {
     /**
-     * Initializes internal state of BaseEnvironmentQuery object.
+     * Initializes internal state of BaseBackupQuery object.
      *
      * @param     string $dbName The dabase name
      * @param     string $modelName The phpName of a model, e.g. 'Book'
@@ -78,25 +74,25 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
             $dbName = 'brain';
         }
         if (null === $modelName) {
-            $modelName = 'Fluxsauce\\Brain\\Environment';
+            $modelName = 'Fluxsauce\\Brain\\Backup';
         }
         parent::__construct($dbName, $modelName, $modelAlias);
     }
 
     /**
-     * Returns a new EnvironmentQuery object.
+     * Returns a new BackupQuery object.
      *
      * @param     string $modelAlias The alias of a model in the query
-     * @param   EnvironmentQuery|Criteria $criteria Optional Criteria to build the query from
+     * @param   BackupQuery|Criteria $criteria Optional Criteria to build the query from
      *
-     * @return EnvironmentQuery
+     * @return BackupQuery
      */
     public static function create($modelAlias = null, $criteria = null)
     {
-        if ($criteria instanceof EnvironmentQuery) {
+        if ($criteria instanceof BackupQuery) {
             return $criteria;
         }
-        $query = new EnvironmentQuery(null, null, $modelAlias);
+        $query = new BackupQuery(null, null, $modelAlias);
 
         if ($criteria instanceof Criteria) {
             $query->mergeWith($criteria);
@@ -117,19 +113,19 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      * @param mixed $key Primary key to use for the query
      * @param     PropelPDO $con an optional connection object
      *
-     * @return   Environment|Environment[]|mixed the result, formatted by the current formatter
+     * @return   Backup|Backup[]|mixed the result, formatted by the current formatter
      */
     public function findPk($key, $con = null)
     {
         if ($key === null) {
             return null;
         }
-        if ((null !== ($obj = EnvironmentPeer::getInstanceFromPool((string) $key))) && !$this->formatter) {
+        if ((null !== ($obj = BackupPeer::getInstanceFromPool((string) $key))) && !$this->formatter) {
             // the object is already in the instance pool
             return $obj;
         }
         if ($con === null) {
-            $con = Propel::getConnection(EnvironmentPeer::DATABASE_NAME, Propel::CONNECTION_READ);
+            $con = Propel::getConnection(BackupPeer::DATABASE_NAME, Propel::CONNECTION_READ);
         }
         $this->basePreSelect($con);
         if ($this->formatter || $this->modelAlias || $this->with || $this->select
@@ -147,7 +143,7 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      * @param     mixed $key Primary key to use for the query
      * @param     PropelPDO $con A connection object
      *
-     * @return                 Environment A model object, or null if the key is not found
+     * @return                 Backup A model object, or null if the key is not found
      * @throws PropelException
      */
      public function findOneById($key, $con = null)
@@ -162,12 +158,12 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      * @param     mixed $key Primary key to use for the query
      * @param     PropelPDO $con A connection object
      *
-     * @return                 Environment A model object, or null if the key is not found
+     * @return                 Backup A model object, or null if the key is not found
      * @throws PropelException
      */
     protected function findPkSimple($key, $con)
     {
-        $sql = 'SELECT [id], [siteId], [name], [host], [username], [branch], [createdOn], [updatedOn] FROM [environment] WHERE [id] = :p0';
+        $sql = 'SELECT [id], [siteId], [projectId], [component], [path], [createdOn], [updatedOn] FROM [backup] WHERE [id] = :p0';
         try {
             $stmt = $con->prepare($sql);
             $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
@@ -178,9 +174,9 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
         }
         $obj = null;
         if ($row = $stmt->fetch(PDO::FETCH_NUM)) {
-            $obj = new Environment();
+            $obj = new Backup();
             $obj->hydrate($row);
-            EnvironmentPeer::addInstanceToPool($obj, (string) $key);
+            BackupPeer::addInstanceToPool($obj, (string) $key);
         }
         $stmt->closeCursor();
 
@@ -193,7 +189,7 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      * @param     mixed $key Primary key to use for the query
      * @param     PropelPDO $con A connection object
      *
-     * @return Environment|Environment[]|mixed the result, formatted by the current formatter
+     * @return Backup|Backup[]|mixed the result, formatted by the current formatter
      */
     protected function findPkComplex($key, $con)
     {
@@ -214,7 +210,7 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      * @param     array $keys Primary keys to use for the query
      * @param     PropelPDO $con an optional connection object
      *
-     * @return PropelObjectCollection|Environment[]|mixed the list of results, formatted by the current formatter
+     * @return PropelObjectCollection|Backup[]|mixed the list of results, formatted by the current formatter
      */
     public function findPks($keys, $con = null)
     {
@@ -235,12 +231,12 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      *
      * @param     mixed $key Primary key to use for the query
      *
-     * @return EnvironmentQuery The current query, for fluid interface
+     * @return BackupQuery The current query, for fluid interface
      */
     public function filterByPrimaryKey($key)
     {
 
-        return $this->addUsingAlias(EnvironmentPeer::ID, $key, Criteria::EQUAL);
+        return $this->addUsingAlias(BackupPeer::ID, $key, Criteria::EQUAL);
     }
 
     /**
@@ -248,12 +244,12 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      *
      * @param     array $keys The list of primary key to use for the query
      *
-     * @return EnvironmentQuery The current query, for fluid interface
+     * @return BackupQuery The current query, for fluid interface
      */
     public function filterByPrimaryKeys($keys)
     {
 
-        return $this->addUsingAlias(EnvironmentPeer::ID, $keys, Criteria::IN);
+        return $this->addUsingAlias(BackupPeer::ID, $keys, Criteria::IN);
     }
 
     /**
@@ -273,18 +269,18 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
      * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
      *
-     * @return EnvironmentQuery The current query, for fluid interface
+     * @return BackupQuery The current query, for fluid interface
      */
     public function filterById($id = null, $comparison = null)
     {
         if (is_array($id)) {
             $useMinMax = false;
             if (isset($id['min'])) {
-                $this->addUsingAlias(EnvironmentPeer::ID, $id['min'], Criteria::GREATER_EQUAL);
+                $this->addUsingAlias(BackupPeer::ID, $id['min'], Criteria::GREATER_EQUAL);
                 $useMinMax = true;
             }
             if (isset($id['max'])) {
-                $this->addUsingAlias(EnvironmentPeer::ID, $id['max'], Criteria::LESS_EQUAL);
+                $this->addUsingAlias(BackupPeer::ID, $id['max'], Criteria::LESS_EQUAL);
                 $useMinMax = true;
             }
             if ($useMinMax) {
@@ -295,7 +291,7 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
             }
         }
 
-        return $this->addUsingAlias(EnvironmentPeer::ID, $id, $comparison);
+        return $this->addUsingAlias(BackupPeer::ID, $id, $comparison);
     }
 
     /**
@@ -315,18 +311,18 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
      * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
      *
-     * @return EnvironmentQuery The current query, for fluid interface
+     * @return BackupQuery The current query, for fluid interface
      */
     public function filterBySiteid($siteid = null, $comparison = null)
     {
         if (is_array($siteid)) {
             $useMinMax = false;
             if (isset($siteid['min'])) {
-                $this->addUsingAlias(EnvironmentPeer::SITEID, $siteid['min'], Criteria::GREATER_EQUAL);
+                $this->addUsingAlias(BackupPeer::SITEID, $siteid['min'], Criteria::GREATER_EQUAL);
                 $useMinMax = true;
             }
             if (isset($siteid['max'])) {
-                $this->addUsingAlias(EnvironmentPeer::SITEID, $siteid['max'], Criteria::LESS_EQUAL);
+                $this->addUsingAlias(BackupPeer::SITEID, $siteid['max'], Criteria::LESS_EQUAL);
                 $useMinMax = true;
             }
             if ($useMinMax) {
@@ -337,123 +333,107 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
             }
         }
 
-        return $this->addUsingAlias(EnvironmentPeer::SITEID, $siteid, $comparison);
+        return $this->addUsingAlias(BackupPeer::SITEID, $siteid, $comparison);
     }
 
     /**
-     * Filter the query on the name column
+     * Filter the query on the projectId column
      *
      * Example usage:
      * <code>
-     * $query->filterByName('fooValue');   // WHERE name = 'fooValue'
-     * $query->filterByName('%fooValue%'); // WHERE name LIKE '%fooValue%'
+     * $query->filterByProjectid(1234); // WHERE projectId = 1234
+     * $query->filterByProjectid(array(12, 34)); // WHERE projectId IN (12, 34)
+     * $query->filterByProjectid(array('min' => 12)); // WHERE projectId >= 12
+     * $query->filterByProjectid(array('max' => 12)); // WHERE projectId <= 12
      * </code>
      *
-     * @param     string $name The value to use as filter.
+     * @param     mixed $projectid The value to use as filter.
+     *              Use scalar values for equality.
+     *              Use array values for in_array() equivalent.
+     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return BackupQuery The current query, for fluid interface
+     */
+    public function filterByProjectid($projectid = null, $comparison = null)
+    {
+        if (is_array($projectid)) {
+            $useMinMax = false;
+            if (isset($projectid['min'])) {
+                $this->addUsingAlias(BackupPeer::PROJECTID, $projectid['min'], Criteria::GREATER_EQUAL);
+                $useMinMax = true;
+            }
+            if (isset($projectid['max'])) {
+                $this->addUsingAlias(BackupPeer::PROJECTID, $projectid['max'], Criteria::LESS_EQUAL);
+                $useMinMax = true;
+            }
+            if ($useMinMax) {
+                return $this;
+            }
+            if (null === $comparison) {
+                $comparison = Criteria::IN;
+            }
+        }
+
+        return $this->addUsingAlias(BackupPeer::PROJECTID, $projectid, $comparison);
+    }
+
+    /**
+     * Filter the query on the component column
+     *
+     * Example usage:
+     * <code>
+     * $query->filterByComponent('fooValue');   // WHERE component = 'fooValue'
+     * $query->filterByComponent('%fooValue%'); // WHERE component LIKE '%fooValue%'
+     * </code>
+     *
+     * @param     string $component The value to use as filter.
      *              Accepts wildcards (* and % trigger a LIKE)
      * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
      *
-     * @return EnvironmentQuery The current query, for fluid interface
+     * @return BackupQuery The current query, for fluid interface
      */
-    public function filterByName($name = null, $comparison = null)
+    public function filterByComponent($component = null, $comparison = null)
     {
         if (null === $comparison) {
-            if (is_array($name)) {
+            if (is_array($component)) {
                 $comparison = Criteria::IN;
-            } elseif (preg_match('/[\%\*]/', $name)) {
-                $name = str_replace('*', '%', $name);
+            } elseif (preg_match('/[\%\*]/', $component)) {
+                $component = str_replace('*', '%', $component);
                 $comparison = Criteria::LIKE;
             }
         }
 
-        return $this->addUsingAlias(EnvironmentPeer::NAME, $name, $comparison);
+        return $this->addUsingAlias(BackupPeer::COMPONENT, $component, $comparison);
     }
 
     /**
-     * Filter the query on the host column
+     * Filter the query on the path column
      *
      * Example usage:
      * <code>
-     * $query->filterByHost('fooValue');   // WHERE host = 'fooValue'
-     * $query->filterByHost('%fooValue%'); // WHERE host LIKE '%fooValue%'
+     * $query->filterByPath('fooValue');   // WHERE path = 'fooValue'
+     * $query->filterByPath('%fooValue%'); // WHERE path LIKE '%fooValue%'
      * </code>
      *
-     * @param     string $host The value to use as filter.
+     * @param     string $path The value to use as filter.
      *              Accepts wildcards (* and % trigger a LIKE)
      * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
      *
-     * @return EnvironmentQuery The current query, for fluid interface
+     * @return BackupQuery The current query, for fluid interface
      */
-    public function filterByHost($host = null, $comparison = null)
+    public function filterByPath($path = null, $comparison = null)
     {
         if (null === $comparison) {
-            if (is_array($host)) {
+            if (is_array($path)) {
                 $comparison = Criteria::IN;
-            } elseif (preg_match('/[\%\*]/', $host)) {
-                $host = str_replace('*', '%', $host);
+            } elseif (preg_match('/[\%\*]/', $path)) {
+                $path = str_replace('*', '%', $path);
                 $comparison = Criteria::LIKE;
             }
         }
 
-        return $this->addUsingAlias(EnvironmentPeer::HOST, $host, $comparison);
-    }
-
-    /**
-     * Filter the query on the username column
-     *
-     * Example usage:
-     * <code>
-     * $query->filterByUsername('fooValue');   // WHERE username = 'fooValue'
-     * $query->filterByUsername('%fooValue%'); // WHERE username LIKE '%fooValue%'
-     * </code>
-     *
-     * @param     string $username The value to use as filter.
-     *              Accepts wildcards (* and % trigger a LIKE)
-     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
-     *
-     * @return EnvironmentQuery The current query, for fluid interface
-     */
-    public function filterByUsername($username = null, $comparison = null)
-    {
-        if (null === $comparison) {
-            if (is_array($username)) {
-                $comparison = Criteria::IN;
-            } elseif (preg_match('/[\%\*]/', $username)) {
-                $username = str_replace('*', '%', $username);
-                $comparison = Criteria::LIKE;
-            }
-        }
-
-        return $this->addUsingAlias(EnvironmentPeer::USERNAME, $username, $comparison);
-    }
-
-    /**
-     * Filter the query on the branch column
-     *
-     * Example usage:
-     * <code>
-     * $query->filterByBranch('fooValue');   // WHERE branch = 'fooValue'
-     * $query->filterByBranch('%fooValue%'); // WHERE branch LIKE '%fooValue%'
-     * </code>
-     *
-     * @param     string $branch The value to use as filter.
-     *              Accepts wildcards (* and % trigger a LIKE)
-     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
-     *
-     * @return EnvironmentQuery The current query, for fluid interface
-     */
-    public function filterByBranch($branch = null, $comparison = null)
-    {
-        if (null === $comparison) {
-            if (is_array($branch)) {
-                $comparison = Criteria::IN;
-            } elseif (preg_match('/[\%\*]/', $branch)) {
-                $branch = str_replace('*', '%', $branch);
-                $comparison = Criteria::LIKE;
-            }
-        }
-
-        return $this->addUsingAlias(EnvironmentPeer::BRANCH, $branch, $comparison);
+        return $this->addUsingAlias(BackupPeer::PATH, $path, $comparison);
     }
 
     /**
@@ -474,18 +454,18 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
      * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
      *
-     * @return EnvironmentQuery The current query, for fluid interface
+     * @return BackupQuery The current query, for fluid interface
      */
     public function filterByCreatedon($createdon = null, $comparison = null)
     {
         if (is_array($createdon)) {
             $useMinMax = false;
             if (isset($createdon['min'])) {
-                $this->addUsingAlias(EnvironmentPeer::CREATEDON, $createdon['min'], Criteria::GREATER_EQUAL);
+                $this->addUsingAlias(BackupPeer::CREATEDON, $createdon['min'], Criteria::GREATER_EQUAL);
                 $useMinMax = true;
             }
             if (isset($createdon['max'])) {
-                $this->addUsingAlias(EnvironmentPeer::CREATEDON, $createdon['max'], Criteria::LESS_EQUAL);
+                $this->addUsingAlias(BackupPeer::CREATEDON, $createdon['max'], Criteria::LESS_EQUAL);
                 $useMinMax = true;
             }
             if ($useMinMax) {
@@ -496,7 +476,7 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
             }
         }
 
-        return $this->addUsingAlias(EnvironmentPeer::CREATEDON, $createdon, $comparison);
+        return $this->addUsingAlias(BackupPeer::CREATEDON, $createdon, $comparison);
     }
 
     /**
@@ -517,18 +497,18 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
      * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
      *
-     * @return EnvironmentQuery The current query, for fluid interface
+     * @return BackupQuery The current query, for fluid interface
      */
     public function filterByUpdatedon($updatedon = null, $comparison = null)
     {
         if (is_array($updatedon)) {
             $useMinMax = false;
             if (isset($updatedon['min'])) {
-                $this->addUsingAlias(EnvironmentPeer::UPDATEDON, $updatedon['min'], Criteria::GREATER_EQUAL);
+                $this->addUsingAlias(BackupPeer::UPDATEDON, $updatedon['min'], Criteria::GREATER_EQUAL);
                 $useMinMax = true;
             }
             if (isset($updatedon['max'])) {
-                $this->addUsingAlias(EnvironmentPeer::UPDATEDON, $updatedon['max'], Criteria::LESS_EQUAL);
+                $this->addUsingAlias(BackupPeer::UPDATEDON, $updatedon['max'], Criteria::LESS_EQUAL);
                 $useMinMax = true;
             }
             if ($useMinMax) {
@@ -539,20 +519,20 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
             }
         }
 
-        return $this->addUsingAlias(EnvironmentPeer::UPDATEDON, $updatedon, $comparison);
+        return $this->addUsingAlias(BackupPeer::UPDATEDON, $updatedon, $comparison);
     }
 
     /**
      * Exclude object from result
      *
-     * @param   Environment $environment Object to remove from the list of results
+     * @param   Backup $backup Object to remove from the list of results
      *
-     * @return EnvironmentQuery The current query, for fluid interface
+     * @return BackupQuery The current query, for fluid interface
      */
-    public function prune($environment = null)
+    public function prune($backup = null)
     {
-        if ($environment) {
-            $this->addUsingAlias(EnvironmentPeer::ID, $environment->getId(), Criteria::NOT_EQUAL);
+        if ($backup) {
+            $this->addUsingAlias(BackupPeer::ID, $backup->getId(), Criteria::NOT_EQUAL);
         }
 
         return $this;
@@ -565,31 +545,31 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      *
      * @param      int $nbDays Maximum age of the latest update in days
      *
-     * @return     EnvironmentQuery The current query, for fluid interface
+     * @return     BackupQuery The current query, for fluid interface
      */
     public function recentlyUpdated($nbDays = 7)
     {
-        return $this->addUsingAlias(EnvironmentPeer::UPDATEDON, time() - $nbDays * 24 * 60 * 60, Criteria::GREATER_EQUAL);
+        return $this->addUsingAlias(BackupPeer::UPDATEDON, time() - $nbDays * 24 * 60 * 60, Criteria::GREATER_EQUAL);
     }
 
     /**
      * Order by update date desc
      *
-     * @return     EnvironmentQuery The current query, for fluid interface
+     * @return     BackupQuery The current query, for fluid interface
      */
     public function lastUpdatedFirst()
     {
-        return $this->addDescendingOrderByColumn(EnvironmentPeer::UPDATEDON);
+        return $this->addDescendingOrderByColumn(BackupPeer::UPDATEDON);
     }
 
     /**
      * Order by update date asc
      *
-     * @return     EnvironmentQuery The current query, for fluid interface
+     * @return     BackupQuery The current query, for fluid interface
      */
     public function firstUpdatedFirst()
     {
-        return $this->addAscendingOrderByColumn(EnvironmentPeer::UPDATEDON);
+        return $this->addAscendingOrderByColumn(BackupPeer::UPDATEDON);
     }
 
     /**
@@ -597,30 +577,30 @@ abstract class BaseEnvironmentQuery extends ModelCriteria
      *
      * @param      int $nbDays Maximum age of in days
      *
-     * @return     EnvironmentQuery The current query, for fluid interface
+     * @return     BackupQuery The current query, for fluid interface
      */
     public function recentlyCreated($nbDays = 7)
     {
-        return $this->addUsingAlias(EnvironmentPeer::CREATEDON, time() - $nbDays * 24 * 60 * 60, Criteria::GREATER_EQUAL);
+        return $this->addUsingAlias(BackupPeer::CREATEDON, time() - $nbDays * 24 * 60 * 60, Criteria::GREATER_EQUAL);
     }
 
     /**
      * Order by create date desc
      *
-     * @return     EnvironmentQuery The current query, for fluid interface
+     * @return     BackupQuery The current query, for fluid interface
      */
     public function lastCreatedFirst()
     {
-        return $this->addDescendingOrderByColumn(EnvironmentPeer::CREATEDON);
+        return $this->addDescendingOrderByColumn(BackupPeer::CREATEDON);
     }
 
     /**
      * Order by create date asc
      *
-     * @return     EnvironmentQuery The current query, for fluid interface
+     * @return     BackupQuery The current query, for fluid interface
      */
     public function firstCreatedFirst()
     {
-        return $this->addAscendingOrderByColumn(EnvironmentPeer::CREATEDON);
+        return $this->addAscendingOrderByColumn(BackupPeer::CREATEDON);
     }
 }

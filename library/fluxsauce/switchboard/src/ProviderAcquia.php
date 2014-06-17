@@ -6,6 +6,8 @@
 
 namespace Fluxsauce\Switchboard;
 use Fluxsauce\Brain\Environment;
+use Fluxsauce\Brain\Site;
+use Fluxsauce\Brain\SiteQuery;
 
 /**
  * Acquia specific API interactions.
@@ -51,7 +53,6 @@ class ProviderAcquia extends Provider {
       case 'provider':
         break;
 
-      case 'unixUsername':
       case 'vcsUrl':
       case 'vcsType':
       case 'vcsProtocol':
@@ -72,7 +73,6 @@ class ProviderAcquia extends Provider {
       default:
         throw new \Exception('Unknown field ' . $field . ' in ' . __CLASS__);
     }
-    return $this->sites[$site_name]->$field;
   }
 
   /**
@@ -161,10 +161,21 @@ class ProviderAcquia extends Provider {
     $sites = array();
     foreach ($site_names as $site_data) {
       list($realm, $site_name) = explode(':', $site_data);
-      $site = new Site($this->name, $site_name);
-      $site->realm = $realm;
-      $site->update();
-      $this->sites[$site->name] = $site;
+
+      $site = SiteQuery::create()
+        ->filterByProvider($this->name)
+        ->filterByName($site_name)
+        ->findOne();
+      if (!$site) {
+        $site = new Site();
+        $site->setProvider($this->name);
+        $site->setName($site_name);
+      }
+
+      $site->setRealm($realm);
+
+      $site->save();
+      $this->sites[$site->getName()] = $site;
     }
   }
 
@@ -175,21 +186,25 @@ class ProviderAcquia extends Provider {
    *   The name of the site in question.
    */
   public function apiGetSite($site_name) {
-    $site = new Site('acquia', $site_name);
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
+
     $result = switchboard_request($this, array(
       'method' => 'GET',
-      'resource' => '/sites/' . $site->realm . ':' . $site_name,
+      'resource' => '/sites/' . $site->getRealm() . ':' . $site_name,
     ));
     $site_info = json_decode($result->body);
-    $site->update(array(
-      'unixUsername' => $site_info->unix_username,
-      'vcsUrl' => $site_info->vcs_url,
-      'vcsType' => $site_info->vcs_type,
-      'vcsProtocol' => 'git',
-      'uuid' => $site_info->uuid,
-      'title' => $site_info->title,
-      'sshPort' => 22,
-    ));
+
+    $site->setVcsurl($site_info->vcs_url);
+    $site->setVcstype($site_info->vcs_type);
+    $site->setVcsprotocol('git');
+    $site->setUuid($site_info->uuid);
+    $site->setTitle($site_info->title);
+    $site->setSshport(22);
+
+    $site->save();
     $this->sites[$site_name] = $site;
   }
 
@@ -214,7 +229,6 @@ class ProviderAcquia extends Provider {
       $new_environment->setHost($environment->ssh_host);
       $new_environment->setUsername("$site_name.$environment->name");
       $new_environment->save();
-      $site->environmentAdd($new_environment);
     }
   }
 

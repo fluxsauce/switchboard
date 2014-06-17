@@ -7,7 +7,7 @@ use \TableMap;
 
 
 /**
- * This class defines the structure of the 'environment' table.
+ * This class defines the structure of the 'backup' table.
  *
  *
  *
@@ -18,13 +18,13 @@ use \TableMap;
  *
  * @package    propel.generator.brain.map
  */
-class EnvironmentTableMap extends TableMap
+class BackupTableMap extends TableMap
 {
 
     /**
      * The (dot-path) name of this class
      */
-    const CLASS_NAME = 'brain.map.EnvironmentTableMap';
+    const CLASS_NAME = 'brain.map.BackupTableMap';
 
     /**
      * Initialize the table attributes, columns and validators
@@ -36,18 +36,17 @@ class EnvironmentTableMap extends TableMap
     public function initialize()
     {
         // attributes
-        $this->setName('environment');
-        $this->setPhpName('Environment');
-        $this->setClassname('Fluxsauce\\Brain\\Environment');
+        $this->setName('backup');
+        $this->setPhpName('Backup');
+        $this->setClassname('Fluxsauce\\Brain\\Backup');
         $this->setPackage('brain');
         $this->setUseIdGenerator(true);
         // columns
         $this->addPrimaryKey('id', 'Id', 'INTEGER', true, null, null);
         $this->addColumn('siteId', 'Siteid', 'INTEGER', false, null, null);
-        $this->addColumn('name', 'Name', 'VARCHAR', true, 255, null);
-        $this->addColumn('host', 'Host', 'VARCHAR', false, 255, null);
-        $this->addColumn('username', 'Username', 'VARCHAR', false, 255, null);
-        $this->addColumn('branch', 'Branch', 'VARCHAR', false, 255, null);
+        $this->addColumn('projectId', 'Projectid', 'INTEGER', false, null, null);
+        $this->addColumn('component', 'Component', 'VARCHAR', false, 15, null);
+        $this->addColumn('path', 'Path', 'VARCHAR', false, 255, null);
         $this->addColumn('createdOn', 'Createdon', 'TIMESTAMP', false, null, null);
         $this->addColumn('updatedOn', 'Updatedon', 'TIMESTAMP', false, null, null);
         // validators
@@ -77,4 +76,4 @@ class EnvironmentTableMap extends TableMap
         );
     } // getBehaviors()
 
-} // EnvironmentTableMap
+} // BackupTableMap
