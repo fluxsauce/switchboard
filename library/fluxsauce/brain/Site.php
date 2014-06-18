@@ -33,7 +33,7 @@ class Site extends BaseSite {
       '@calling_function' => $callers[1]['function'],
     )));
     $provider = Switchboard\Provider::getInstance($this->getProvider());
-    return $provider->siteGetField($this->getName(), $name);
+    $provider->siteGetField($this->getName(), $name);
   }
 
   /**
@@ -154,5 +154,67 @@ class Site extends BaseSite {
     }
     $url .= $this->getVcsUrl();
     return $url;
+  }
+
+  public function renderEnvironments() {
+    if (drush_get_option('json')) {
+      $this->renderEnvironmentsJson();
+    }
+    else {
+      $this->renderEnvironmentsDrushTable();
+    }
+  }
+
+  /**
+   * Render a Site's environments as a Drush table.
+   */
+  public function renderEnvironmentsDrushTable() {
+    $environments = $this->getEnvironments();
+    if (count($environments) == 0) {
+      return;
+    }
+    $rows = array();
+    foreach ($environments as $environment) {
+      $fields = $environment->toArray();
+      $rows[] = array_values($fields);
+    }
+    array_unshift($rows, array_keys($fields));
+    drush_print_table($rows, TRUE);
+  }
+
+  /**
+   * Render a Site's environments as JSON.
+   */
+  public function renderEnvironmentsJson() {
+    $environments = $this->getEnvironments();
+    if (count($environments) == 0) {
+      return;
+    }
+    $rows = array();
+    foreach ($environments as $environment) {
+      $rows[] = $environment->toArray();
+    }
+    drush_print(json_encode($rows));
+  }
+
+  /**
+   * Gets an array of Environment objects which reference a Site.
+   *
+   * @param Criteria $criteria
+   *   Optional Criteria object to narrow the query.
+   * @param PropelPDO $con
+   *   Optional connection object.
+   *
+   * @return PropelObjectCollection|Environment[]
+   *   List of Environment objects.
+   * @throws PropelException
+   */
+  public function getEnvironments($criteria = null, PropelPDO $con = null) {
+    $environments = parent::getEnvironments($criteria, $con);
+    if (count($environments) == 0) {
+      $this->apiGetField('environments');
+      $environments = parent::getEnvironments($criteria, $con);
+    }
+    return $environments;
   }
 }

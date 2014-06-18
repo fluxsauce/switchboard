@@ -16,6 +16,8 @@ use \PropelPDO;
 use Fluxsauce\Brain\Project;
 use Fluxsauce\Brain\ProjectPeer;
 use Fluxsauce\Brain\ProjectQuery;
+use Fluxsauce\Brain\Site;
+use Fluxsauce\Brain\SiteQuery;
 
 /**
  * Base class that represents a row from the 'project' table.
@@ -140,6 +142,11 @@ abstract class BaseProject extends BaseObject implements Persistent
      * @var        string
      */
     protected $updatedon;
+
+    /**
+     * @var        Site
+     */
+    protected $aSite;
 
     /**
      * Flag to prevent endless save loop, if this object is referenced
@@ -463,6 +470,10 @@ abstract class BaseProject extends BaseObject implements Persistent
         if ($this->siteid !== $v) {
             $this->siteid = $v;
             $this->modifiedColumns[] = ProjectPeer::SITEID;
+        }
+
+        if ($this->aSite !== null && $this->aSite->getId() !== $v) {
+            $this->aSite = null;
         }
 
 
@@ -805,6 +816,9 @@ abstract class BaseProject extends BaseObject implements Persistent
     public function ensureConsistency()
     {
 
+        if ($this->aSite !== null && $this->siteid !== $this->aSite->getId()) {
+            $this->aSite = null;
+        }
     } // ensureConsistency
 
     /**
@@ -844,6 +858,7 @@ abstract class BaseProject extends BaseObject implements Persistent
 
         if ($deep) {  // also de-associate any related objects?
 
+            $this->aSite = null;
         } // if (deep)
     }
 
@@ -967,6 +982,18 @@ abstract class BaseProject extends BaseObject implements Persistent
         $affectedRows = 0; // initialize var to track total num of affected rows
         if (!$this->alreadyInSave) {
             $this->alreadyInSave = true;
+
+            // We call the save method on the following object(s) if they
+            // were passed to this object by their corresponding set
+            // method.  This object relates to these object(s) by a
+            // foreign key reference.
+
+            if ($this->aSite !== null) {
+                if ($this->aSite->isModified() || $this->aSite->isNew()) {
+                    $affectedRows += $this->aSite->save($con);
+                }
+                $this->setSite($this->aSite);
+            }
 
             if ($this->isNew() || $this->isModified()) {
                 // persist changes
@@ -1206,6 +1233,18 @@ abstract class BaseProject extends BaseObject implements Persistent
             $failureMap = array();
 
 
+            // We call the validate method on the following object(s) if they
+            // were passed to this object by their corresponding set
+            // method.  This object relates to these object(s) by a
+            // foreign key reference.
+
+            if ($this->aSite !== null) {
+                if (!$this->aSite->validate($columns)) {
+                    $failureMap = array_merge($failureMap, $this->aSite->getValidationFailures());
+                }
+            }
+
+
             if (($retval = ProjectPeer::doValidate($this, $columns)) !== true) {
                 $failureMap = array_merge($failureMap, $retval);
             }
@@ -1311,10 +1350,11 @@ abstract class BaseProject extends BaseObject implements Persistent
      *                    Defaults to BasePeer::TYPE_PHPNAME.
      * @param     boolean $includeLazyLoadColumns (optional) Whether to include lazy loaded columns. Defaults to true.
      * @param     array $alreadyDumpedObjects List of objects to skip to avoid recursion
+     * @param     boolean $includeForeignObjects (optional) Whether to include hydrated related objects. Default to FALSE.
      *
      * @return array an associative array containing the field names (as keys) and field values
      */
-    public function toArray($keyType = BasePeer::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array())
+    public function toArray($keyType = BasePeer::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array(), $includeForeignObjects = false)
     {
         if (isset($alreadyDumpedObjects['Project'][$this->getPrimaryKey()])) {
             return '*RECURSION*';
@@ -1344,6 +1384,11 @@ abstract class BaseProject extends BaseObject implements Persistent
             $result[$key] = $virtualColumn;
         }
 
+        if ($includeForeignObjects) {
+            if (null !== $this->aSite) {
+                $result['Site'] = $this->aSite->toArray($keyType, $includeLazyLoadColumns,  $alreadyDumpedObjects, true);
+            }
+        }
 
         return $result;
     }
@@ -1570,6 +1615,18 @@ abstract class BaseProject extends BaseObject implements Persistent
         $copyObj->setDatabaseport($this->getDatabaseport());
         $copyObj->setCreatedon($this->getCreatedon());
         $copyObj->setUpdatedon($this->getUpdatedon());
+
+        if ($deepCopy && !$this->startCopy) {
+            // important: temporarily setNew(false) because this affects the behavior of
+            // the getter/setter methods for fkey referrer objects.
+            $copyObj->setNew(false);
+            // store object hash to prevent cycle
+            $this->startCopy = true;
+
+            //unflag object copy
+            $this->startCopy = false;
+        } // if ($deepCopy)
+
         if ($makeNew) {
             $copyObj->setNew(true);
             $copyObj->setId(NULL); // this is a auto-increment column, so set to default value
@@ -1617,6 +1674,58 @@ abstract class BaseProject extends BaseObject implements Persistent
     }
 
     /**
+     * Declares an association between this object and a Site object.
+     *
+     * @param                  Site $v
+     * @return Project The current object (for fluent API support)
+     * @throws PropelException
+     */
+    public function setSite(Site $v = null)
+    {
+        if ($v === null) {
+            $this->setSiteid(NULL);
+        } else {
+            $this->setSiteid($v->getId());
+        }
+
+        $this->aSite = $v;
+
+        // Add binding for other direction of this n:n relationship.
+        // If this object has already been added to the Site object, it will not be re-added.
+        if ($v !== null) {
+            $v->addProject($this);
+        }
+
+
+        return $this;
+    }
+
+
+    /**
+     * Get the associated Site object
+     *
+     * @param PropelPDO $con Optional Connection object.
+     * @param $doQuery Executes a query to get the object if required
+     * @return Site The associated Site object.
+     * @throws PropelException
+     */
+    public function getSite(PropelPDO $con = null, $doQuery = true)
+    {
+        if ($this->aSite === null && ($this->siteid !== null) && $doQuery) {
+            $this->aSite = SiteQuery::create()->findPk($this->siteid, $con);
+            /* The following can be used additionally to
+                guarantee the related object contains a reference
+                to this object.  This level of coupling may, however, be
+                undesirable since it could result in an only partially populated collection
+                in the referenced object.
+                $this->aSite->addProjects($this);
+             */
+        }
+
+        return $this->aSite;
+    }
+
+    /**
      * Clears the current object and sets all attributes to their default values
      */
     public function clear()
@@ -1659,10 +1768,14 @@ abstract class BaseProject extends BaseObject implements Persistent
     {
         if ($deep && !$this->alreadyInClearAllReferencesDeep) {
             $this->alreadyInClearAllReferencesDeep = true;
+            if ($this->aSite instanceof Persistent) {
+              $this->aSite->clearAllReferences($deep);
+            }
 
             $this->alreadyInClearAllReferencesDeep = false;
         } // if ($deep)
 
+        $this->aSite = null;
     }
 
     /**

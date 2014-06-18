@@ -43,7 +43,7 @@ class EnvironmentTableMap extends TableMap
         $this->setUseIdGenerator(true);
         // columns
         $this->addPrimaryKey('id', 'Id', 'INTEGER', true, null, null);
-        $this->addColumn('siteId', 'Siteid', 'INTEGER', false, null, null);
+        $this->addForeignKey('siteId', 'Siteid', 'INTEGER', 'site', 'id', false, null, null);
         $this->addColumn('name', 'Name', 'VARCHAR', true, 255, null);
         $this->addColumn('host', 'Host', 'VARCHAR', false, 255, null);
         $this->addColumn('username', 'Username', 'VARCHAR', false, 255, null);
@@ -58,6 +58,7 @@ class EnvironmentTableMap extends TableMap
      */
     public function buildRelations()
     {
+        $this->addRelation('Site', 'Fluxsauce\\Brain\\Site', RelationMap::MANY_TO_ONE, array('siteId' => 'id', ), null, null);
     } // buildRelations()
 
     /**

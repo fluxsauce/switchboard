@@ -43,7 +43,7 @@ class BackupTableMap extends TableMap
         $this->setUseIdGenerator(true);
         // columns
         $this->addPrimaryKey('id', 'Id', 'INTEGER', true, null, null);
-        $this->addColumn('siteId', 'Siteid', 'INTEGER', false, null, null);
+        $this->addForeignKey('siteId', 'Siteid', 'INTEGER', 'site', 'id', false, null, null);
         $this->addColumn('projectId', 'Projectid', 'INTEGER', false, null, null);
         $this->addColumn('component', 'Component', 'VARCHAR', false, 15, null);
         $this->addColumn('path', 'Path', 'VARCHAR', false, 255, null);
@@ -57,6 +57,7 @@ class BackupTableMap extends TableMap
      */
     public function buildRelations()
     {
+        $this->addRelation('Site', 'Fluxsauce\\Brain\\Site', RelationMap::MANY_TO_ONE, array('siteId' => 'id', ), null, null);
     } // buildRelations()
 
     /**

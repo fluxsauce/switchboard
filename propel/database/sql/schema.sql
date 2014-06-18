@@ -16,6 +16,9 @@ CREATE TABLE [backup]
     [updatedOn] TIMESTAMP
 );
 
+-- SQLite does not support foreign keys; this is just for reference
+-- FOREIGN KEY ([siteId]) REFERENCES site ([id])
+
 -----------------------------------------------------------------------
 -- environment
 -----------------------------------------------------------------------
@@ -33,6 +36,9 @@ CREATE TABLE [environment]
     [createdOn] TIMESTAMP,
     [updatedOn] TIMESTAMP
 );
+
+-- SQLite does not support foreign keys; this is just for reference
+-- FOREIGN KEY ([siteId]) REFERENCES site ([id])
 
 -----------------------------------------------------------------------
 -- project
@@ -59,6 +65,9 @@ CREATE TABLE [project]
     [createdOn] TIMESTAMP,
     [updatedOn] TIMESTAMP
 );
+
+-- SQLite does not support foreign keys; this is just for reference
+-- FOREIGN KEY ([siteId]) REFERENCES site ([id])
 
 -----------------------------------------------------------------------
 -- site

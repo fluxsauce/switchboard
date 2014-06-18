@@ -6,6 +6,7 @@
 
 namespace Fluxsauce\Switchboard;
 use Fluxsauce\Brain\Environment;
+use Fluxsauce\Brain\EnvironmentQuery;
 use Fluxsauce\Brain\Site;
 use Fluxsauce\Brain\SiteQuery;
 
@@ -175,7 +176,6 @@ class ProviderAcquia extends Provider {
       $site->setRealm($realm);
 
       $site->save();
-      $this->sites[$site->getName()] = $site;
     }
   }
 
@@ -205,7 +205,6 @@ class ProviderAcquia extends Provider {
     $site->setSshport(22);
 
     $site->save();
-    $this->sites[$site_name] = $site;
   }
 
   /**
@@ -215,21 +214,27 @@ class ProviderAcquia extends Provider {
    *   The machine name of the site in question.
    */
   public function apiGetSiteEnvironments($site_name) {
-    $site =& $this->sites[$site_name];
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
+
     $result = switchboard_request($this, array(
       'method' => 'GET',
-      'resource' => '/sites/' . $site->realm . ':' . $site_name . '/envs',
+      'resource' => '/sites/' . $site->getRealm() . ':' . $site_name . '/envs',
     ));
     $environment_data = json_decode($result->body);
+
     foreach ($environment_data as $environment) {
       $new_environment = new Environment();
-      $new_environment->setSiteid($site->id);
       $new_environment->setName($environment->name);
       $new_environment->setBranch($environment->vcs_path);
       $new_environment->setHost($environment->ssh_host);
       $new_environment->setUsername("$site_name.$environment->name");
-      $new_environment->save();
+      $site->addEnvironment($new_environment);
     }
+
+    $site->save();
   }
 
   /**
@@ -241,15 +246,19 @@ class ProviderAcquia extends Provider {
    *   The machine name of the Site Environment.
    */
   public function apiGetSiteEnvDbs($site_name, $env_name) {
-    $site =& $this->sites[$site_name];
-    $env =& $site->environments[$env_name];
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
+    $env = $site->getEnvironments(EnvironmentQuery::create()->findByName($env_name));
+
     $result = switchboard_request($this, array(
       'method' => 'GET',
-      'resource' => '/sites/' . $site->realm . ':' . $site_name . '/envs/' . $env_name . '/dbs',
+      'resource' => '/sites/' . $site->getRealm() . ':' . $site_name . '/envs/' . $env_name . '/dbs',
     ));
     $db_data = json_decode($result->body);
     foreach ($db_data as $db) {
-      $new_db = new EnvDb($env->id, $db->instance_name);
+      $new_db = new EnvDb($env->getId(), $db->instance_name);
       $new_db->update();
       $env->dbAdd($new_db);
     }
@@ -273,11 +282,14 @@ class ProviderAcquia extends Provider {
    *   - 'timestamp'
    */
   public function apiGetSiteEnvBackups($site_name, $env_name, $backup_type) {
-    $site = $this->sites[$site_name];
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
     if ($backup_type == 'db') {
       $result = switchboard_request($this, array(
         'method' => 'GET',
-        'resource' => '/sites/' . $site->realm . ':' . $site_name . '/envs/' . $env_name . '/dbs/' . $site_name . '/backups',
+        'resource' => '/sites/' . $site->getRealm() . ':' . $site_name . '/envs/' . $env_name . '/dbs/' . $site_name . '/backups',
       ));
     }
     $backup_data = json_decode($result->body);
@@ -309,10 +321,13 @@ class ProviderAcquia extends Provider {
    *   A backup array as defined in apiGetSiteEnvBackups().
    */
   public function getSiteEnvBackupLatest($site_name, $env_name, $backup_type) {
-    $site = $this->sites[$site_name];
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
     $backup = parent::getSiteEnvBackupLatest($site_name, $env_name, $backup_type);
     if ($backup_type == 'db') {
-      $backup['url'] = 'https://cloudapi.acquia.com/v1/sites/' . $site->realm . ':' . $site_name . '/envs/' . $env_name . '/dbs/' . $site_name . '/backups/' . $backup['id'] . '/download.json';
+      $backup['url'] = 'https://cloudapi.acquia.com/v1/sites/' . $site->getRealm() . ':' . $site_name . '/envs/' . $env_name . '/dbs/' . $site_name . '/backups/' . $backup['id'] . '/download.json';
     }
     unset($backup['id']);
     return $backup;

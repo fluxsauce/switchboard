@@ -5,14 +5,17 @@ namespace Fluxsauce\Brain\om;
 use \Criteria;
 use \Exception;
 use \ModelCriteria;
+use \ModelJoin;
 use \PDO;
 use \Propel;
+use \PropelCollection;
 use \PropelException;
 use \PropelObjectCollection;
 use \PropelPDO;
 use Fluxsauce\Brain\Backup;
 use Fluxsauce\Brain\BackupPeer;
 use Fluxsauce\Brain\BackupQuery;
+use Fluxsauce\Brain\Site;
 
 /**
  * Base class that represents a query for the 'backup' table.
@@ -38,6 +41,10 @@ use Fluxsauce\Brain\BackupQuery;
  * @method BackupQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
  * @method BackupQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
  * @method BackupQuery innerJoin($relation) Adds a INNER JOIN clause to the query
+ *
+ * @method BackupQuery leftJoinSite($relationAlias = null) Adds a LEFT JOIN clause to the query using the Site relation
+ * @method BackupQuery rightJoinSite($relationAlias = null) Adds a RIGHT JOIN clause to the query using the Site relation
+ * @method BackupQuery innerJoinSite($relationAlias = null) Adds a INNER JOIN clause to the query using the Site relation
  *
  * @method Backup findOne(PropelPDO $con = null) Return the first Backup matching the query
  * @method Backup findOneOrCreate(PropelPDO $con = null) Return the first Backup matching the query, or a new Backup object populated from the query conditions when no match is found
@@ -305,6 +312,8 @@ abstract class BaseBackupQuery extends ModelCriteria
      * $query->filterBySiteid(array('max' => 12)); // WHERE siteId <= 12
      * </code>
      *
+     * @see       filterBySite()
+     *
      * @param     mixed $siteid The value to use as filter.
      *              Use scalar values for equality.
      *              Use array values for in_array() equivalent.
@@ -520,6 +529,82 @@ abstract class BaseBackupQuery extends ModelCriteria
         }
 
         return $this->addUsingAlias(BackupPeer::UPDATEDON, $updatedon, $comparison);
+    }
+
+    /**
+     * Filter the query by a related Site object
+     *
+     * @param   Site|PropelObjectCollection $site The related object(s) to use as filter
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return                 BackupQuery The current query, for fluid interface
+     * @throws PropelException - if the provided filter is invalid.
+     */
+    public function filterBySite($site, $comparison = null)
+    {
+        if ($site instanceof Site) {
+            return $this
+                ->addUsingAlias(BackupPeer::SITEID, $site->getId(), $comparison);
+        } elseif ($site instanceof PropelObjectCollection) {
+            if (null === $comparison) {
+                $comparison = Criteria::IN;
+            }
+
+            return $this
+                ->addUsingAlias(BackupPeer::SITEID, $site->toKeyValue('PrimaryKey', 'Id'), $comparison);
+        } else {
+            throw new PropelException('filterBySite() only accepts arguments of type Site or PropelCollection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the Site relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return BackupQuery The current query, for fluid interface
+     */
+    public function joinSite($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('Site');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'Site');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the Site relation Site object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   \Fluxsauce\Brain\SiteQuery A secondary query class using the current class as primary query
+     */
+    public function useSiteQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        return $this
+            ->joinSite($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'Site', '\Fluxsauce\Brain\SiteQuery');
     }
 
     /**

@@ -23,7 +23,7 @@
 date_default_timezone_set('UTC');
 define('SWITCHBOARD_BASE_PATH', __DIR__);
 
-// PSR-4 autoloading.
+// Autoloader.
 if (!file_exists(SWITCHBOARD_BASE_PATH . '/vendor/autoload.php')) {
   return drush_set_error('SWITCHBOARD_MISSING_COMPOSER', dt('Composer autoloader is missing; please see README.md for installation instructions.'));
 }
@@ -784,9 +784,7 @@ function drush_switchboard_sw_project_files_rsync_validate($project_name = '', $
     return switchboard_message_fail('SWITCHBOARD_PROJECT_FILES_RSYNC_DIR', dt('Invalid rsync direction (up or down).'));
   }
 
-  $site = \Fluxsauce\Brain\SiteQuery::create()
-    ->filterById($project->getSiteid())
-    ->findOne();
+  $site = \Fluxsauce\Brain\SiteQuery::create()->findPk($project->getSiteid());
 
   if (!$site) {
     return switchboard_message_fail('SWITCHBOARD_SITE_NOT_FOUND', dt('Cannot find site_id #@site_id.', array(
@@ -1722,6 +1720,11 @@ function drush_switchboard_sw_site_env_list_validate($provider_name = '', $site_
  *   FALSE upon failure.
  */
 function drush_switchboard_sw_site_env_list($provider_name, $site_name) {
+  $site = \Fluxsauce\Brain\SiteQuery::create()
+    ->filterByProvider($provider_name)
+    ->filterByName($site_name)
+    ->findOne();
+  $environments = $site->getEnvironments();
   $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
   if (drush_get_option('json')) {
     $provider->sites[$site_name]->renderEnvironmentsJson();

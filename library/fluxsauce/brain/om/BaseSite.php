@@ -10,9 +10,17 @@ use \Exception;
 use \PDO;
 use \Persistent;
 use \Propel;
+use \PropelCollection;
 use \PropelDateTime;
 use \PropelException;
+use \PropelObjectCollection;
 use \PropelPDO;
+use Fluxsauce\Brain\Backup;
+use Fluxsauce\Brain\BackupQuery;
+use Fluxsauce\Brain\Environment;
+use Fluxsauce\Brain\EnvironmentQuery;
+use Fluxsauce\Brain\Project;
+use Fluxsauce\Brain\ProjectQuery;
 use Fluxsauce\Brain\Site;
 use Fluxsauce\Brain\SitePeer;
 use Fluxsauce\Brain\SiteQuery;
@@ -118,6 +126,24 @@ abstract class BaseSite extends BaseObject implements Persistent
     protected $updatedon;
 
     /**
+     * @var        PropelObjectCollection|Backup[] Collection to store aggregation of Backup objects.
+     */
+    protected $collBackups;
+    protected $collBackupsPartial;
+
+    /**
+     * @var        PropelObjectCollection|Environment[] Collection to store aggregation of Environment objects.
+     */
+    protected $collEnvironments;
+    protected $collEnvironmentsPartial;
+
+    /**
+     * @var        PropelObjectCollection|Project[] Collection to store aggregation of Project objects.
+     */
+    protected $collProjects;
+    protected $collProjectsPartial;
+
+    /**
      * Flag to prevent endless save loop, if this object is referenced
      * by another object which falls in this transaction.
      * @var        boolean
@@ -136,6 +162,24 @@ abstract class BaseSite extends BaseObject implements Persistent
      * @var        boolean
      */
     protected $alreadyInClearAllReferencesDeep = false;
+
+    /**
+     * An array of objects scheduled for deletion.
+     * @var		PropelObjectCollection
+     */
+    protected $backupsScheduledForDeletion = null;
+
+    /**
+     * An array of objects scheduled for deletion.
+     * @var		PropelObjectCollection
+     */
+    protected $environmentsScheduledForDeletion = null;
+
+    /**
+     * An array of objects scheduled for deletion.
+     * @var		PropelObjectCollection
+     */
+    protected $projectsScheduledForDeletion = null;
 
     /**
      * Get the [id] column value.
@@ -688,6 +732,12 @@ abstract class BaseSite extends BaseObject implements Persistent
 
         if ($deep) {  // also de-associate any related objects?
 
+            $this->collBackups = null;
+
+            $this->collEnvironments = null;
+
+            $this->collProjects = null;
+
         } // if (deep)
     }
 
@@ -821,6 +871,60 @@ abstract class BaseSite extends BaseObject implements Persistent
                 }
                 $affectedRows += 1;
                 $this->resetModified();
+            }
+
+            if ($this->backupsScheduledForDeletion !== null) {
+                if (!$this->backupsScheduledForDeletion->isEmpty()) {
+                    foreach ($this->backupsScheduledForDeletion as $backup) {
+                        // need to save related object because we set the relation to null
+                        $backup->save($con);
+                    }
+                    $this->backupsScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collBackups !== null) {
+                foreach ($this->collBackups as $referrerFK) {
+                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
+            }
+
+            if ($this->environmentsScheduledForDeletion !== null) {
+                if (!$this->environmentsScheduledForDeletion->isEmpty()) {
+                    foreach ($this->environmentsScheduledForDeletion as $environment) {
+                        // need to save related object because we set the relation to null
+                        $environment->save($con);
+                    }
+                    $this->environmentsScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collEnvironments !== null) {
+                foreach ($this->collEnvironments as $referrerFK) {
+                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
+            }
+
+            if ($this->projectsScheduledForDeletion !== null) {
+                if (!$this->projectsScheduledForDeletion->isEmpty()) {
+                    foreach ($this->projectsScheduledForDeletion as $project) {
+                        // need to save related object because we set the relation to null
+                        $project->save($con);
+                    }
+                    $this->projectsScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collProjects !== null) {
+                foreach ($this->collProjects as $referrerFK) {
+                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
             }
 
             $this->alreadyInSave = false;
@@ -1031,6 +1135,30 @@ abstract class BaseSite extends BaseObject implements Persistent
             }
 
 
+                if ($this->collBackups !== null) {
+                    foreach ($this->collBackups as $referrerFK) {
+                        if (!$referrerFK->validate($columns)) {
+                            $failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
+                        }
+                    }
+                }
+
+                if ($this->collEnvironments !== null) {
+                    foreach ($this->collEnvironments as $referrerFK) {
+                        if (!$referrerFK->validate($columns)) {
+                            $failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
+                        }
+                    }
+                }
+
+                if ($this->collProjects !== null) {
+                    foreach ($this->collProjects as $referrerFK) {
+                        if (!$referrerFK->validate($columns)) {
+                            $failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
+                        }
+                    }
+                }
+
 
             $this->alreadyInValidation = false;
         }
@@ -1119,10 +1247,11 @@ abstract class BaseSite extends BaseObject implements Persistent
      *                    Defaults to BasePeer::TYPE_PHPNAME.
      * @param     boolean $includeLazyLoadColumns (optional) Whether to include lazy loaded columns. Defaults to true.
      * @param     array $alreadyDumpedObjects List of objects to skip to avoid recursion
+     * @param     boolean $includeForeignObjects (optional) Whether to include hydrated related objects. Default to FALSE.
      *
      * @return array an associative array containing the field names (as keys) and field values
      */
-    public function toArray($keyType = BasePeer::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array())
+    public function toArray($keyType = BasePeer::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array(), $includeForeignObjects = false)
     {
         if (isset($alreadyDumpedObjects['Site'][$this->getPrimaryKey()])) {
             return '*RECURSION*';
@@ -1148,6 +1277,17 @@ abstract class BaseSite extends BaseObject implements Persistent
             $result[$key] = $virtualColumn;
         }
 
+        if ($includeForeignObjects) {
+            if (null !== $this->collBackups) {
+                $result['Backups'] = $this->collBackups->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
+            if (null !== $this->collEnvironments) {
+                $result['Environments'] = $this->collEnvironments->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
+            if (null !== $this->collProjects) {
+                $result['Projects'] = $this->collProjects->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
+        }
 
         return $result;
     }
@@ -1350,6 +1490,36 @@ abstract class BaseSite extends BaseObject implements Persistent
         $copyObj->setSshport($this->getSshport());
         $copyObj->setCreatedon($this->getCreatedon());
         $copyObj->setUpdatedon($this->getUpdatedon());
+
+        if ($deepCopy && !$this->startCopy) {
+            // important: temporarily setNew(false) because this affects the behavior of
+            // the getter/setter methods for fkey referrer objects.
+            $copyObj->setNew(false);
+            // store object hash to prevent cycle
+            $this->startCopy = true;
+
+            foreach ($this->getBackups() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addBackup($relObj->copy($deepCopy));
+                }
+            }
+
+            foreach ($this->getEnvironments() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addEnvironment($relObj->copy($deepCopy));
+                }
+            }
+
+            foreach ($this->getProjects() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addProject($relObj->copy($deepCopy));
+                }
+            }
+
+            //unflag object copy
+            $this->startCopy = false;
+        } // if ($deepCopy)
+
         if ($makeNew) {
             $copyObj->setNew(true);
             $copyObj->setId(NULL); // this is a auto-increment column, so set to default value
@@ -1396,6 +1566,703 @@ abstract class BaseSite extends BaseObject implements Persistent
         return self::$peer;
     }
 
+
+    /**
+     * Initializes a collection based on the name of a relation.
+     * Avoids crafting an 'init[$relationName]s' method name
+     * that wouldn't work when StandardEnglishPluralizer is used.
+     *
+     * @param string $relationName The name of the relation to initialize
+     * @return void
+     */
+    public function initRelation($relationName)
+    {
+        if ('Backup' == $relationName) {
+            $this->initBackups();
+        }
+        if ('Environment' == $relationName) {
+            $this->initEnvironments();
+        }
+        if ('Project' == $relationName) {
+            $this->initProjects();
+        }
+    }
+
+    /**
+     * Clears out the collBackups collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return Site The current object (for fluent API support)
+     * @see        addBackups()
+     */
+    public function clearBackups()
+    {
+        $this->collBackups = null; // important to set this to null since that means it is uninitialized
+        $this->collBackupsPartial = null;
+
+        return $this;
+    }
+
+    /**
+     * reset is the collBackups collection loaded partially
+     *
+     * @return void
+     */
+    public function resetPartialBackups($v = true)
+    {
+        $this->collBackupsPartial = $v;
+    }
+
+    /**
+     * Initializes the collBackups collection.
+     *
+     * By default this just sets the collBackups collection to an empty array (like clearcollBackups());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initBackups($overrideExisting = true)
+    {
+        if (null !== $this->collBackups && !$overrideExisting) {
+            return;
+        }
+        $this->collBackups = new PropelObjectCollection();
+        $this->collBackups->setModel('Backup');
+    }
+
+    /**
+     * Gets an array of Backup objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this Site is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @return PropelObjectCollection|Backup[] List of Backup objects
+     * @throws PropelException
+     */
+    public function getBackups($criteria = null, PropelPDO $con = null)
+    {
+        $partial = $this->collBackupsPartial && !$this->isNew();
+        if (null === $this->collBackups || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collBackups) {
+                // return empty collection
+                $this->initBackups();
+            } else {
+                $collBackups = BackupQuery::create(null, $criteria)
+                    ->filterBySite($this)
+                    ->find($con);
+                if (null !== $criteria) {
+                    if (false !== $this->collBackupsPartial && count($collBackups)) {
+                      $this->initBackups(false);
+
+                      foreach ($collBackups as $obj) {
+                        if (false == $this->collBackups->contains($obj)) {
+                          $this->collBackups->append($obj);
+                        }
+                      }
+
+                      $this->collBackupsPartial = true;
+                    }
+
+                    $collBackups->getInternalIterator()->rewind();
+
+                    return $collBackups;
+                }
+
+                if ($partial && $this->collBackups) {
+                    foreach ($this->collBackups as $obj) {
+                        if ($obj->isNew()) {
+                            $collBackups[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collBackups = $collBackups;
+                $this->collBackupsPartial = false;
+            }
+        }
+
+        return $this->collBackups;
+    }
+
+    /**
+     * Sets a collection of Backup objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param PropelCollection $backups A Propel collection.
+     * @param PropelPDO $con Optional connection object
+     * @return Site The current object (for fluent API support)
+     */
+    public function setBackups(PropelCollection $backups, PropelPDO $con = null)
+    {
+        $backupsToDelete = $this->getBackups(new Criteria(), $con)->diff($backups);
+
+
+        $this->backupsScheduledForDeletion = $backupsToDelete;
+
+        foreach ($backupsToDelete as $backupRemoved) {
+            $backupRemoved->setSite(null);
+        }
+
+        $this->collBackups = null;
+        foreach ($backups as $backup) {
+            $this->addBackup($backup);
+        }
+
+        $this->collBackups = $backups;
+        $this->collBackupsPartial = false;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of related Backup objects.
+     *
+     * @param Criteria $criteria
+     * @param boolean $distinct
+     * @param PropelPDO $con
+     * @return int             Count of related Backup objects.
+     * @throws PropelException
+     */
+    public function countBackups(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+    {
+        $partial = $this->collBackupsPartial && !$this->isNew();
+        if (null === $this->collBackups || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collBackups) {
+                return 0;
+            }
+
+            if ($partial && !$criteria) {
+                return count($this->getBackups());
+            }
+            $query = BackupQuery::create(null, $criteria);
+            if ($distinct) {
+                $query->distinct();
+            }
+
+            return $query
+                ->filterBySite($this)
+                ->count($con);
+        }
+
+        return count($this->collBackups);
+    }
+
+    /**
+     * Method called to associate a Backup object to this object
+     * through the Backup foreign key attribute.
+     *
+     * @param    Backup $l Backup
+     * @return Site The current object (for fluent API support)
+     */
+    public function addBackup(Backup $l)
+    {
+        if ($this->collBackups === null) {
+            $this->initBackups();
+            $this->collBackupsPartial = true;
+        }
+
+        if (!in_array($l, $this->collBackups->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
+            $this->doAddBackup($l);
+
+            if ($this->backupsScheduledForDeletion and $this->backupsScheduledForDeletion->contains($l)) {
+                $this->backupsScheduledForDeletion->remove($this->backupsScheduledForDeletion->search($l));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param	Backup $backup The backup object to add.
+     */
+    protected function doAddBackup($backup)
+    {
+        $this->collBackups[]= $backup;
+        $backup->setSite($this);
+    }
+
+    /**
+     * @param	Backup $backup The backup object to remove.
+     * @return Site The current object (for fluent API support)
+     */
+    public function removeBackup($backup)
+    {
+        if ($this->getBackups()->contains($backup)) {
+            $this->collBackups->remove($this->collBackups->search($backup));
+            if (null === $this->backupsScheduledForDeletion) {
+                $this->backupsScheduledForDeletion = clone $this->collBackups;
+                $this->backupsScheduledForDeletion->clear();
+            }
+            $this->backupsScheduledForDeletion[]= $backup;
+            $backup->setSite(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Clears out the collEnvironments collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return Site The current object (for fluent API support)
+     * @see        addEnvironments()
+     */
+    public function clearEnvironments()
+    {
+        $this->collEnvironments = null; // important to set this to null since that means it is uninitialized
+        $this->collEnvironmentsPartial = null;
+
+        return $this;
+    }
+
+    /**
+     * reset is the collEnvironments collection loaded partially
+     *
+     * @return void
+     */
+    public function resetPartialEnvironments($v = true)
+    {
+        $this->collEnvironmentsPartial = $v;
+    }
+
+    /**
+     * Initializes the collEnvironments collection.
+     *
+     * By default this just sets the collEnvironments collection to an empty array (like clearcollEnvironments());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initEnvironments($overrideExisting = true)
+    {
+        if (null !== $this->collEnvironments && !$overrideExisting) {
+            return;
+        }
+        $this->collEnvironments = new PropelObjectCollection();
+        $this->collEnvironments->setModel('Environment');
+    }
+
+    /**
+     * Gets an array of Environment objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this Site is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @return PropelObjectCollection|Environment[] List of Environment objects
+     * @throws PropelException
+     */
+    public function getEnvironments($criteria = null, PropelPDO $con = null)
+    {
+        $partial = $this->collEnvironmentsPartial && !$this->isNew();
+        if (null === $this->collEnvironments || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collEnvironments) {
+                // return empty collection
+                $this->initEnvironments();
+            } else {
+                $collEnvironments = EnvironmentQuery::create(null, $criteria)
+                    ->filterBySite($this)
+                    ->find($con);
+                if (null !== $criteria) {
+                    if (false !== $this->collEnvironmentsPartial && count($collEnvironments)) {
+                      $this->initEnvironments(false);
+
+                      foreach ($collEnvironments as $obj) {
+                        if (false == $this->collEnvironments->contains($obj)) {
+                          $this->collEnvironments->append($obj);
+                        }
+                      }
+
+                      $this->collEnvironmentsPartial = true;
+                    }
+
+                    $collEnvironments->getInternalIterator()->rewind();
+
+                    return $collEnvironments;
+                }
+
+                if ($partial && $this->collEnvironments) {
+                    foreach ($this->collEnvironments as $obj) {
+                        if ($obj->isNew()) {
+                            $collEnvironments[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collEnvironments = $collEnvironments;
+                $this->collEnvironmentsPartial = false;
+            }
+        }
+
+        return $this->collEnvironments;
+    }
+
+    /**
+     * Sets a collection of Environment objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param PropelCollection $environments A Propel collection.
+     * @param PropelPDO $con Optional connection object
+     * @return Site The current object (for fluent API support)
+     */
+    public function setEnvironments(PropelCollection $environments, PropelPDO $con = null)
+    {
+        $environmentsToDelete = $this->getEnvironments(new Criteria(), $con)->diff($environments);
+
+
+        $this->environmentsScheduledForDeletion = $environmentsToDelete;
+
+        foreach ($environmentsToDelete as $environmentRemoved) {
+            $environmentRemoved->setSite(null);
+        }
+
+        $this->collEnvironments = null;
+        foreach ($environments as $environment) {
+            $this->addEnvironment($environment);
+        }
+
+        $this->collEnvironments = $environments;
+        $this->collEnvironmentsPartial = false;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of related Environment objects.
+     *
+     * @param Criteria $criteria
+     * @param boolean $distinct
+     * @param PropelPDO $con
+     * @return int             Count of related Environment objects.
+     * @throws PropelException
+     */
+    public function countEnvironments(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+    {
+        $partial = $this->collEnvironmentsPartial && !$this->isNew();
+        if (null === $this->collEnvironments || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collEnvironments) {
+                return 0;
+            }
+
+            if ($partial && !$criteria) {
+                return count($this->getEnvironments());
+            }
+            $query = EnvironmentQuery::create(null, $criteria);
+            if ($distinct) {
+                $query->distinct();
+            }
+
+            return $query
+                ->filterBySite($this)
+                ->count($con);
+        }
+
+        return count($this->collEnvironments);
+    }
+
+    /**
+     * Method called to associate a Environment object to this object
+     * through the Environment foreign key attribute.
+     *
+     * @param    Environment $l Environment
+     * @return Site The current object (for fluent API support)
+     */
+    public function addEnvironment(Environment $l)
+    {
+        if ($this->collEnvironments === null) {
+            $this->initEnvironments();
+            $this->collEnvironmentsPartial = true;
+        }
+
+        if (!in_array($l, $this->collEnvironments->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
+            $this->doAddEnvironment($l);
+
+            if ($this->environmentsScheduledForDeletion and $this->environmentsScheduledForDeletion->contains($l)) {
+                $this->environmentsScheduledForDeletion->remove($this->environmentsScheduledForDeletion->search($l));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param	Environment $environment The environment object to add.
+     */
+    protected function doAddEnvironment($environment)
+    {
+        $this->collEnvironments[]= $environment;
+        $environment->setSite($this);
+    }
+
+    /**
+     * @param	Environment $environment The environment object to remove.
+     * @return Site The current object (for fluent API support)
+     */
+    public function removeEnvironment($environment)
+    {
+        if ($this->getEnvironments()->contains($environment)) {
+            $this->collEnvironments->remove($this->collEnvironments->search($environment));
+            if (null === $this->environmentsScheduledForDeletion) {
+                $this->environmentsScheduledForDeletion = clone $this->collEnvironments;
+                $this->environmentsScheduledForDeletion->clear();
+            }
+            $this->environmentsScheduledForDeletion[]= $environment;
+            $environment->setSite(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Clears out the collProjects collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return Site The current object (for fluent API support)
+     * @see        addProjects()
+     */
+    public function clearProjects()
+    {
+        $this->collProjects = null; // important to set this to null since that means it is uninitialized
+        $this->collProjectsPartial = null;
+
+        return $this;
+    }
+
+    /**
+     * reset is the collProjects collection loaded partially
+     *
+     * @return void
+     */
+    public function resetPartialProjects($v = true)
+    {
+        $this->collProjectsPartial = $v;
+    }
+
+    /**
+     * Initializes the collProjects collection.
+     *
+     * By default this just sets the collProjects collection to an empty array (like clearcollProjects());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initProjects($overrideExisting = true)
+    {
+        if (null !== $this->collProjects && !$overrideExisting) {
+            return;
+        }
+        $this->collProjects = new PropelObjectCollection();
+        $this->collProjects->setModel('Project');
+    }
+
+    /**
+     * Gets an array of Project objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this Site is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @return PropelObjectCollection|Project[] List of Project objects
+     * @throws PropelException
+     */
+    public function getProjects($criteria = null, PropelPDO $con = null)
+    {
+        $partial = $this->collProjectsPartial && !$this->isNew();
+        if (null === $this->collProjects || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collProjects) {
+                // return empty collection
+                $this->initProjects();
+            } else {
+                $collProjects = ProjectQuery::create(null, $criteria)
+                    ->filterBySite($this)
+                    ->find($con);
+                if (null !== $criteria) {
+                    if (false !== $this->collProjectsPartial && count($collProjects)) {
+                      $this->initProjects(false);
+
+                      foreach ($collProjects as $obj) {
+                        if (false == $this->collProjects->contains($obj)) {
+                          $this->collProjects->append($obj);
+                        }
+                      }
+
+                      $this->collProjectsPartial = true;
+                    }
+
+                    $collProjects->getInternalIterator()->rewind();
+
+                    return $collProjects;
+                }
+
+                if ($partial && $this->collProjects) {
+                    foreach ($this->collProjects as $obj) {
+                        if ($obj->isNew()) {
+                            $collProjects[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collProjects = $collProjects;
+                $this->collProjectsPartial = false;
+            }
+        }
+
+        return $this->collProjects;
+    }
+
+    /**
+     * Sets a collection of Project objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param PropelCollection $projects A Propel collection.
+     * @param PropelPDO $con Optional connection object
+     * @return Site The current object (for fluent API support)
+     */
+    public function setProjects(PropelCollection $projects, PropelPDO $con = null)
+    {
+        $projectsToDelete = $this->getProjects(new Criteria(), $con)->diff($projects);
+
+
+        $this->projectsScheduledForDeletion = $projectsToDelete;
+
+        foreach ($projectsToDelete as $projectRemoved) {
+            $projectRemoved->setSite(null);
+        }
+
+        $this->collProjects = null;
+        foreach ($projects as $project) {
+            $this->addProject($project);
+        }
+
+        $this->collProjects = $projects;
+        $this->collProjectsPartial = false;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of related Project objects.
+     *
+     * @param Criteria $criteria
+     * @param boolean $distinct
+     * @param PropelPDO $con
+     * @return int             Count of related Project objects.
+     * @throws PropelException
+     */
+    public function countProjects(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+    {
+        $partial = $this->collProjectsPartial && !$this->isNew();
+        if (null === $this->collProjects || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collProjects) {
+                return 0;
+            }
+
+            if ($partial && !$criteria) {
+                return count($this->getProjects());
+            }
+            $query = ProjectQuery::create(null, $criteria);
+            if ($distinct) {
+                $query->distinct();
+            }
+
+            return $query
+                ->filterBySite($this)
+                ->count($con);
+        }
+
+        return count($this->collProjects);
+    }
+
+    /**
+     * Method called to associate a Project object to this object
+     * through the Project foreign key attribute.
+     *
+     * @param    Project $l Project
+     * @return Site The current object (for fluent API support)
+     */
+    public function addProject(Project $l)
+    {
+        if ($this->collProjects === null) {
+            $this->initProjects();
+            $this->collProjectsPartial = true;
+        }
+
+        if (!in_array($l, $this->collProjects->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
+            $this->doAddProject($l);
+
+            if ($this->projectsScheduledForDeletion and $this->projectsScheduledForDeletion->contains($l)) {
+                $this->projectsScheduledForDeletion->remove($this->projectsScheduledForDeletion->search($l));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param	Project $project The project object to add.
+     */
+    protected function doAddProject($project)
+    {
+        $this->collProjects[]= $project;
+        $project->setSite($this);
+    }
+
+    /**
+     * @param	Project $project The project object to remove.
+     * @return Site The current object (for fluent API support)
+     */
+    public function removeProject($project)
+    {
+        if ($this->getProjects()->contains($project)) {
+            $this->collProjects->remove($this->collProjects->search($project));
+            if (null === $this->projectsScheduledForDeletion) {
+                $this->projectsScheduledForDeletion = clone $this->collProjects;
+                $this->projectsScheduledForDeletion->clear();
+            }
+            $this->projectsScheduledForDeletion[]= $project;
+            $project->setSite(null);
+        }
+
+        return $this;
+    }
+
     /**
      * Clears the current object and sets all attributes to their default values
      */
@@ -1435,10 +2302,37 @@ abstract class BaseSite extends BaseObject implements Persistent
     {
         if ($deep && !$this->alreadyInClearAllReferencesDeep) {
             $this->alreadyInClearAllReferencesDeep = true;
+            if ($this->collBackups) {
+                foreach ($this->collBackups as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
+            if ($this->collEnvironments) {
+                foreach ($this->collEnvironments as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
+            if ($this->collProjects) {
+                foreach ($this->collProjects as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
 
             $this->alreadyInClearAllReferencesDeep = false;
         } // if ($deep)
 
+        if ($this->collBackups instanceof PropelCollection) {
+            $this->collBackups->clearIterator();
+        }
+        $this->collBackups = null;
+        if ($this->collEnvironments instanceof PropelCollection) {
+            $this->collEnvironments->clearIterator();
+        }
+        $this->collEnvironments = null;
+        if ($this->collProjects instanceof PropelCollection) {
+            $this->collProjects->clearIterator();
+        }
+        $this->collProjects = null;
     }
 
     /**

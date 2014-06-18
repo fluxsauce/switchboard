@@ -5,11 +5,16 @@ namespace Fluxsauce\Brain\om;
 use \Criteria;
 use \Exception;
 use \ModelCriteria;
+use \ModelJoin;
 use \PDO;
 use \Propel;
+use \PropelCollection;
 use \PropelException;
 use \PropelObjectCollection;
 use \PropelPDO;
+use Fluxsauce\Brain\Backup;
+use Fluxsauce\Brain\Environment;
+use Fluxsauce\Brain\Project;
 use Fluxsauce\Brain\Site;
 use Fluxsauce\Brain\SitePeer;
 use Fluxsauce\Brain\SiteQuery;
@@ -48,6 +53,18 @@ use Fluxsauce\Brain\SiteQuery;
  * @method SiteQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
  * @method SiteQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
  * @method SiteQuery innerJoin($relation) Adds a INNER JOIN clause to the query
+ *
+ * @method SiteQuery leftJoinBackup($relationAlias = null) Adds a LEFT JOIN clause to the query using the Backup relation
+ * @method SiteQuery rightJoinBackup($relationAlias = null) Adds a RIGHT JOIN clause to the query using the Backup relation
+ * @method SiteQuery innerJoinBackup($relationAlias = null) Adds a INNER JOIN clause to the query using the Backup relation
+ *
+ * @method SiteQuery leftJoinEnvironment($relationAlias = null) Adds a LEFT JOIN clause to the query using the Environment relation
+ * @method SiteQuery rightJoinEnvironment($relationAlias = null) Adds a RIGHT JOIN clause to the query using the Environment relation
+ * @method SiteQuery innerJoinEnvironment($relationAlias = null) Adds a INNER JOIN clause to the query using the Environment relation
+ *
+ * @method SiteQuery leftJoinProject($relationAlias = null) Adds a LEFT JOIN clause to the query using the Project relation
+ * @method SiteQuery rightJoinProject($relationAlias = null) Adds a RIGHT JOIN clause to the query using the Project relation
+ * @method SiteQuery innerJoinProject($relationAlias = null) Adds a INNER JOIN clause to the query using the Project relation
  *
  * @method Site findOne(PropelPDO $con = null) Return the first Site matching the query
  * @method Site findOneOrCreate(PropelPDO $con = null) Return the first Site matching the query, or a new Site object populated from the query conditions when no match is found
@@ -672,6 +689,228 @@ abstract class BaseSiteQuery extends ModelCriteria
         }
 
         return $this->addUsingAlias(SitePeer::UPDATEDON, $updatedon, $comparison);
+    }
+
+    /**
+     * Filter the query by a related Backup object
+     *
+     * @param   Backup|PropelObjectCollection $backup  the related object to use as filter
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return                 SiteQuery The current query, for fluid interface
+     * @throws PropelException - if the provided filter is invalid.
+     */
+    public function filterByBackup($backup, $comparison = null)
+    {
+        if ($backup instanceof Backup) {
+            return $this
+                ->addUsingAlias(SitePeer::ID, $backup->getSiteid(), $comparison);
+        } elseif ($backup instanceof PropelObjectCollection) {
+            return $this
+                ->useBackupQuery()
+                ->filterByPrimaryKeys($backup->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByBackup() only accepts arguments of type Backup or PropelCollection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the Backup relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return SiteQuery The current query, for fluid interface
+     */
+    public function joinBackup($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('Backup');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'Backup');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the Backup relation Backup object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   \Fluxsauce\Brain\BackupQuery A secondary query class using the current class as primary query
+     */
+    public function useBackupQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        return $this
+            ->joinBackup($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'Backup', '\Fluxsauce\Brain\BackupQuery');
+    }
+
+    /**
+     * Filter the query by a related Environment object
+     *
+     * @param   Environment|PropelObjectCollection $environment  the related object to use as filter
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return                 SiteQuery The current query, for fluid interface
+     * @throws PropelException - if the provided filter is invalid.
+     */
+    public function filterByEnvironment($environment, $comparison = null)
+    {
+        if ($environment instanceof Environment) {
+            return $this
+                ->addUsingAlias(SitePeer::ID, $environment->getSiteid(), $comparison);
+        } elseif ($environment instanceof PropelObjectCollection) {
+            return $this
+                ->useEnvironmentQuery()
+                ->filterByPrimaryKeys($environment->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByEnvironment() only accepts arguments of type Environment or PropelCollection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the Environment relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return SiteQuery The current query, for fluid interface
+     */
+    public function joinEnvironment($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('Environment');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'Environment');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the Environment relation Environment object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   \Fluxsauce\Brain\EnvironmentQuery A secondary query class using the current class as primary query
+     */
+    public function useEnvironmentQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        return $this
+            ->joinEnvironment($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'Environment', '\Fluxsauce\Brain\EnvironmentQuery');
+    }
+
+    /**
+     * Filter the query by a related Project object
+     *
+     * @param   Project|PropelObjectCollection $project  the related object to use as filter
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return                 SiteQuery The current query, for fluid interface
+     * @throws PropelException - if the provided filter is invalid.
+     */
+    public function filterByProject($project, $comparison = null)
+    {
+        if ($project instanceof Project) {
+            return $this
+                ->addUsingAlias(SitePeer::ID, $project->getSiteid(), $comparison);
+        } elseif ($project instanceof PropelObjectCollection) {
+            return $this
+                ->useProjectQuery()
+                ->filterByPrimaryKeys($project->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByProject() only accepts arguments of type Project or PropelCollection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the Project relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return SiteQuery The current query, for fluid interface
+     */
+    public function joinProject($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('Project');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'Project');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the Project relation Project object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   \Fluxsauce\Brain\ProjectQuery A secondary query class using the current class as primary query
+     */
+    public function useProjectQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        return $this
+            ->joinProject($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'Project', '\Fluxsauce\Brain\ProjectQuery');
     }
 
     /**

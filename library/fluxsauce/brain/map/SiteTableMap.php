@@ -62,6 +62,9 @@ class SiteTableMap extends TableMap
      */
     public function buildRelations()
     {
+        $this->addRelation('Backup', 'Fluxsauce\\Brain\\Backup', RelationMap::ONE_TO_MANY, array('id' => 'siteId', ), null, null, 'Backups');
+        $this->addRelation('Environment', 'Fluxsauce\\Brain\\Environment', RelationMap::ONE_TO_MANY, array('id' => 'siteId', ), null, null, 'Environments');
+        $this->addRelation('Project', 'Fluxsauce\\Brain\\Project', RelationMap::ONE_TO_MANY, array('id' => 'siteId', ), null, null, 'Projects');
     } // buildRelations()
 
     /**

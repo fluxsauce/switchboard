@@ -98,7 +98,6 @@ class ProviderPantheon extends Provider {
     $site->setSshport(2222);
 
     $site->save();
-    $this->sites[$site->getName()] = $site;
   }
 
   /**
@@ -131,7 +130,6 @@ class ProviderPantheon extends Provider {
       $site->setRealm($data->information->preferred_zone);
 
       $site->save();
-      $this->sites[$site->getName()] = $site;
     }
   }
 
@@ -159,7 +157,6 @@ class ProviderPantheon extends Provider {
     $site->setTitle($site_attributes->label);
 
     $site->save();
-    $this->sites[$site->getName()] = $site;
   }
 
   /**
@@ -324,15 +321,17 @@ class ProviderPantheon extends Provider {
       'uuid' => $site->getUuid(),
     ));
     $environment_data = json_decode($result->body);
+
     foreach ($environment_data as $environment_name => $environment) {
       $new_environment = new Environment();
-      $new_environment->setSiteid($site->getId());
       $new_environment->setName($environment_name);
       $new_environment->setBranch('master');
       $new_environment->setHost("appserver.$environment_name.{$site->getUuid()}.drush.in");
       $new_environment->setUsername("$environment_name.$site_name");
-      $new_environment->save();
+      $site->addEnvironment($new_environment);
     }
+
+    $site->save();
   }
 
   /**
@@ -344,7 +343,10 @@ class ProviderPantheon extends Provider {
    *   The machine name of the Site Environment.
    */
   public function apiGetSiteEnvDbs($site_name, $env_name) {
-    $site =& $this->sites[$site_name];
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
     $env =& $site->environments[$env_name];
     $new_db = new EnvDb($env->id, 'pantheon');
     $new_db->update();
@@ -369,12 +371,15 @@ class ProviderPantheon extends Provider {
    *   - 'timestamp'
    */
   public function apiGetSiteEnvBackups($site_name, $env_name, $backup_type) {
-    $site = $this->sites[$site_name];
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
     $result = switchboard_request($this, array(
       'method' => 'GET',
       'resource' => 'site',
       'realm' => 'environments/' . $env_name . '/backups/catalog',
-      'uuid' => $site->uuid,
+      'uuid' => $site->getUuid(),
     ));
     $backups = array();
     $backup_data = json_decode($result->body);
@@ -434,12 +439,15 @@ class ProviderPantheon extends Provider {
    *   The S3 URL of the backup.
    */
   public function apiGetBackupDownloadUrl($site_name, $env_name, $bucket, $element) {
-    $site = $this->sites[$site_name];
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
     $result = switchboard_request($this, array(
       'method' => 'POST',
       'resource' => 'site',
       'realm' => 'environments/' . $env_name . '/backups/catalog/' . $bucket . '/' . $element . '/s3token',
-      'uuid' => $site->uuid,
+      'uuid' => $site->getUuid(),
       'data' => array('method' => 'GET'),
     ));
     $token = json_decode($result->body);

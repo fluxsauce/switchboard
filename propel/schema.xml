@@ -6,7 +6,10 @@
     </behavior>
     <table name="backup" phpName="Backup" namespace="Fluxsauce\Brain">
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
-        <column name="siteId" type="integer" description="External key to the Site."/>
+        <column name="siteId" type="integer" description="External key to an associated Site."/>
+        <foreign-key foreignTable="site" phpName="Site" refPhpName="Backup">
+            <reference local="siteId" foreign="id"/>
+        </foreign-key>
         <column name="projectId" type="integer" description="External key to the Project."/>
         <column name="component" type="varchar" size="15" description="Name of the Component."/>
         <column name="path" type="varchar" size="255" description="Path to the Backup."/>
@@ -15,7 +18,10 @@
     </table>
     <table name="environment" phpName="Environment" namespace="Fluxsauce\Brain">
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
-        <column name="siteId" type="integer" description="External key to the Site."/>
+        <column name="siteId" type="integer" description="External key to an associated Site."/>
+        <foreign-key foreignTable="site" phpName="Site" refPhpName="Environment">
+            <reference local="siteId" foreign="id"/>
+        </foreign-key>
         <column name="name" type="varchar" size="255" required="true" description="Name of the Environment."/>
         <column name="host" type="varchar" size="255" description="The hostname for the Environment." />
         <column name="username" type="varchar" size="255" description="The UNIX username for the Environment." />
@@ -28,6 +34,9 @@
         <column name="name" type="varchar" size="255" required="true" description="Name of the Project."/>
         <column name="uuid" type="varchar" size="255" description="The UUID of the Project."/>
         <column name="siteId" type="integer" description="External key to an associated Site."/>
+        <foreign-key foreignTable="site" phpName="Site" refPhpName="Project">
+            <reference local="siteId" foreign="id"/>
+        </foreign-key>
         <column name="hostname" type="varchar" size="255" description="The hostname for the local Project." />
         <column name="username" type="varchar" size="255" description="The UNIX username for the local Project." />
         <column name="sshPort" type="integer" description="The SSH port for the local Project."/>

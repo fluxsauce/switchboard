@@ -142,15 +142,10 @@ abstract class Provider {
    * Delete all Sites associated with a Provider.
    */
   public function sitesDestroy() {
-    $this->sites = array();
-    $pdo = Sqlite::get();
-    try {
-      $stmt = $pdo->prepare('DELETE FROM sites WHERE provider = :provider');
-      $stmt->bindParam(':provider', $this->name, PDO::PARAM_STR);
-      $stmt->execute();
-    }
-    catch (\PDOException $e) {
-      switchboard_pdo_exception_debug($e);
+    if (!empty($this->sites)) {
+      foreach ($this->sites as $site) {
+        $site->delete();
+      }
     }
   }
 
