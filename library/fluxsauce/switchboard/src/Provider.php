@@ -197,16 +197,6 @@ abstract class Provider {
   abstract public function apiGetSiteEnvironments($site_name);
 
   /**
-   * Get and populate list of Databases for a particular Environment.
-   *
-   * @param string $site_name
-   *   The machine name of the Site.
-   * @param string $env_name
-   *   The machine name of the Site Environment.
-   */
-  abstract public function apiGetSiteEnvDbs($site_name, $env_name);
-
-  /**
    * Provider specific options for Requests.
    *
    * @return array

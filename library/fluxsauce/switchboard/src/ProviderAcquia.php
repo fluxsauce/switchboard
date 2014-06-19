@@ -238,36 +238,6 @@ class ProviderAcquia extends Provider {
   }
 
   /**
-   * Get and populate list of Databases for a particular Environment.
-   *
-   * @param string $site_name
-   *   The machine name of the Site.
-   * @param string $env_name
-   *   The machine name of the Site Environment.
-   */
-  public function apiGetSiteEnvDbs($site_name, $env_name) {
-    $site = SiteQuery::create()
-      ->filterByProvider($this->name)
-      ->filterByName($site_name)
-      ->findOne();
-    $environment = EnvironmentQuery::create()
-      ->filterBySite($site)
-      ->filterByName($env_name)
-      ->findOne();
-
-    $result = switchboard_request($this, array(
-      'method' => 'GET',
-      'resource' => '/sites/' . $site->getRealm() . ':' . $site_name . '/envs/' . $env_name . '/dbs',
-    ));
-    $db_data = json_decode($result->body);
-    foreach ($db_data as $db) {
-      $new_db = new EnvDb($environment->getId(), $db->instance_name);
-      $new_db->update();
-      $environment->dbAdd($new_db);
-    }
-  }
-
-  /**
    * Get a list of database backups for a particular Site Environment.
    *
    * @param string $site_name

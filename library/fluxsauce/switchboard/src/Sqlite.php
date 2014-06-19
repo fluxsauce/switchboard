@@ -73,20 +73,6 @@ class Sqlite {
       catch (\PDOException $e) {
         switchboard_pdo_exception_debug($e);
       }
-
-      try {
-        $sql_query = 'CREATE TABLE IF NOT EXISTS envdbs ( ';
-        $sql_query .= 'id INTEGER PRIMARY KEY ';
-        $sql_query .= ', environmentId INTEGER ';
-        $sql_query .= ', name TEXT ';
-        $sql_query .= ', updated INTEGER ';
-        $sql_query .= ') ';
-
-        $pdo->exec($sql_query);
-      }
-      catch (\PDOException $e) {
-        switchboard_pdo_exception_debug($e);
-      }
     }
     return $pdo;
   }

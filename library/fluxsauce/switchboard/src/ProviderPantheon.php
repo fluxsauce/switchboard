@@ -335,28 +335,6 @@ class ProviderPantheon extends Provider {
   }
 
   /**
-   * Get and populate list of Databases for a particular Environment.
-   *
-   * @param string $site_name
-   *   The machine name of the Site.
-   * @param string $env_name
-   *   The machine name of the Site Environment.
-   */
-  public function apiGetSiteEnvDbs($site_name, $env_name) {
-    $site = SiteQuery::create()
-      ->filterByProvider($this->name)
-      ->filterByName($site_name)
-      ->findOne();
-    $environment = EnvironmentQuery::create()
-      ->filterBySite($site)
-      ->filterByName($env_name)
-      ->findOne();
-    $new_db = new EnvDb($environment->getId(), $this->name);
-    $new_db->update();
-    $environment->dbAdd($new_db);
-  }
-
-  /**
    * Get a list of database backups for a particular Site Environment.
    *
    * @param string $site_name
