@@ -278,22 +278,6 @@ function switchboard_get_drush_options($command_name) {
 }
 
 /**
- * Convert an underscore_delimited string to CamelCase.
- *
- * @param string $string
- *   The string to be converted.
- *
- * @return string
- *   The converted string.
- */
-function switchboard_to_camel_case($string) {
-  $ret_val = preg_replace_callback('/_(.?)/', function ($matches) {
-    return str_replace('_', '', strtoupper($matches[0]));
-  }, $string);
-  return $ret_val;
-}
-
-/**
  * Render an Object to the Standard Output.
  *
  * @param mixed $object
@@ -330,4 +314,17 @@ function switchboard_render_object_drush_table($object) {
  */
 function switchboard_render_object_json($object) {
   drush_print($object->toJSON(FALSE));
+}
+
+/**
+ * Convert an underscored property name to a Propel property name.
+ *
+ * @param string $underscore
+ *   The value to be converted.
+ *
+ * @return string
+ *   A property name that can be used in get and set operations.
+ */
+function switchboard_underscore_to_property_name($underscore) {
+  return ucfirst(str_replace('_', '', $underscore));
 }

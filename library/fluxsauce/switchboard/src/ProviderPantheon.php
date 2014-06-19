@@ -347,10 +347,13 @@ class ProviderPantheon extends Provider {
       ->filterByProvider($this->name)
       ->filterByName($site_name)
       ->findOne();
-    $env =& $site->environments[$env_name];
-    $new_db = new EnvDb($env->id, 'pantheon');
+    $environment = EnvironmentQuery::create()
+      ->filterBySite($site)
+      ->filterByName($env_name)
+      ->findOne();
+    $new_db = new EnvDb($environment->getId(), $this->name);
     $new_db->update();
-    $env->dbAdd($new_db);
+    $environment->dbAdd($new_db);
   }
 
   /**

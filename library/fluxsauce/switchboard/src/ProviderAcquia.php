@@ -250,7 +250,10 @@ class ProviderAcquia extends Provider {
       ->filterByProvider($this->name)
       ->filterByName($site_name)
       ->findOne();
-    $env = $site->getEnvironments(EnvironmentQuery::create()->findByName($env_name));
+    $environment = EnvironmentQuery::create()
+      ->filterBySite($site)
+      ->filterByName($env_name)
+      ->findOne();
 
     $result = switchboard_request($this, array(
       'method' => 'GET',
@@ -258,9 +261,9 @@ class ProviderAcquia extends Provider {
     ));
     $db_data = json_decode($result->body);
     foreach ($db_data as $db) {
-      $new_db = new EnvDb($env->getId(), $db->instance_name);
+      $new_db = new EnvDb($environment->getId(), $db->instance_name);
       $new_db->update();
-      $env->dbAdd($new_db);
+      $environment->dbAdd($new_db);
     }
   }
 

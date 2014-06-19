@@ -549,7 +549,7 @@ function drush_switchboard_sw_project_create($project_name) {
   foreach (array_keys(switchboard_get_drush_options('sw-project-create')) as $option) {
     $option_value = drush_get_option($option);
     if ($option_value && !is_bool($option_value)) {
-      $method = 'set' . ucfirst(str_replace('_', '', $option));
+      $method = 'set' . switchboard_underscore_to_property_name($option);
       $project->$method($option_value);
     }
   }
@@ -731,6 +731,11 @@ function drush_switchboard_sw_project_db_import_validate($project_name = '', $pa
  *
  * @param string $project_name
  *   Name of the local project in question.
+ * @param string $path
+ *   Path to backup to import.
+ *
+ * @return bool
+ *   FALSE upon failure.
  */
 function drush_switchboard_sw_project_db_import($project_name, $path) {
   $project = drush_get_option('project');
@@ -814,10 +819,13 @@ function drush_switchboard_sw_project_files_rsync_validate($project_name = '', $
 function drush_switchboard_sw_project_files_rsync($project_name, $env_name, $direction) {
   $project = drush_get_option('project');
   $site = drush_get_option('site');
-  $provider = \Fluxsauce\Switchboard\Provider::getInstance($site->provider);
-  $command = "rsync -rlvz --size-only --ipv4 --progress -e 'ssh -p {$site->sshPort}' ";
-  $environment = $site->environments[$env_name];
-  $remote = "{$environment->username}@{$environment->host}:{$provider->getFilesPath($site->name, $env_name)}";
+  $environment = \Fluxsauce\Brain\EnvironmentQuery::create()
+    ->filterBySite($site)
+    ->filterByName($env_name)
+    ->findOne();
+  $provider = \Fluxsauce\Switchboard\Provider::getInstance($site->getProvider());
+  $command = "rsync -rlvz --size-only --ipv4 --progress -e 'ssh -p {$site->getSshport()}' ";
+  $remote = "{$environment->getUsername()}@{$environment->getHost()}:{$provider->getFilesPath($site->getName(), $env_name)}";
   $local = $project->getFilespath();
   if ($direction == 'up') {
     $command .= "$local/ $remote";
@@ -972,7 +980,7 @@ function drush_switchboard_sw_project_get_path_validate($project_name = '', $com
       '@project_name' => $project_name,
     )));
   }
-  $method_name = 'get' . ucfirst($property_name);
+  $method_name = 'get' . switchboard_underscore_to_property_name($property_name);
   if (!$project->$method_name()) {
     return switchboard_message_fail('SWITCHBOARD_PROJECT_PATH_MISSING', dt('@project_name is missing a value for @property_name.', array(
       '@project_name' => $project_name,
@@ -994,7 +1002,7 @@ function drush_switchboard_sw_project_get_path_validate($project_name = '', $com
 function drush_switchboard_sw_project_get_path($project_name, $component_name) {
   $property_name = drush_get_option('property_name');
   $project = drush_get_option('project');
-  $method_name = 'get' . ucfirst($property_name);
+  $method_name = 'get' . switchboard_underscore_to_property_name($property_name);
   switchboard_message_success($project->$method_name());
 }
 
@@ -1018,7 +1026,7 @@ function drush_switchboard_sw_project_list() {
     foreach ($projects as $project) {
       $project_row = array();
       foreach ($keys_to_show as $key) {
-        $method = 'get' . ucfirst($key);
+        $method = 'get' . switchboard_underscore_to_property_name($key);
         $project_row[$key] = $project->$method();
       }
       $rows[$project->getName()] = $project_row;
@@ -1117,7 +1125,7 @@ function drush_switchboard_sw_project_update($project_name) {
   foreach (array_keys(switchboard_get_drush_options('sw-project-update')) as $option) {
     $option_value = drush_get_option($option);
     if ($option_value && !is_bool($option_value)) {
-      $method = 'set' . ucfirst($option);
+      $method = 'set' . switchboard_underscore_to_property_name($option);
       $project->$method($option_value);
     }
   }
