@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <propel>
+        <datasources default="brain">
+            <datasource id="brain">
+                <adapter>sqlite</adapter>
+                <connection>
+                    <dsn>sqlite:./brain/switchboard.sqlite</dsn>
+                </connection>
+            </datasource>
+        </datasources>
+    </propel>
+</config>

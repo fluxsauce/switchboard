@@ -278,17 +278,53 @@ function switchboard_get_drush_options($command_name) {
 }
 
 /**
- * Convert an underscore_delimited string to CamelCase.
+ * Render an Object to the Standard Output.
  *
- * @param string $string
- *   The string to be converted.
+ * @param mixed $object
+ *   A Propel object.
+ */
+function switchboard_render_object($object) {
+  if (drush_get_option('json')) {
+    switchboard_render_object_json($object);
+  }
+  else {
+    switchboard_render_object_drush_table($object);
+  }
+}
+
+/**
+ * Render as a Drush table.
+ *
+ * @param mixed $object
+ *   A Propel object.
+ */
+function switchboard_render_object_drush_table($object) {
+  $fields = $object->toArray();
+  $rows = array();
+  $rows[] = array_keys($fields);
+  $rows[] = array_values($fields);
+  drush_print_table($rows, TRUE);
+}
+
+/**
+ * Render as a JSON array.
+ *
+ * @param mixed $object
+ *   A Propel object.
+ */
+function switchboard_render_object_json($object) {
+  drush_print($object->toJSON(FALSE));
+}
+
+/**
+ * Convert an underscored property name to a Propel property name.
+ *
+ * @param string $underscore
+ *   The value to be converted.
  *
  * @return string
- *   The converted string.
+ *   A property name that can be used in get and set operations.
  */
-function switchboard_to_camel_case($string) {
-  $ret_val = preg_replace_callback('/_(.?)/', function ($matches) {
-    return str_replace('_', '', strtoupper($matches[0]));
-  }, $string);
-  return $ret_val;
+function switchboard_underscore_to_property_name($underscore) {
+  return ucfirst(str_replace('_', '', $underscore));
 }

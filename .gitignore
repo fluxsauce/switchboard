@@ -1,3 +1,4 @@
 vendor
 composer.lock
 switchboard.sqlite
+brain/switchboard.db

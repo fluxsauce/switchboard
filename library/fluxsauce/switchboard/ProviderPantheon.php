@@ -5,6 +5,9 @@
  */
 
 namespace Fluxsauce\Switchboard;
+use Fluxsauce\Brain\Environment;
+use Fluxsauce\Brain\Site;
+use Fluxsauce\Brain\SiteQuery;
 
 /**
  * Pantheon specific API interactions.
@@ -57,7 +60,6 @@ class ProviderPantheon extends Provider {
         $this->apiGetSite($site_name);
         break;
 
-      case 'unixUsername':
       case 'realm':
       case 'uuid':
         $this->apiGetSites();
@@ -72,7 +74,6 @@ class ProviderPantheon extends Provider {
       default:
         throw new \Exception('Unknown field ' . $field . ' in ' . __CLASS__);
     }
-    return $this->sites[$site_name]->$field;
   }
 
   /**
@@ -82,19 +83,21 @@ class ProviderPantheon extends Provider {
    *   The name of the site in question.
    */
   public function apiGetSite($site_name) {
-    $site = new Site('pantheon', $site_name);
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
 
-    $repository = 'codeserver.dev.' . $site->uuid;
-    $repository .= '@codeserver.dev.' . $site->uuid;
+    $repository = 'codeserver.dev.' . $site->getUuid();
+    $repository .= '@codeserver.dev.' . $site->getUuid();
     $repository .= '.drush.in:2222/~/repository.git';
 
-    $site->update(array(
-      'vcsUrl' => $repository,
-      'vcsType' => 'git',
-      'vcsProtocol' => 'ssh',
-      'sshPort' => 2222,
-    ));
-    $this->sites[$site_name] = $site;
+    $site->setVcsurl($repository);
+    $site->setVcstype('git');
+    $site->setVcsprotocol('ssh');
+    $site->setSshport(2222);
+
+    $site->save();
   }
 
   /**
@@ -113,12 +116,20 @@ class ProviderPantheon extends Provider {
     $sites = array();
 
     foreach ($site_metadata as $uuid => $data) {
-      $site = new Site($this->name, $data->information->name);
-      $site->uuid = $uuid;
-      $site->realm = $data->information->preferred_zone;
-      $site->unixUsername = '';
-      $site->update();
-      $this->sites[$site->name] = $site;
+      $site = SiteQuery::create()
+        ->filterByProvider($this->name)
+        ->filterByName($data->information->name)
+        ->findOne();
+      if (!$site) {
+        $site = new Site();
+        $site->setProvider($this->name);
+        $site->setName($data->information->name);
+      }
+
+      $site->setUuid($uuid);
+      $site->setRealm($data->information->preferred_zone);
+
+      $site->save();
     }
   }
 
@@ -129,17 +140,23 @@ class ProviderPantheon extends Provider {
    *   The machine name of a site.
    */
   public function apiGetSiteName($site_name) {
-    $site =& $this->sites[$site_name];
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
+
     $result = switchboard_request($this, array(
       'method' => 'GET',
       'realm' => 'attributes',
       'resource' => 'site',
-      'uuid' => $site->uuid,
+      'uuid' => $site->getUuid(),
     ));
+
     $site_attributes = json_decode($result->body);
-    $site->title = $site_attributes->label;
-    $site->update();
-    $this->sites[$site->name] = $site;
+
+    $site->setTitle($site_attributes->label);
+
+    $site->save();
   }
 
   /**
@@ -292,38 +309,29 @@ class ProviderPantheon extends Provider {
    *   The machine name of the site in question.
    */
   public function apiGetSiteEnvironments($site_name) {
-    $site =& $this->sites[$site_name];
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
+
     $result = switchboard_request($this, array(
       'method' => 'GET',
       'realm' => 'environments',
       'resource' => 'site',
-      'uuid' => $site->uuid,
+      'uuid' => $site->getUuid(),
     ));
     $environment_data = json_decode($result->body);
-    foreach ($environment_data as $environment_name => $environment) {
-      $new_environment = new Environment($site->id, $environment_name);
-      $new_environment->branch = 'master';
-      $new_environment->host = "appserver.$environment_name.{$site->uuid}.drush.in";
-      $new_environment->username = "$environment_name.$site_name";
-      $new_environment->update();
-      $site->environmentAdd($new_environment);
-    }
-  }
 
-  /**
-   * Get and populate list of Databases for a particular Environment.
-   *
-   * @param string $site_name
-   *   The machine name of the Site.
-   * @param string $env_name
-   *   The machine name of the Site Environment.
-   */
-  public function apiGetSiteEnvDbs($site_name, $env_name) {
-    $site =& $this->sites[$site_name];
-    $env =& $site->environments[$env_name];
-    $new_db = new EnvDb($env->id, 'pantheon');
-    $new_db->update();
-    $env->dbAdd($new_db);
+    foreach ($environment_data as $environment_name => $environment) {
+      $new_environment = new Environment();
+      $new_environment->setName($environment_name);
+      $new_environment->setBranch('master');
+      $new_environment->setHost("appserver.$environment_name.{$site->getUuid()}.drush.in");
+      $new_environment->setUsername("$environment_name.$site_name");
+      $site->addEnvironment($new_environment);
+    }
+
+    $site->save();
   }
 
   /**
@@ -344,12 +352,15 @@ class ProviderPantheon extends Provider {
    *   - 'timestamp'
    */
   public function apiGetSiteEnvBackups($site_name, $env_name, $backup_type) {
-    $site = $this->sites[$site_name];
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
     $result = switchboard_request($this, array(
       'method' => 'GET',
       'resource' => 'site',
       'realm' => 'environments/' . $env_name . '/backups/catalog',
-      'uuid' => $site->uuid,
+      'uuid' => $site->getUuid(),
     ));
     $backups = array();
     $backup_data = json_decode($result->body);
@@ -409,12 +420,15 @@ class ProviderPantheon extends Provider {
    *   The S3 URL of the backup.
    */
   public function apiGetBackupDownloadUrl($site_name, $env_name, $bucket, $element) {
-    $site = $this->sites[$site_name];
+    $site = SiteQuery::create()
+      ->filterByProvider($this->name)
+      ->filterByName($site_name)
+      ->findOne();
     $result = switchboard_request($this, array(
       'method' => 'POST',
       'resource' => 'site',
       'realm' => 'environments/' . $env_name . '/backups/catalog/' . $bucket . '/' . $element . '/s3token',
-      'uuid' => $site->uuid,
+      'uuid' => $site->getUuid(),
       'data' => array('method' => 'GET'),
     ));
     $token = json_decode($result->body);

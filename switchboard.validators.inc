@@ -80,8 +80,15 @@ function switchboard_validate_site_env($provider_name, $site_name, $env_name) {
   if (!$env_name) {
     return FALSE;
   }
-  $provider =& \Fluxsauce\Switchboard\Provider::getInstance($provider_name);
-  return array_key_exists($env_name, $provider->sites[$site_name]->environments);
+  $site = \Fluxsauce\Brain\SiteQuery::create()
+    ->filterByProvider($provider_name)
+    ->filterByName($site_name)
+    ->findOne();
+  $environment = \Fluxsauce\Brain\EnvironmentQuery::create()
+    ->filterBySite($site)
+    ->filterByName($env_name)
+    ->findOne();
+  return $environment ? TRUE : FALSE;
 }
 
 /**

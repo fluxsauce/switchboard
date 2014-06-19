@@ -14,4 +14,4 @@ script:
   # Make sure Switchboard executes cleanly. Should do nothing.
   - php ./switchboard.drush.inc
   # PHP_CodeSniffer using Drupal Coding Standard.
-  - phpcs --standard=./vendor/coder/coder/coder_sniffer/Drupal --ignore=*/vendor/* .
+  - phpcs --standard=./vendor/coder/coder/coder_sniffer/Drupal --ignore=*/vendor/* --ignore=*/propel/* --ignore=*/library/fluxsauce/brain/map/* --ignore=*/library/fluxsauce/brain/om/* .

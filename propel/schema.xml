@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database name="brain" defaultIdMethod="native">
+    <behavior name="timestampable">
+        <parameter name="create_column" value="createdOn" />
+        <parameter name="update_column" value="updatedOn" />
+    </behavior>
+    <table name="backup" phpName="Backup" namespace="Fluxsauce\Brain">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="siteId" type="integer" description="External key to an associated Site."/>
+        <foreign-key foreignTable="site" phpName="Site" refPhpName="Backup">
+            <reference local="siteId" foreign="id"/>
+        </foreign-key>
+        <column name="projectId" type="integer" description="External key to the Project."/>
+        <column name="component" type="varchar" size="15" description="Name of the Component."/>
+        <column name="path" type="varchar" size="255" description="Path to the Backup."/>
+        <column name="createdOn" type="timestamp" description="The time the record was created."/>
+        <column name="updatedOn" type="timestamp" description="The time the record was updated." />
+    </table>
+    <table name="environment" phpName="Environment" namespace="Fluxsauce\Brain">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="siteId" type="integer" description="External key to an associated Site."/>
+        <foreign-key foreignTable="site" phpName="Site" refPhpName="Environment">
+            <reference local="siteId" foreign="id"/>
+        </foreign-key>
+        <column name="name" type="varchar" size="255" required="true" description="Name of the Environment."/>
+        <column name="host" type="varchar" size="255" description="The hostname for the Environment." />
+        <column name="username" type="varchar" size="255" description="The UNIX username for the Environment." />
+        <column name="branch" type="varchar" size="255" description="The default VCS branch for the Environment."/>
+        <column name="createdOn" type="timestamp" description="The time the record was created."/>
+        <column name="updatedOn" type="timestamp" description="The time the record was updated." />
+    </table>
+    <table name="project" phpName="Project" namespace="Fluxsauce\Brain">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="name" type="varchar" size="255" required="true" description="Name of the Project."/>
+        <column name="uuid" type="varchar" size="255" description="The UUID of the Project."/>
+        <column name="siteId" type="integer" description="External key to an associated Site."/>
+        <foreign-key foreignTable="site" phpName="Site" refPhpName="Project">
+            <reference local="siteId" foreign="id"/>
+        </foreign-key>
+        <column name="hostname" type="varchar" size="255" description="The hostname for the local Project." />
+        <column name="username" type="varchar" size="255" description="The UNIX username for the local Project." />
+        <column name="sshPort" type="integer" description="The SSH port for the local Project."/>
+        <column name="codePath" type="varchar" size="255" description="The path on disk to the code root."/>
+        <column name="filesPath" type="varchar" size="255" description="The path on disk to the files root."/>
+        <column name="databaseHost" type="varchar" size="255" description="The hostname for the Project database."/>
+        <column name="databaseUsername" type="varchar" size="255" description="The username for the Project database."/>
+        <column name="databasePassword" type="varchar" size="255" description="The password for the Project database."/>
+        <column name="databaseName" type="varchar" size="255" description="The name for the Project database."/>
+        <column name="databasePort" type="integer" description="The port for the Project database."/>
+        <column name="createdOn" type="timestamp" description="The time the record was created."/>
+        <column name="updatedOn" type="timestamp" description="The time the record was updated." />
+    </table>
+    <table name="site" phpName="Site" namespace="Fluxsauce\Brain">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="provider" type="varchar" size="255" description="The machine name of the Provider."/>
+        <column name="uuid" type="varchar" size="255" description="The UUID of the Site."/>
+        <column name="realm" type="varchar" size="255" description="The realm of the site, like devcloud for Acquia."/>
+        <column name="name" type="varchar" size="255" description="The machine name of the site."/>
+        <column name="title" type="varchar" size="255" description="The human-readable name of the site."/>
+        <column name="vcsUrl" type="varchar" size="255" description="The Version Control System URL for the site."/>
+        <column name="vcsType" type="varchar" size="255" description="The Version Control System type, such as git or svn."/>
+        <column name="vcsProtocol" type="varchar" size="255" description="The Version Control System protocol, such as git or ssh."/>
+        <column name="sshPort" type="integer" description="The target port for SSH."/>
+        <column name="createdOn" type="timestamp" description="The time the record was created."/>
+        <column name="updatedOn" type="timestamp" description="The time the record was updated." />
+    </table>
+</database>
