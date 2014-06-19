@@ -156,6 +156,9 @@ class Site extends BaseSite {
     return $url;
   }
 
+  /**
+   * Render site environments to standard output.
+   */
   public function renderEnvironments() {
     if (drush_get_option('json')) {
       $this->renderEnvironmentsJson();
@@ -209,7 +212,7 @@ class Site extends BaseSite {
    *   List of Environment objects.
    * @throws PropelException
    */
-  public function getEnvironments($criteria = null, PropelPDO $con = null) {
+  public function getEnvironments($criteria = NULL, PropelPDO $con = NULL) {
     $environments = parent::getEnvironments($criteria, $con);
     if (count($environments) == 0) {
       $this->apiGetField('environments');

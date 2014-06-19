@@ -30,7 +30,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Fluxsauce\\Switchboard\\": "library/fluxsauce/switchboard/src",
+      "Fluxsauce\\Switchboard\\": "library/fluxsauce/switchboard",
       "Fluxsauce\\Brain\\": "library/fluxsauce/brain"
     }
   }
