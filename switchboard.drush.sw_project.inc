@@ -199,7 +199,11 @@ function drush_switchboard_sw_project_db_get_validate($project_name = '') {
       '@project_name' => $project_name,
     )));
   }
-  foreach ($project->getDatabaseSpecs() as $db_field => $db_value) {
+  $database_specs = $project->getDatabaseSpecs();
+  foreach ($database_specs as $db_field => $db_value) {
+    if ($db_field == 'port' && $db_value == '' && $database_specs['host'] == 'localhost') {
+      continue;
+    }
     if (!$db_value) {
       return switchboard_message_fail('SWITCHBOARD_PROJECT_DB_FIELD_MISSING', dt('@project_name does not have a value for @field_name.', array(
         '@project_name' => $project_name,
@@ -272,7 +276,11 @@ function drush_switchboard_sw_project_db_import_validate($project_name = '', $pa
       '@project_name' => $project_name,
     )));
   }
-  foreach ($project->getDatabaseSpecs() as $db_field => $db_value) {
+  $database_specs = $project->getDatabaseSpecs();
+  foreach ($database_specs as $db_field => $db_value) {
+    if ($db_field == 'port' && $db_value == '' && $database_specs['host'] == 'localhost') {
+      continue;
+    }
     if (!$db_value) {
       return switchboard_message_fail('SWITCHBOARD_PROJECT_DB_FIELD_MISSING', dt('@project_name does not have a value for @field_name.', array(
         '@project_name' => $project_name,
@@ -977,7 +985,11 @@ function drush_switchboard_sw_project_db_wipe_validate($project_name = '') {
   }
   drush_set_option('project', $project);
 
-  foreach ($project->getDatabaseSpecs() as $db_field => $db_value) {
+  $database_specs = $project->getDatabaseSpecs();
+  foreach ($database_specs as $db_field => $db_value) {
+    if ($db_field == 'port' && $db_value == '' && $database_specs['host'] == 'localhost') {
+      continue;
+    }
     if (!$db_value) {
       return switchboard_message_fail('SWITCHBOARD_PROJECT_DB_FIELD_MISSING', dt('@project_name does not have a value for @field_name.', array(
         '@project_name' => $project_name,

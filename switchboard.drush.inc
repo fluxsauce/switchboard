@@ -439,8 +439,6 @@ function drush_switchboard_sw_manual() {
   }
 }
 
-
-
 /**
  * Command callback for drush sw-project-list.
  */
