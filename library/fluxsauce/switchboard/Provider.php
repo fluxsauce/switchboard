@@ -263,7 +263,7 @@ abstract class Provider {
    */
   public function getSiteEnvBackupLatest($site_name, $env_name, $backup_type) {
     $backups = $this->apiGetSiteEnvBackups($site_name, $env_name, $backup_type);
-    return array_pop($backups);
+    return array_shift($backups);
   }
 
   /**
