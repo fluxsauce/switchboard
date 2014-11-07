@@ -94,6 +94,19 @@ function drush_switchboard_sw_project_create_validate($project_name = '') {
       ));
     }
   }
+  $provider_name = drush_get_option('provider_name');
+  $provider_site_name = drush_get_option('provider_site_name');
+  $site_id = drush_get_option('site_id');
+  // Look up site_id and set.
+  if ($provider_site_name && $provider_name && !$site_id) {
+    $site = \Fluxsauce\Brain\SiteQuery::create()
+      ->filterByName($provider_site_name)
+      ->filterByProvider($provider_name)
+      ->findOne();
+    if ($site) {
+      drush_set_option('site_id', $site->getId());
+    }
+  }
   $project = \Fluxsauce\Brain\ProjectQuery::create()
     ->filterByName($project_name)
     ->findOne();
@@ -117,6 +130,9 @@ function drush_switchboard_sw_project_create($project_name) {
   $project = new \Fluxsauce\Brain\Project();
   $project->setName($project_name);
   foreach (array_keys(switchboard_get_drush_options('sw-project-create')) as $option) {
+    if (in_array($option, array('provider_name', 'provider_site_name'))) {
+      continue;
+    }
     $option_value = drush_get_option($option);
     if ($option_value && !is_bool($option_value)) {
       $method = 'set' . switchboard_underscore_to_property_name($option);

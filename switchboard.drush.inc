@@ -184,7 +184,18 @@ function switchboard_drush_command() {
     'arguments' => array(
       'name' => dt('Name of the project.'),
     ),
-    'options' => $site_options + $json_option,
+    'options' => $site_options + $json_option + array(
+      'provider_site_name' => array(
+        'description' => dt('Machine name of site at provider; will look up site_id if specified'),
+        'value' => 'required',
+        'example-value' => 'speck',
+      ),
+      'provider_name' => array(
+        'description' => dt('Machine name of the provider; used to look up site_id'),
+        'value' => 'required',
+        'example-value' => 'acquia',
+      ),
+    ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 

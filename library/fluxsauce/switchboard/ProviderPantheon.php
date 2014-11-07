@@ -321,16 +321,16 @@ class ProviderPantheon extends Provider {
       'uuid' => $site->getUuid(),
     ));
     $environment_data = json_decode($result->body);
-
-    foreach ($environment_data as $environment_name => $environment) {
-      $new_environment = new Environment();
-      $new_environment->setName($environment_name);
-      $new_environment->setBranch('master');
-      $new_environment->setHost("appserver.$environment_name.{$site->getUuid()}.drush.in");
-      $new_environment->setUsername("$environment_name.$site_name");
-      $site->addEnvironment($new_environment);
+    if (!is_scalar($environment_data)) {
+      foreach ($environment_data as $environment_name => $environment) {
+        $new_environment = new Environment();
+        $new_environment->setName($environment_name);
+        $new_environment->setBranch('master');
+        $new_environment->setHost("appserver.$environment_name.{$site->getUuid()}.drush.in");
+        $new_environment->setUsername("$environment_name.$site_name");
+        $site->addEnvironment($new_environment);
+      }
     }
-
     $site->save();
   }
 
